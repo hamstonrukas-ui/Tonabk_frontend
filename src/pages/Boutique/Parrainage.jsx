@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { MessageCircle, Copy, Check as CheckIcon } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
+import { API_URL } from "../../lib/api";
 
 const SITE_URL = "tonabk.com";
 
@@ -13,7 +14,7 @@ export default function Parrainage() {
     async function charger() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
-      const res = await fetch(`/api/parrainage/mes-filleuls`, {
+      const res = await fetch(`${API_URL}/api/parrainage/mes-filleuls`, {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       if (res.ok) setFilleuls(await res.json());

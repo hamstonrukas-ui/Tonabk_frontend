@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, MapPin, BedDouble, Bath, MessageCircle } from "lucide-react";
+import { API_URL } from "../../lib/api";
 
 const fmt = (n, devise) => n.toLocaleString("fr-FR") + " " + devise;
 
@@ -9,7 +10,7 @@ export default function Fiche() {
   const [maison, setMaison] = useState(null);
 
   useEffect(() => {
-    fetch(`/api/maisons/${id}`).then((r) => r.json()).then(setMaison);
+    fetch(`${API_URL}/api/maisons/${id}`).then((r) => r.json()).then(setMaison);
   }, [id]);
 
   if (!maison) return <p className="text-center text-sm text-gray-400 py-10">Chargement...</p>;

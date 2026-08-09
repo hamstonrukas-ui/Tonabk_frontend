@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
+import { API_URL } from "../../lib/api";
 
 export default function PublierRequete() {
   const navigate = useNavigate();
@@ -12,7 +13,7 @@ export default function PublierRequete() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch("/api/categories").then((r) => r.json()).then(setCategories).catch(() => {});
+    fetch(`${API_URL}/api/categories`).then((r) => r.json()).then(setCategories).catch(() => {});
   }, []);
 
   const handleSubmit = async (e) => {
@@ -26,7 +27,7 @@ export default function PublierRequete() {
       return navigate("/connexion");
     }
 
-    const res = await fetch("/api/requetes", {
+    const res = await fetch(`${API_URL}/api/requetes`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
       body: JSON.stringify({

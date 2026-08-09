@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
+import { API_URL } from "../lib/api";
 
 async function authHeaders() {
   const { data: { session } } = await supabase.auth.getSession();
@@ -11,7 +12,7 @@ export default function AdminRequetes() {
 
   async function charger() {
     const headers = await authHeaders();
-    const res = await fetch("/api/requetes/admin/toutes", { headers });
+    const res = await fetch(`${API_URL}/api/requetes/admin/toutes`, { headers });
     if (res.ok) setRequetes(await res.json());
   }
 
@@ -19,13 +20,13 @@ export default function AdminRequetes() {
 
   const changerStatut = async (id, statut) => {
     const headers = await authHeaders();
-    await fetch(`/api/requetes/${id}/statut`, { method: "PUT", headers, body: JSON.stringify({ statut }) });
+    await fetch(`${API_URL}/api/requetes/${id}/statut`, { method: "PUT", headers, body: JSON.stringify({ statut }) });
     charger();
   };
 
   const supprimer = async (id) => {
     const headers = await authHeaders();
-    await fetch(`/api/requetes/admin/${id}`, { method: "DELETE", headers });
+    await fetch(`${API_URL}/api/requetes/admin/${id}`, { method: "DELETE", headers });
     charger();
   };
 

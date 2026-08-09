@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
+import { API_URL } from "../../lib/api";
 
 export default function Publier() {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ export default function Publier() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) { alert("Connectez-vous d'abord"); setLoading(false); return; }
 
-    const res = await fetch("/api/maisons", {
+    const res = await fetch(`${API_URL}/api/maisons`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
       body: JSON.stringify(form),

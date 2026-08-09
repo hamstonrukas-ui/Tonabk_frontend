@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { MessageCircle } from "lucide-react";
 import { useCart } from "../../context/CartContext";
+import { API_URL } from "../../lib/api";
 
 const fmt = (n) => n.toLocaleString("fr-FR") + " FC";
 const WHATSAPP_NUMBER = "243900000000";
@@ -13,7 +14,7 @@ export default function Commande() {
   const [source, setSource] = useState("WhatsApp");
 
   useEffect(() => {
-    fetch("/api/produits").then((r) => r.json()).then(setProduits);
+    fetch(`${API_URL}/api/produits`).then((r) => r.json()).then(setProduits);
   }, []);
 
   const cartItems = Object.entries(cart)

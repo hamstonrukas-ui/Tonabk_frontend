@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, MapPin, BadgeCheck, MessageCircle } from "lucide-react";
+import { API_URL } from "../../lib/api";
 
 const fmt = (n) => n.toLocaleString("fr-FR") + " FC";
 
@@ -9,7 +10,7 @@ export default function DetailBoutique() {
   const [boutique, setBoutique] = useState(null);
 
   useEffect(() => {
-    fetch(`/api/boutiques/${id}`).then((r) => r.json()).then(setBoutique);
+    fetch(`${API_URL}/api/boutiques/${id}`).then((r) => r.json()).then(setBoutique);
   }, [id]);
 
   if (!boutique) return <p className="text-center text-sm text-gray-400 py-10">Chargement...</p>;

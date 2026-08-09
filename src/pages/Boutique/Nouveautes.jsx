@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Bell } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
+import { API_URL } from "../../lib/api";
 
 export default function Nouveautes() {
   const { id: boutiqueId } = useParams();
@@ -11,7 +12,7 @@ export default function Nouveautes() {
 
   useEffect(() => {
     if (!boutiqueId) return;
-    fetch(`/api/boutiques/${boutiqueId}/annonces`)
+    fetch(`${API_URL}/api/boutiques/${boutiqueId}/annonces`)
       .then((r) => r.json())
       .then((data) => {
         setAnnonces(data.annonces || []);
@@ -24,7 +25,7 @@ export default function Nouveautes() {
     if (!annonce.trim() || !boutiqueId) return;
     const { data: { session } } = await supabase.auth.getSession();
 
-    const res = await fetch(`/api/boutiques/${boutiqueId}/annonces`, {
+    const res = await fetch(`${API_URL}/api/boutiques/${boutiqueId}/annonces`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

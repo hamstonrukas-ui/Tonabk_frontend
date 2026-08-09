@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { API_URL } from "../../lib/api";
 
 export default function ListeRequetes() {
   const [requetes, setRequetes] = useState([]);
 
   useEffect(() => {
-    fetch("/api/requetes").then((r) => r.json()).then(setRequetes).catch(console.error);
+    fetch(`${API_URL}/api/requetes`).then((r) => r.json()).then(setRequetes).catch(console.error);
   }, []);
 
   return (

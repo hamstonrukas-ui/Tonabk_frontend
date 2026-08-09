@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
+import { API_URL } from "../lib/api";
 
 async function authHeaders() {
   const { data: { session } } = await supabase.auth.getSession();
@@ -10,7 +11,7 @@ export default function AdminMaisons() {
   const [maisons, setMaisons] = useState([]);
 
   async function charger() {
-    const res = await fetch("/api/maisons");
+    const res = await fetch(`${API_URL}/api/maisons`);
     if (res.ok) setMaisons(await res.json());
   }
 
@@ -18,13 +19,13 @@ export default function AdminMaisons() {
 
   const suspendre = async (id) => {
     const headers = await authHeaders();
-    await fetch(`/api/maisons/admin/${id}/suspendre`, { method: "PUT", headers });
+    await fetch(`${API_URL}/api/maisons/admin/${id}/suspendre`, { method: "PUT", headers });
     charger();
   };
 
   const supprimer = async (id) => {
     const headers = await authHeaders();
-    await fetch(`/api/maisons/admin/${id}`, { method: "DELETE", headers });
+    await fetch(`${API_URL}/api/maisons/admin/${id}`, { method: "DELETE", headers });
     charger();
   };
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
+import { API_URL } from "../../lib/api";
 
 export default function DetailRequete() {
   const { id } = useParams();
@@ -12,7 +13,7 @@ export default function DetailRequete() {
   const [envoye, setEnvoye] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/requetes/${id}`).then((r) => r.json()).then(setRequete).catch(console.error);
+    fetch(`${API_URL}/api/requetes/${id}`).then((r) => r.json()).then(setRequete).catch(console.error);
   }, [id]);
 
   const handleReponse = async (e) => {
@@ -26,7 +27,7 @@ export default function DetailRequete() {
       return navigate("/connexion");
     }
 
-    const res = await fetch("/api/reponses", {
+    const res = await fetch(`${API_URL}/api/reponses`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
       body: JSON.stringify({

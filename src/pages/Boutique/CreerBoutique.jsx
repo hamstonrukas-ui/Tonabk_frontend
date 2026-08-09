@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
+import { API_URL } from "../../lib/api";
 
 export default function CreerBoutique() {
   const navigate = useNavigate();
@@ -9,7 +10,7 @@ export default function CreerBoutique() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch("/api/categories").then((r) => r.json()).then(setCategories).catch(() => {});
+    fetch(`${API_URL}/api/categories`).then((r) => r.json()).then(setCategories).catch(() => {});
   }, []);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -25,7 +26,7 @@ export default function CreerBoutique() {
       return navigate("/connexion");
     }
 
-    const res = await fetch("/api/boutiques", {
+    const res = await fetch(`${API_URL}/api/boutiques`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
       body: JSON.stringify(form),

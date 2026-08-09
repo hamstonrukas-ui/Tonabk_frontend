@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Search, ShoppingBag, BadgeCheck } from "lucide-react";
+import { API_URL } from "../lib/api";
 
 const fmt = (n) => n.toLocaleString("fr-FR") + " FC";
 
@@ -9,8 +10,8 @@ export default function Accueil() {
   const [boutiques, setBoutiques] = useState([]);
 
   useEffect(() => {
-    fetch("/api/produits/accueil").then((r) => r.json()).then(setProduits).catch(console.error);
-    fetch("/api/boutiques").then((r) => r.json()).then(setBoutiques).catch(console.error);
+    fetch(`${API_URL}/api/produits/accueil`).then((r) => r.json()).then(setProduits).catch(console.error);
+    fetch(`${API_URL}/api/boutiques`).then((r) => r.json()).then(setBoutiques).catch(console.error);
   }, []);
 
   return (

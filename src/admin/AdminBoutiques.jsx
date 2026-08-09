@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
+import { API_URL } from "../lib/api";
 
 async function authHeaders() {
   const { data: { session } } = await supabase.auth.getSession();
@@ -39,7 +40,7 @@ export default function AdminBoutiques() {
 
   async function charger() {
     const headers = await authHeaders();
-    const res = await fetch("/api/boutiques/admin/en-attente", { headers });
+    const res = await fetch(`${API_URL}/api/boutiques/admin/en-attente`, { headers });
     if (res.ok) setBoutiques(await res.json());
   }
 
@@ -47,25 +48,25 @@ export default function AdminBoutiques() {
 
   const approuver = async (id) => {
     const headers = await authHeaders();
-    await fetch(`/api/boutiques/admin/${id}/approuver`, { method: "PUT", headers });
+    await fetch(`${API_URL}/api/boutiques/admin/${id}/approuver`, { method: "PUT", headers });
     charger();
   };
 
   const suspendre = async (id) => {
     const headers = await authHeaders();
-    await fetch(`/api/boutiques/admin/${id}/suspendre`, { method: "PUT", headers });
+    await fetch(`${API_URL}/api/boutiques/admin/${id}/suspendre`, { method: "PUT", headers });
     charger();
   };
 
   const supprimer = async (id) => {
     const headers = await authHeaders();
-    await fetch(`/api/boutiques/admin/${id}`, { method: "DELETE", headers });
+    await fetch(`${API_URL}/api/boutiques/admin/${id}`, { method: "DELETE", headers });
     charger();
   };
 
   const certifier = async (id) => {
     const headers = await authHeaders();
-    await fetch(`/api/boutiques/admin/${id}/certifier`, {
+    await fetch(`${API_URL}/api/boutiques/admin/${id}/certifier`, {
       method: "PUT", headers, body: JSON.stringify({ jours: 30 }),
     });
     charger();

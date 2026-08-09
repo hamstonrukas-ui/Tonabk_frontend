@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Plus, Minus, Trash2, MessageCircle } from "lucide-react";
 import { useCart } from "../../context/CartContext";
+import { API_URL } from "../../lib/api";
 
 const fmt = (n) => n.toLocaleString("fr-FR") + " FC";
 const LIVRAISON_GRATUITE_SEUIL = 100000;
@@ -11,7 +12,7 @@ export default function Panier() {
   const [produits, setProduits] = useState([]);
 
   useEffect(() => {
-    fetch("/api/produits").then((r) => r.json()).then(setProduits);
+    fetch(`${API_URL}/api/produits`).then((r) => r.json()).then(setProduits);
   }, []);
 
   const cartItems = Object.entries(cart)

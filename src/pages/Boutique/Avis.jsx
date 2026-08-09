@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Star } from "lucide-react";
+import { API_URL } from "../../lib/api";
 
 export default function Avis() {
   const [reviews, setReviews] = useState([]);
   const [noteMoyenne, setNoteMoyenne] = useState(0);
 
   useEffect(() => {
-    fetch("/api/avis")
+    fetch(`${API_URL}/api/avis`)
       .then((r) => r.json())
       .then((data) => {
         setReviews(data);

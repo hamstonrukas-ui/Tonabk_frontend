@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Share2 } from "lucide-react";
 import { useCart } from "../../context/CartContext";
+import { API_URL } from "../../lib/api";
 
 const fmt = (n) => n.toLocaleString("fr-FR") + " FC";
 const SITE_URL = "tonabk.com";
@@ -12,7 +13,7 @@ export default function DetailProduit() {
   const { addToCart } = useCart();
 
   useEffect(() => {
-    fetch("/api/produits").then((r) => r.json()).then((data) => {
+    fetch(`${API_URL}/api/produits`).then((r) => r.json()).then((data) => {
       setProduit(data.find((p) => p.id === id));
     });
   }, [id]);

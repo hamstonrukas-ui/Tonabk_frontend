@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Search } from "lucide-react";
+import { API_URL } from "../../lib/api";
 
 const fmt = (n) => n.toLocaleString("fr-FR") + " FC";
 
@@ -10,7 +11,7 @@ export default function RechercheBoutique() {
   const [resultats, setResultats] = useState([]);
 
   useEffect(() => {
-    fetch("/api/produits").then((r) => r.json()).then(setProduits);
+    fetch(`${API_URL}/api/produits`).then((r) => r.json()).then(setProduits);
   }, []);
 
   useEffect(() => {

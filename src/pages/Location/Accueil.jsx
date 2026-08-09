@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Heart, MapPin } from "lucide-react";
 import { useFavoris } from "../../lib/favoris";
+import { API_URL } from "../../lib/api";
 
 const fmt = (n, devise) => n.toLocaleString("fr-FR") + " " + devise;
 
@@ -11,7 +12,7 @@ export default function Accueil() {
   const { favoris, toggleFavori } = useFavoris();
 
   useEffect(() => {
-    fetch("/api/maisons").then((r) => r.json()).then(setMaisons).catch(console.error);
+    fetch(`${API_URL}/api/maisons`).then((r) => r.json()).then(setMaisons).catch(console.error);
   }, []);
 
   const quartiers = ["Tous", ...new Set(maisons.map((m) => m.quartier))];

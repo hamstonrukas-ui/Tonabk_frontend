@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
+import { API_URL } from "../../lib/api";
 
 const fmt = (n, devise) => n.toLocaleString("fr-FR") + " " + devise;
 
@@ -11,7 +12,7 @@ export default function Favoris() {
     async function charger() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
-      const res = await fetch("/api/favoris", { headers: { Authorization: `Bearer ${session.access_token}` } });
+      const res = await fetch(`${API_URL}/api/favoris`, { headers: { Authorization: `Bearer ${session.access_token}` } });
       if (res.ok) setFavoris(await res.json());
     }
     charger();

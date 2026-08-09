@@ -1,0 +1,110 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import BarreNavigation from "./components/BarreNavigation";
+import { CartProvider } from "./context/CartContext";
+
+// Accueil
+import Accueil from "./pages/Accueil";
+
+// Boutique
+import BoutiqueLayout from "./pages/Boutique/BoutiqueLayout";
+import Catalogue from "./pages/Boutique/Catalogue";
+import Panier from "./pages/Boutique/Panier";
+import Commande from "./pages/Boutique/Commande";
+import Avis from "./pages/Boutique/Avis";
+import Parrainage from "./pages/Boutique/Parrainage";
+import Nouveautes from "./pages/Boutique/Nouveautes";
+import CreerBoutique from "./pages/Boutique/CreerBoutique";
+import DetailBoutique from "./pages/Boutique/DetailBoutique";
+import DetailProduit from "./pages/Boutique/DetailProduit";
+import RechercheBoutique from "./pages/Boutique/Recherche";
+
+// Location
+import LocationAccueil from "./pages/Location/Accueil";
+import RechercheLocation from "./pages/Location/Recherche";
+import Fiche from "./pages/Location/Fiche";
+import FavorisLocation from "./pages/Location/Favoris";
+import Publier from "./pages/Location/Publier";
+
+// Requête
+import ListeRequetes from "./pages/Requete/ListeRequetes";
+import PublierRequete from "./pages/Requete/PublierRequete";
+import DetailRequete from "./pages/Requete/DetailRequete";
+
+// Auth
+import Connexion from "./pages/Auth/Connexion";
+import Inscription from "./pages/Auth/Inscription";
+
+// Admin
+import AdminLayout from "./admin/AdminLayout";
+import AdminDashboard from "./admin/AdminDashboard";
+import AdminBoutiques from "./admin/AdminBoutiques";
+import AdminRequetes from "./admin/AdminRequetes";
+import AdminMaisons from "./admin/AdminMaisons";
+import RequireAdmin from "./admin/RequireAdmin";
+
+function AppLayout({ children }) {
+  return (
+    <div className="max-w-md mx-auto min-h-screen bg-[#F3F3F3] flex flex-col">
+      <div className="flex-1 pb-20">{children}</div>
+      <BarreNavigation />
+    </div>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <CartProvider>
+        <Routes>
+          {/* Accueil */}
+          <Route path="/" element={<AppLayout><Accueil /></AppLayout>} />
+
+          {/* Boutique */}
+          <Route path="/boutique/creer" element={<AppLayout><CreerBoutique /></AppLayout>} />
+          <Route path="/boutique/recherche" element={<AppLayout><RechercheBoutique /></AppLayout>} />
+          <Route path="/boutique/:id" element={<AppLayout><DetailBoutique /></AppLayout>} />
+          <Route path="/boutique/produit/:id" element={<AppLayout><DetailProduit /></AppLayout>} />
+          <Route path="/boutique" element={<AppLayout><BoutiqueLayout /></AppLayout>}>
+            <Route index element={<Catalogue />} />
+            <Route path="panier" element={<Panier />} />
+            <Route path="commande" element={<Commande />} />
+            <Route path="avis" element={<Avis />} />
+            <Route path="parrainage" element={<Parrainage />} />
+            <Route path="nouveautes" element={<Nouveautes />} />
+          </Route>
+
+          {/* Location */}
+          <Route path="/location" element={<AppLayout><LocationAccueil /></AppLayout>} />
+          <Route path="/location/recherche" element={<AppLayout><RechercheLocation /></AppLayout>} />
+          <Route path="/location/maison/:id" element={<AppLayout><Fiche /></AppLayout>} />
+          <Route path="/location/favoris" element={<AppLayout><FavorisLocation /></AppLayout>} />
+          <Route path="/location/publier" element={<AppLayout><Publier /></AppLayout>} />
+
+          {/* Requête */}
+          <Route path="/requete" element={<AppLayout><ListeRequetes /></AppLayout>} />
+          <Route path="/requete/publier" element={<AppLayout><PublierRequete /></AppLayout>} />
+          <Route path="/requete/:id" element={<AppLayout><DetailRequete /></AppLayout>} />
+
+          {/* Auth (pas de BottomNav) */}
+          <Route path="/connexion" element={<Connexion />} />
+          <Route path="/inscription" element={<Inscription />} />
+
+          {/* Admin (protégé, pas de BottomNav) */}
+          <Route
+            path="/admin"
+            element={
+              <RequireAdmin>
+                <AdminLayout />
+              </RequireAdmin>
+            }
+          >
+            <Route index element={<AdminDashboard />} />
+            <Route path="boutiques" element={<AdminBoutiques />} />
+            <Route path="requetes" element={<AdminRequetes />} />
+            <Route path="maisons" element={<AdminMaisons />} />
+          </Route>
+        </Routes>
+      </CartProvider>
+    </BrowserRouter>
+  );
+}

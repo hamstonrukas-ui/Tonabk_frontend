@@ -6,6 +6,8 @@ import { CartProvider } from "./context/CartContext";
 import Accueil from "./pages/Accueil";
 
 // Boutique
+import CategoriesBoutique from "./pages/Boutique/CategoriesBoutique";
+import ListeBoutiquesCategorie from "./pages/Boutique/ListeBoutiquesCategorie";
 import BoutiqueLayout from "./pages/Boutique/BoutiqueLayout";
 import Catalogue from "./pages/Boutique/Catalogue";
 import Panier from "./pages/Boutique/Panier";
@@ -14,7 +16,6 @@ import Avis from "./pages/Boutique/Avis";
 import Parrainage from "./pages/Boutique/Parrainage";
 import Nouveautes from "./pages/Boutique/Nouveautes";
 import CreerBoutique from "./pages/Boutique/CreerBoutique";
-import DetailBoutique from "./pages/Boutique/DetailBoutique";
 import DetailProduit from "./pages/Boutique/DetailProduit";
 import RechercheBoutique from "./pages/Boutique/Recherche";
 
@@ -34,14 +35,6 @@ import DetailRequete from "./pages/Requete/DetailRequete";
 import Connexion from "./pages/Auth/Connexion";
 import Inscription from "./pages/Auth/Inscription";
 
-// Admin
-import AdminLayout from "./admin/AdminLayout";
-import AdminDashboard from "./admin/AdminDashboard";
-import AdminBoutiques from "./admin/AdminBoutiques";
-import AdminRequetes from "./admin/AdminRequetes";
-import AdminMaisons from "./admin/AdminMaisons";
-import RequireAdmin from "./admin/RequireAdmin";
-
 function AppLayout({ children }) {
   return (
     <div className="max-w-md mx-auto min-h-screen bg-[#F3F3F3] flex flex-col">
@@ -59,12 +52,15 @@ export default function App() {
           {/* Accueil */}
           <Route path="/" element={<AppLayout><Accueil /></AppLayout>} />
 
-          {/* Boutique */}
+          {/* Boutique — découverte par catégorie */}
+          <Route path="/boutique" element={<AppLayout><CategoriesBoutique /></AppLayout>} />
+          <Route path="/boutique/categorie/:categorieId" element={<AppLayout><ListeBoutiquesCategorie /></AppLayout>} />
           <Route path="/boutique/creer" element={<AppLayout><CreerBoutique /></AppLayout>} />
           <Route path="/boutique/recherche" element={<AppLayout><RechercheBoutique /></AppLayout>} />
-          <Route path="/boutique/:id" element={<AppLayout><DetailBoutique /></AppLayout>} />
           <Route path="/boutique/produit/:id" element={<AppLayout><DetailProduit /></AppLayout>} />
-          <Route path="/boutique" element={<AppLayout><BoutiqueLayout /></AppLayout>}>
+
+          {/* Boutique — mini-site d'une boutique précise */}
+          <Route path="/boutique/:id" element={<AppLayout><BoutiqueLayout /></AppLayout>}>
             <Route index element={<Catalogue />} />
             <Route path="panier" element={<Panier />} />
             <Route path="commande" element={<Commande />} />
@@ -85,26 +81,12 @@ export default function App() {
           <Route path="/requete/publier" element={<AppLayout><PublierRequete /></AppLayout>} />
           <Route path="/requete/:id" element={<AppLayout><DetailRequete /></AppLayout>} />
 
-          {/* Auth (pas de BottomNav) */}
+          {/* Auth */}
           <Route path="/connexion" element={<Connexion />} />
           <Route path="/inscription" element={<Inscription />} />
-
-          {/* Admin (protégé, pas de BottomNav) */}
-          <Route
-            path="/admin"
-            element={
-              <RequireAdmin>
-                <AdminLayout />
-              </RequireAdmin>
-            }
-          >
-            <Route index element={<AdminDashboard />} />
-            <Route path="boutiques" element={<AdminBoutiques />} />
-            <Route path="requetes" element={<AdminRequetes />} />
-            <Route path="maisons" element={<AdminMaisons />} />
-          </Route>
         </Routes>
       </CartProvider>
     </BrowserRouter>
   );
-}
+            }
+            

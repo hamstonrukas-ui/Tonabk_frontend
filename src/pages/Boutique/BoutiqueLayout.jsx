@@ -1,22 +1,40 @@
-import { NavLink, Outlet } from "react-router-dom";
-import { Store, ShoppingBag, ClipboardList, Star, Users, Bell } from "lucide-react";
+import { useEffect, useState } from "react";
+import { NavLink, Outlet, useParams, Link } from "react-router-dom";
+import { Store, ShoppingBag, ClipboardList, Star, Users, Bell, ArrowLeft, BadgeCheck } from "lucide-react";
 import { useCart } from "../../context/CartContext";
-
-const onglets = [
-  { to: "/boutique", label: "Catalogue", icon: Store, end: true },
-  { to: "/boutique/panier", label: "Panier", icon: ShoppingBag },
-  { to: "/boutique/commande", label: "Commande", icon: ClipboardList },
-  { to: "/boutique/avis", label: "Avis", icon: Star },
-  { to: "/boutique/parrainage", label: "Parrainage", icon: Users },
-  { to: "/boutique/nouveautes", label: "Nouveautés", icon: Bell },
-];
+import { API_URL } from "../../lib/api";
 
 export default function BoutiqueLayout() {
+  const { id } = useParams();
   const { cart } = useCart();
+  const [boutique, setBoutique] = useState(null);
   const itemCount = Object.values(cart).reduce((s, q) => s + q, 0);
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/boutiques/${id}`).then((r) => r.json()).then(setBoutique).catch(() => {});
+  }, [id]);
+
+  const onglets = [
+    { to: `/boutique/${id}`, label: "Catalogue", icon: Store, end: true },
+    { to: `/boutique/${id}/panier`, label: "Panier", icon: ShoppingBag },
+    { to: `/boutique/${id}/commande`, label: "Commande", icon: ClipboardList },
+    { to: `/boutique/${id}/avis`, label: "Avis", icon: Star },
+    { to: `/boutique/${id}/parrainage`, label: "Parrainage", icon: Users },
+    { to: `/boutique/${id}/nouveautes`, label: "Nouveautés", icon: Bell },
+  ];
 
   return (
     <div className="min-h-screen bg-[#F3F3F3]">
+      <div className="bg-gradient-to-r from-[#F5720C] to-[#C9560A] px-3 pt-3 pb-2 flex items-center gap-2">
+        <Link to="/boutique" className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+          <ArrowLeft size={16} className="text-white" />
+        </Link>
+        <div className="flex items-center gap-1.5 min-w-0">
+          <p className="text-sm font-bold text-white truncate">{boutique?.nom || "Boutique"}</p>
+          {boutique?.certifiee && <BadgeCheck size={14} className="text-white flex-shrink-0" />}
+        </div>
+      </div>
+
       <div className="sticky top-0 z-20 bg-white border-b border-gray-100 overflow-x-auto">
         <div className="flex px-2 py-2 gap-1 min-w-max">
           {onglets.map(({ to, label, icon: Icon, end }) => (
@@ -42,7 +60,7 @@ export default function BoutiqueLayout() {
         </div>
       </div>
       <div className="p-3">
-        <Outlet />
+        <Outlet context={{ boutiqueId: id, boutique }} />
       </div>
     </div>
   );

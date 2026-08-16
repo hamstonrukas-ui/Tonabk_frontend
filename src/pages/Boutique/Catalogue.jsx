@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useOutletContext } from "react-router-dom";
 import { Star, Share2 } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { API_URL } from "../../lib/api";
@@ -7,16 +8,16 @@ const fmt = (n) => n.toLocaleString("fr-FR") + " FC";
 const SITE_URL = "tonabk.com";
 
 export default function Catalogue() {
+  const { boutiqueId } = useOutletContext();
   const [produits, setProduits] = useState([]);
-  const [categorieFiltre, setCategorieFiltre] = useState("Tous");
   const { addToCart } = useCart();
 
   useEffect(() => {
-    fetch(`${API_URL}/api/produits`).then((r) => r.json()).then(setProduits).catch(console.error);
-  }, []);
-
-  const filtres = ["Tous", ...new Set(produits.map((p) => p.categorie_nom).filter(Boolean))];
-  const filtered = categorieFiltre === "Tous" ? produits : produits.filter((p) => p.categorie_nom === categorieFiltre);
+    fetch(`${API_URL}/api/produits?boutique_id=${boutiqueId}`)
+      .then((r) => r.json())
+      .then(setProduits)
+      .catch(console.error);
+  }, [boutiqueId]);
 
   const shareProduct = (p) => {
     const msg = `Regarde ce produit sur TonaBk : ${p.nom} — ${fmt(p.prix)}. ${SITE_URL}`;
@@ -35,22 +36,8 @@ export default function Catalogue() {
         </div>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto mb-3 pb-1">
-        {filtres.map((f) => (
-          <button
-            key={f}
-            onClick={() => setCategorieFiltre(f)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap ${
-              categorieFiltre === f ? "bg-[#F5720C] text-white" : "bg-white text-gray-600 border border-gray-200"
-            }`}
-          >
-            {f}
-          </button>
-        ))}
-      </div>
-
       <div className="grid grid-cols-2 gap-2.5">
-        {filtered.map((p) => (
+        {produits.map((p) => (
           <div key={p.id} className="bg-white rounded-xl overflow-hidden shadow-sm">
             <div className="bg-[#F6F6F6] h-24 flex items-center justify-center text-3xl">
               {p.photo_url ? <img src={p.photo_thumb_url || p.photo_url} alt={p.nom} className="w-full h-full object-cover" /> : "📦"}
@@ -62,7 +49,6 @@ export default function Catalogue() {
                 <span className="text-[9px] text-gray-400">({p.avis || 0})</span>
               </div>
               <p className="text-sm font-extrabold text-[#1B1B1B] mt-1">{fmt(p.prix)}</p>
-              <p className="text-[9px] text-gray-400 mt-0.5">{p.boutiques?.nom}</p>
               <div className="flex gap-1.5 mt-2">
                 <button
                   onClick={() => addToCart(p.id)}
@@ -77,7 +63,11 @@ export default function Catalogue() {
             </div>
           </div>
         ))}
+        {produits.length === 0 && (
+          <p className="col-span-2 text-center text-sm text-gray-400 py-10">Aucun produit publié pour l'instant</p>
+        )}
       </div>
     </div>
   );
-}
+                                                   }
+                                       

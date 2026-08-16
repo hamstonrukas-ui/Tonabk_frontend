@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
+import { useOutletContext } from "react-router-dom";
 import { Star } from "lucide-react";
 import { API_URL } from "../../lib/api";
 
 export default function Avis() {
+  const { boutiqueId } = useOutletContext();
   const [reviews, setReviews] = useState([]);
   const [noteMoyenne, setNoteMoyenne] = useState(0);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/avis`)
+    fetch(`${API_URL}/api/avis?boutique_id=${boutiqueId}`)
       .then((r) => r.json())
       .then((data) => {
         setReviews(data);
@@ -15,7 +17,7 @@ export default function Avis() {
         setNoteMoyenne(moy.toFixed(1));
       })
       .catch(() => {});
-  }, []);
+  }, [boutiqueId]);
 
   return (
     <div className="space-y-3">
@@ -50,4 +52,5 @@ export default function Avis() {
       )}
     </div>
   );
-}
+            }
+      

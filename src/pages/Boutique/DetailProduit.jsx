@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Share2 } from "lucide-react";
+import { ArrowLeft, Share2, Check, ShoppingBag } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { API_URL } from "../../lib/api";
 
@@ -10,6 +10,7 @@ const SITE_URL = "tonabk.com";
 export default function DetailProduit() {
   const { id } = useParams();
   const [produit, setProduit] = useState(null);
+  const [ajoute, setAjoute] = useState(false);
   const { addToCart } = useCart();
 
   useEffect(() => {
@@ -23,6 +24,11 @@ export default function DetailProduit() {
   const partager = () => {
     const msg = `Regarde ce produit sur TonaBk : ${produit.nom} — ${fmt(produit.prix)}. ${SITE_URL}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
+  };
+
+  const handleAjouter = () => {
+    addToCart(produit.id);
+    setAjoute(true);
   };
 
   return (
@@ -51,13 +57,27 @@ export default function DetailProduit() {
 
         {produit.description && <p className="text-sm text-gray-600 mt-3">{produit.description}</p>}
 
-        <button
-          onClick={() => addToCart(produit.id)}
-          disabled={produit.stock === 0}
-          className="w-full mt-4 bg-[#F5720C] text-white text-sm font-semibold rounded-lg py-3 disabled:bg-gray-300"
-        >
-          {produit.stock === 0 ? "Rupture de stock" : "Ajouter au panier"}
-        </button>
+        {!ajoute ? (
+          <button
+            onClick={handleAjouter}
+            disabled={produit.stock === 0}
+            className="w-full mt-4 bg-[#F5720C] text-white text-sm font-semibold rounded-lg py-3 disabled:bg-gray-300"
+          >
+            {produit.stock === 0 ? "Rupture de stock" : "Ajouter au panier"}
+          </button>
+        ) : (
+          <div className="mt-4 space-y-2">
+            <div className="flex items-center justify-center gap-2 bg-green-50 text-green-700 text-sm font-medium rounded-lg py-3">
+              <Check size={16} /> Ajouté au panier
+            </div>
+            <Link
+              to={`/boutique/${produit.boutique_id}/panier`}
+              className="w-full flex items-center justify-center gap-2 bg-[#F5720C] text-white text-sm font-semibold rounded-lg py-3"
+            >
+              <ShoppingBag size={16} /> Voir mon panier
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

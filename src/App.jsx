@@ -16,6 +16,7 @@ import Avis from "./pages/Boutique/Avis";
 import Parrainage from "./pages/Boutique/Parrainage";
 import Nouveautes from "./pages/Boutique/Nouveautes";
 import CreerBoutique from "./pages/Boutique/CreerBoutique";
+import GererBoutique from "./pages/Boutique/GererBoutique";
 import DetailProduit from "./pages/Boutique/DetailProduit";
 import RechercheBoutique from "./pages/Boutique/Recherche";
 
@@ -56,6 +57,7 @@ export default function App() {
           <Route path="/boutique" element={<AppLayout><CategoriesBoutique /></AppLayout>} />
           <Route path="/boutique/categorie/:categorieId" element={<AppLayout><ListeBoutiquesCategorie /></AppLayout>} />
           <Route path="/boutique/creer" element={<AppLayout><CreerBoutique /></AppLayout>} />
+          <Route path="/boutique/gerer" element={<AppLayout><GererBoutique /></AppLayout>} />
           <Route path="/boutique/recherche" element={<AppLayout><RechercheBoutique /></AppLayout>} />
           <Route path="/boutique/produit/:id" element={<AppLayout><DetailProduit /></AppLayout>} />
 
@@ -88,5 +90,4 @@ export default function App() {
       </CartProvider>
     </BrowserRouter>
   );
-            }
-            
+}

@@ -8,9 +8,35 @@ export default function CreerBoutique() {
   const [categories, setCategories] = useState([]);
   const [form, setForm] = useState({ nom: "", categorie_id: "", description: "", telephone: "", quartier: "" });
   const [loading, setLoading] = useState(false);
+  const [verification, setVerification] = useState(true);
 
   useEffect(() => {
     fetch(`${API_URL}/api/categories`).then((r) => r.json()).then(setCategories).catch(() => {});
+  }, []);
+
+  // Redirige directement vers la gestion si l'utilisateur a déjà une boutique
+  useEffect(() => {
+    async function verifierBoutiqueExistante() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setVerification(false);
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/api/boutiques/mine`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (res.ok) {
+        const mesBoutiques = await res.json();
+        if (mesBoutiques.length > 0) {
+          navigate("/boutique/gerer");
+          return;
+        }
+      }
+      setVerification(false);
+    }
+    verifierBoutiqueExistante();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -37,9 +63,14 @@ export default function CreerBoutique() {
       alert("Boutique créée ! Elle sera visible après validation par l'équipe.");
       navigate("/boutique");
     } else {
-      alert("Erreur lors de la création");
+      const data = await res.json();
+      alert(data.error || "Erreur lors de la création");
     }
   };
+
+  if (verification) {
+    return <p className="text-center text-sm text-gray-400 py-10">Vérification...</p>;
+  }
 
   return (
     <div className="p-3">
@@ -66,7 +97,7 @@ export default function CreerBoutique() {
           className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full resize-none"
         />
         <p className="text-[11px] text-gray-400">
-          Vous pourrez ajouter jusqu'à 30 photos gratuitement une fois votre boutique validée.
+          Vous pourrez ajouter jusqu'à 30 photos gratuitement une fois votre boutique validée. Un seul compte ne peut créer qu'une boutique.
         </p>
         <button type="submit" disabled={loading} className="w-full bg-[#F5720C] text-white text-sm font-semibold rounded-md py-2.5">
           {loading ? "Création..." : "Créer ma boutique"}

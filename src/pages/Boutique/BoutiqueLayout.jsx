@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { NavLink, Outlet, useParams, Link } from "react-router-dom";
+import { NavLink, Outlet, useParams, Link, useSearchParams } from "react-router-dom";
 import { Store, ShoppingBag, ClipboardList, Star, Users, Bell, ArrowLeft, BadgeCheck } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { API_URL } from "../../lib/api";
 
 export default function BoutiqueLayout() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const { cart } = useCart();
   const [boutique, setBoutique] = useState(null);
   const itemCount = Object.values(cart).reduce((s, q) => s + q, 0);
@@ -13,6 +14,14 @@ export default function BoutiqueLayout() {
   useEffect(() => {
     fetch(`${API_URL}/api/boutiques/${id}`).then((r) => r.json()).then(setBoutique).catch(() => {});
   }, [id]);
+
+  // Mémorise le code de parrainage utilisé, pour l'inclure à la commande
+  useEffect(() => {
+    const ref = searchParams.get("ref");
+    if (ref) {
+      localStorage.setItem(`parrainage_${id}`, ref.toUpperCase());
+    }
+  }, [id, searchParams]);
 
   const onglets = [
     { to: `/boutique/${id}`, label: "Catalogue", icon: Store, end: true },

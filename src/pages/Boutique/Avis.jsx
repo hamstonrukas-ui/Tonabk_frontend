@@ -1,23 +1,68 @@
 import { useEffect, useState } from "react";
-import { useOutletContext } from "react-router-dom";
+import { useOutletContext, useNavigate } from "react-router-dom";
 import { Star } from "lucide-react";
+import { supabase } from "../../lib/supabaseClient";
 import { API_URL } from "../../lib/api";
 
 export default function Avis() {
   const { boutiqueId } = useOutletContext();
+  const navigate = useNavigate();
+
   const [reviews, setReviews] = useState([]);
   const [noteMoyenne, setNoteMoyenne] = useState(0);
+  const [afficherForm, setAfficherForm] = useState(false);
+  const [noteChoisie, setNoteChoisie] = useState(5);
+  const [auteurNom, setAuteurNom] = useState("");
+  const [texte, setTexte] = useState("");
+  const [envoiEnCours, setEnvoiEnCours] = useState(false);
+
+  async function charger() {
+    const res = await fetch(`${API_URL}/api/avis?boutique_id=${boutiqueId}`);
+    if (res.ok) {
+      const data = await res.json();
+      setReviews(data);
+      const moy = data.length ? data.reduce((s, r) => s + r.note, 0) / data.length : 0;
+      setNoteMoyenne(moy.toFixed(1));
+    }
+  }
 
   useEffect(() => {
-    fetch(`${API_URL}/api/avis?boutique_id=${boutiqueId}`)
-      .then((r) => r.json())
-      .then((data) => {
-        setReviews(data);
-        const moy = data.length ? data.reduce((s, r) => s + r.note, 0) / data.length : 0;
-        setNoteMoyenne(moy.toFixed(1));
-      })
-      .catch(() => {});
+    charger();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boutiqueId]);
+
+  const ouvrirFormulaire = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      navigate(`/inscription?redirect=/boutique/${boutiqueId}/avis`);
+      return;
+    }
+    setAfficherForm(true);
+  };
+
+  const envoyerAvis = async (e) => {
+    e.preventDefault();
+    if (!texte.trim() || !auteurNom.trim()) return;
+    setEnvoiEnCours(true);
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      setEnvoiEnCours(false);
+      return navigate(`/inscription?redirect=/boutique/${boutiqueId}/avis`);
+    }
+
+    const res = await fetch(`${API_URL}/api/avis`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ boutique_id: boutiqueId, auteur_nom: auteurNom.trim(), note: noteChoisie, texte: texte.trim() }),
+    });
+
+    if (res.ok) {
+      setAuteurNom(""); setTexte(""); setNoteChoisie(5); setAfficherForm(false);
+      charger();
+    }
+    setEnvoiEnCours(false);
+  };
 
   return (
     <div className="space-y-3">
@@ -30,8 +75,59 @@ export default function Avis() {
             ))}
           </div>
         </div>
-        <p className="text-xs text-gray-500">Basé sur {reviews.length} avis clients vérifiés</p>
+        <p className="text-xs text-gray-500">Basé sur {reviews.length} avis clients</p>
       </div>
+
+      {!afficherForm ? (
+        <button
+          onClick={ouvrirFormulaire}
+          className="w-full bg-[#F5720C] text-white text-sm font-semibold rounded-xl py-2.5"
+        >
+          Laisser un avis
+        </button>
+      ) : (
+        <form onSubmit={envoyerAvis} className="bg-white rounded-xl p-4 space-y-2.5">
+          <p className="text-sm font-semibold text-[#1B1B1B]">Votre note</p>
+          <div className="flex gap-1.5">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <button key={i} type="button" onClick={() => setNoteChoisie(i)}>
+                <Star size={24} fill={i <= noteChoisie ? "#FFB400" : "none"} className="text-[#FFB400]" />
+              </button>
+            ))}
+          </div>
+          <input
+            value={auteurNom}
+            onChange={(e) => setAuteurNom(e.target.value)}
+            placeholder="Votre nom"
+            required
+            className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full"
+          />
+          <textarea
+            value={texte}
+            onChange={(e) => setTexte(e.target.value)}
+            placeholder="Partagez votre expérience avec cette boutique"
+            rows={3}
+            required
+            className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full resize-none"
+          />
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setAfficherForm(false)}
+              className="flex-1 border border-gray-200 text-gray-500 text-sm font-semibold rounded-md py-2.5"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              disabled={envoiEnCours}
+              className="flex-1 bg-[#F5720C] text-white text-sm font-semibold rounded-md py-2.5"
+            >
+              {envoiEnCours ? "Envoi..." : "Publier"}
+            </button>
+          </div>
+        </form>
+      )}
 
       {reviews.map((r) => (
         <div key={r.id} className="bg-white rounded-xl p-4">
@@ -47,10 +143,9 @@ export default function Avis() {
         </div>
       ))}
 
-      {reviews.length === 0 && (
+      {reviews.length === 0 && !afficherForm && (
         <p className="text-center text-sm text-gray-400 py-10">Pas encore d'avis pour cette boutique</p>
       )}
     </div>
   );
-            }
-      
+}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Plus, Trash2, ArrowLeft } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Bell, MessageCircle } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 import { API_URL } from "../../lib/api";
 
@@ -20,6 +20,18 @@ export default function GererBoutique() {
   const [photo, setPhoto] = useState(null);
   const [envoiEnCours, setEnvoiEnCours] = useState(false);
   const [erreur, setErreur] = useState("");
+
+  // --- Nouveautés / abonnés ---
+  const [annonce, setAnnonce] = useState("");
+  const [envoiAnnonceEnCours, setEnvoiAnnonceEnCours] = useState(false);
+  const [annonces, setAnnonces] = useState([]);
+  const [nbAbonnes, setNbAbonnes] = useState(0);
+  const [abonnesTel, setAbonnesTel] = useState([]);
+
+  // --- Ajout manuel d'un ami ---
+  const [afficherFormAmi, setAfficherFormAmi] = useState(false);
+  const [nomAmi, setNomAmi] = useState("");
+  const [telAmi, setTelAmi] = useState("");
 
   async function authHeaders(json = true) {
     const { data: { session } } = await supabase.auth.getSession();
@@ -45,6 +57,16 @@ export default function GererBoutique() {
       if (b) {
         const resP = await fetch(`${API_URL}/api/produits?boutique_id=${b.id}`);
         if (resP.ok) setProduits(await resP.json());
+
+        const resA = await fetch(`${API_URL}/api/boutiques/${b.id}/annonces`);
+        if (resA.ok) {
+          const dataA = await resA.json();
+          setAnnonces(dataA.annonces || []);
+          setNbAbonnes(dataA.nb_abonnes || 0);
+        }
+
+        const resAb = await fetch(`${API_URL}/api/boutiques/${b.id}/abonnes`, { headers });
+        if (resAb.ok) setAbonnesTel(await resAb.json());
       }
     }
     setChargement(false);
@@ -130,6 +152,58 @@ export default function GererBoutique() {
     charger();
   };
 
+  const publierAnnonce = async () => {
+    if (!annonce.trim()) return;
+    setEnvoiAnnonceEnCours(true);
+
+    const headers = await authHeaders();
+    if (!headers) { setEnvoiAnnonceEnCours(false); return; }
+
+    const res = await fetch(`${API_URL}/api/boutiques/${boutique.id}/annonces`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ texte: annonce.trim() }),
+    });
+
+    if (res.ok) {
+      const nouvelle = await res.json();
+      setAnnonces([nouvelle, ...annonces]);
+      setAnnonce("");
+    }
+    setEnvoiAnnonceEnCours(false);
+  };
+
+  const ajouterAmi = async (e) => {
+    e.preventDefault();
+    if (!telAmi.trim()) return;
+    const headers = await authHeaders();
+    if (!headers) return;
+
+    const res = await fetch(`${API_URL}/api/boutiques/${boutique.id}/contacts`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ nom: nomAmi.trim(), telephone: telAmi.trim() }),
+    });
+
+    if (res.ok) {
+      const nouveau = await res.json();
+      setAbonnesTel([...abonnesTel, { ...nouveau, source: "manuel" }]);
+      setNomAmi(""); setTelAmi(""); setAfficherFormAmi(false);
+    }
+  };
+
+  const retirerAmi = async (contactId) => {
+    const headers = await authHeaders();
+    if (!headers) return;
+    await fetch(`${API_URL}/api/boutiques/${boutique.id}/contacts/${contactId}`, { method: "DELETE", headers });
+    setAbonnesTel(abonnesTel.filter((a) => a.id !== contactId));
+  };
+
+  const envoyerWhatsApp = (telephone, texte) => {
+    const msg = `${boutique?.nom} : ${texte}`;
+    window.open(`https://wa.me/${telephone.replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`, "_blank");
+  };
+
   if (chargement) return <p className="text-center text-sm text-gray-400 py-10">Chargement...</p>;
 
   if (!boutique) {
@@ -158,6 +232,7 @@ export default function GererBoutique() {
         </div>
       )}
 
+      {/* --- Section Produits --- */}
       <div className="flex items-center justify-between mb-2">
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
           Produits ({produits.length}) — {boutique.photos_utilisees}/{boutique.photo_limite_gratuite} photos utilisées
@@ -190,7 +265,7 @@ export default function GererBoutique() {
         </form>
       )}
 
-      <div className="grid grid-cols-2 gap-2.5">
+      <div className="grid grid-cols-2 gap-2.5 mb-6">
         {produits.map((p) => (
           <div key={p.id} className="bg-white rounded-xl overflow-hidden shadow-sm">
             <div className="bg-[#F6F6F6] h-24 flex items-center justify-center text-3xl">
@@ -212,6 +287,85 @@ export default function GererBoutique() {
           <p className="col-span-2 text-center text-sm text-gray-400 py-8">Aucun produit publié pour l'instant</p>
         )}
       </div>
+
+      {/* --- Section Nouveautés / Abonnés --- */}
+      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+        Nouveautés — {nbAbonnes} abonné{nbAbonnes > 1 ? "s" : ""}
+      </p>
+
+      <div className="bg-white rounded-xl p-3 mb-3">
+        <textarea
+          value={annonce}
+          onChange={(e) => setAnnonce(e.target.value)}
+          placeholder="Ex: Nouvelle collection disponible cette semaine !"
+          rows={2}
+          className="border border-gray-200 rounded-md px-3 py-2 text-sm resize-none w-full mb-2"
+        />
+        <button
+          onClick={publierAnnonce}
+          disabled={envoiAnnonceEnCours}
+          className="w-full flex items-center justify-center gap-2 text-sm font-medium text-white rounded-md py-2.5 bg-[#F5720C]"
+        >
+          <Bell size={16} /> {envoiAnnonceEnCours ? "Publication..." : "Publier l'annonce"}
+        </button>
+      </div>
+
+      {/* --- Ajouter un ami manuellement --- */}
+      <div className="bg-white rounded-xl p-3 mb-3">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-semibold text-gray-500">Ajouter un ami par son numéro</p>
+          <button onClick={() => setAfficherFormAmi(!afficherFormAmi)} className="text-xs font-semibold text-[#F5720C]">
+            {afficherFormAmi ? "Annuler" : "+ Ajouter"}
+          </button>
+        </div>
+        {afficherFormAmi && (
+          <form onSubmit={ajouterAmi} className="mt-2 space-y-2">
+            <input value={nomAmi} onChange={(e) => setNomAmi(e.target.value)} placeholder="Nom (optionnel)"
+              className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full" />
+            <input value={telAmi} onChange={(e) => setTelAmi(e.target.value)} type="tel" placeholder="Numéro WhatsApp" required
+              className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full" />
+            <button type="submit" className="w-full bg-[#1B1B1B] text-white text-xs font-semibold rounded-md py-2">
+              Ajouter cet ami
+            </button>
+          </form>
+        )}
+      </div>
+
+      {abonnesTel.length > 0 && (
+        <div className="bg-white rounded-xl p-3 mb-3">
+          <p className="text-[11px] text-gray-400 mb-2">
+            Envoyer la dernière annonce sur WhatsApp — un clic par contact pour pré-remplir le message
+          </p>
+          <div className="space-y-1.5">
+            {abonnesTel.map((a) => (
+              <div key={a.id} className="flex items-center gap-1.5">
+                <button
+                  onClick={() => envoyerWhatsApp(a.telephone, annonces[0]?.texte || annonce)}
+                  disabled={!annonces[0] && !annonce.trim()}
+                  className="flex-1 flex items-center justify-center gap-2 text-xs font-medium text-white rounded-md py-2 bg-[#25D366] disabled:opacity-40"
+                >
+                  <MessageCircle size={13} /> {a.nom ? `${a.nom} — ` : ""}{a.telephone}
+                </button>
+                {a.source === "manuel" && (
+                  <button onClick={() => retirerAmi(a.id)} className="text-red-400 px-2">
+                    <Trash2 size={14} />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-2">
+        {annonces.map((a) => (
+          <div key={a.id} className="bg-white rounded-xl p-3">
+            <p className="text-sm text-[#1B1B1B]">{a.texte}</p>
+            <p className="text-xs text-gray-400 mt-1">{new Date(a.created_at).toLocaleDateString("fr-FR")}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
-}
+                                                                 }
+                                 

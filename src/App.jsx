@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import BarreNavigation from "./components/BarreNavigation";
+import InstallPrompt from "./components/InstallPrompt";
 import { CartProvider } from "./context/CartContext";
 
 // Accueil
@@ -49,6 +50,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <CartProvider>
+        <InstallPrompt />
         <Routes>
           {/* Accueil */}
           <Route path="/" element={<AppLayout><Accueil /></AppLayout>} />
@@ -90,4 +92,5 @@ export default function App() {
       </CartProvider>
     </BrowserRouter>
   );
-}
+  }
+  

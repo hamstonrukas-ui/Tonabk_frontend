@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet, useParams, Link, useSearchParams } from "react-router-dom";
-import { Store, ShoppingBag, ClipboardList, Star, Users, Bell, ArrowLeft, BadgeCheck } from "lucide-react";
+import { Store, ShoppingBag, ClipboardList, Star, Users, Bell, ArrowLeft, BadgeCheck, Share2 } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { API_URL } from "../../lib/api";
+import { cachedFetch } from "../../lib/cache";
+
+const SITE_URL = "tonabk.com";
 
 export default function BoutiqueLayout() {
   const { id } = useParams();
@@ -12,7 +15,9 @@ export default function BoutiqueLayout() {
   const itemCount = Object.values(cart).reduce((s, q) => s + q, 0);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/boutiques/${id}`).then((r) => r.json()).then(setBoutique).catch(() => {});
+    cachedFetch(`boutique_${id}`, `${API_URL}/api/boutiques/${id}`)
+      .then(({ data }) => setBoutique(data))
+      .catch(() => {});
   }, [id]);
 
   // Mémorise le code de parrainage utilisé, pour l'inclure à la commande
@@ -22,6 +27,22 @@ export default function BoutiqueLayout() {
       localStorage.setItem(`parrainage_${id}`, ref.toUpperCase());
     }
   }, [id, searchParams]);
+
+  const partagerBoutique = async () => {
+    const url = `${SITE_URL}/boutique/${id}`;
+    const texte = `Découvre "${boutique?.nom || "cette boutique"}" sur TonaBk !`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: boutique?.nom, text: texte, url });
+      } catch {
+        // Partage annulé par l'utilisateur
+      }
+    } else {
+      navigator.clipboard.writeText(url);
+      alert("Lien copié !");
+    }
+  };
 
   const onglets = [
     { to: `/boutique/${id}`, label: "Catalogue", icon: Store, end: true },
@@ -38,10 +59,13 @@ export default function BoutiqueLayout() {
         <Link to="/boutique" className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
           <ArrowLeft size={16} className="text-white" />
         </Link>
-        <div className="flex items-center gap-1.5 min-w-0">
+        <div className="flex items-center gap-1.5 min-w-0 flex-1">
           <p className="text-sm font-bold text-white truncate">{boutique?.nom || "Boutique"}</p>
           {boutique?.certifiee && <BadgeCheck size={14} className="text-white flex-shrink-0" />}
         </div>
+        <button onClick={partagerBoutique} className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+          <Share2 size={14} className="text-white" />
+        </button>
       </div>
 
       <div className="sticky top-0 z-20 bg-white border-b border-gray-100 overflow-x-auto">
@@ -73,4 +97,5 @@ export default function BoutiqueLayout() {
       </div>
     </div>
   );
-}
+    }
+    

@@ -2,10 +2,8 @@ import { useEffect, useState } from "react";
 import { NavLink, Outlet, useParams, Link, useSearchParams } from "react-router-dom";
 import { Store, ShoppingBag, ClipboardList, Star, Users, Bell, ArrowLeft, BadgeCheck, Share2 } from "lucide-react";
 import { useCart } from "../../context/CartContext";
-import { API_URL } from "../../lib/api";
+import { API_URL, SITE_URL } from "../../lib/api";
 import { cachedFetch } from "../../lib/cache";
-
-const SITE_URL = "tonabk.com";
 
 export default function BoutiqueLayout() {
   const { id } = useParams();
@@ -97,5 +95,4 @@ export default function BoutiqueLayout() {
       </div>
     </div>
   );
-    }
-    
+}

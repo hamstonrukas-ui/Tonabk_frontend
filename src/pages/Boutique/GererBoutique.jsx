@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Plus, Trash2, ArrowLeft, Bell, MessageCircle } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Bell, MessageCircle, Copy, Check } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 import { API_URL } from "../../lib/api";
 
 const fmt = (n) => n.toLocaleString("fr-FR") + " FC";
+const SITE_URL = "tonabk.com";
 
 export default function GererBoutique() {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ export default function GererBoutique() {
   const [produits, setProduits] = useState([]);
   const [chargement, setChargement] = useState(true);
   const [afficherForm, setAfficherForm] = useState(false);
+  const [lienCopie, setLienCopie] = useState(false);
 
   const [nom, setNom] = useState("");
   const [prix, setPrix] = useState("");
@@ -76,6 +78,26 @@ export default function GererBoutique() {
     charger();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const lienBoutique = boutique ? `${SITE_URL}/boutique/${boutique.id}` : "";
+
+  const copierLien = () => {
+    navigator.clipboard.writeText(lienBoutique);
+    setLienCopie(true);
+    setTimeout(() => setLienCopie(false), 1500);
+  };
+
+  const partagerLienBoutique = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: boutique.nom, text: `Découvre "${boutique.nom}" sur TonaBk !`, url: lienBoutique });
+      } catch {
+        // Partage annulé
+      }
+    } else {
+      copierLien();
+    }
+  };
 
   const ajouterProduit = async (e) => {
     e.preventDefault();
@@ -232,7 +254,24 @@ export default function GererBoutique() {
         </div>
       )}
 
-      {/* --- Section Produits --- */}
+      {/* Lien de la boutique — à partager */}
+      <div className="bg-white rounded-xl p-3 mb-3">
+        <p className="text-xs font-semibold text-gray-500 mb-2">Lien de ma boutique</p>
+        <div className="flex items-center justify-between rounded-md px-3 py-2 mb-2 bg-[#FFF1E4]">
+          <span className="text-xs font-mono text-[#C9560A] truncate mr-2">{lienBoutique}</span>
+          <button onClick={copierLien} className="flex-shrink-0 flex items-center gap-1 text-xs font-medium text-[#C9560A]">
+            {lienCopie ? <Check size={12} /> : <Copy size={12} />}
+            {lienCopie ? "Copié" : "Copier"}
+          </button>
+        </div>
+        <button
+          onClick={partagerLienBoutique}
+          className="w-full flex items-center justify-center gap-2 text-xs font-medium text-white rounded-md py-2 bg-[#25D366]"
+        >
+          <MessageCircle size={13} /> Partager ma boutique
+        </button>
+      </div>
+
       <div className="flex items-center justify-between mb-2">
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
           Produits ({produits.length}) — {boutique.photos_utilisees}/{boutique.photo_limite_gratuite} photos utilisées
@@ -265,7 +304,7 @@ export default function GererBoutique() {
         </form>
       )}
 
-      <div className="grid grid-cols-2 gap-2.5 mb-6">
+      <div className="grid grid-cols-2 gap-2.5 mb-4">
         {produits.map((p) => (
           <div key={p.id} className="bg-white rounded-xl overflow-hidden shadow-sm">
             <div className="bg-[#F6F6F6] h-24 flex items-center justify-center text-3xl">
@@ -288,10 +327,8 @@ export default function GererBoutique() {
         )}
       </div>
 
-      {/* --- Section Nouveautés / Abonnés --- */}
-      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-        Nouveautés — {nbAbonnes} abonné{nbAbonnes > 1 ? "s" : ""}
-      </p>
+      {/* --- Nouveautés --- */}
+      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Nouveautés</p>
 
       <div className="bg-white rounded-xl p-3 mb-3">
         <textarea
@@ -334,7 +371,7 @@ export default function GererBoutique() {
       {abonnesTel.length > 0 && (
         <div className="bg-white rounded-xl p-3 mb-3">
           <p className="text-[11px] text-gray-400 mb-2">
-            Envoyer la dernière annonce sur WhatsApp — un clic par contact pour pré-remplir le message
+            Envoyer la dernière annonce sur WhatsApp — un clic par contact
           </p>
           <div className="space-y-1.5">
             {abonnesTel.map((a) => (
@@ -367,5 +404,4 @@ export default function GererBoutique() {
       </div>
     </div>
   );
-                                                                 }
-                                 
+}

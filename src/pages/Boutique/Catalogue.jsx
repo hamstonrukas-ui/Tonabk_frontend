@@ -1,14 +1,13 @@
-import { useEffect, useState } from "react";
+    import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { Star, Share2, Bell, BellRing } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { supabase } from "../../lib/supabaseClient";
-import { API_URL } from "../../lib/api";
+import { API_URL, SITE_URL } from "../../lib/api";
 import { cachedFetch } from "../../lib/cache";
 import BandeauHorsLigne from "../../components/BandeauHorsLigne";
 
 const fmt = (n) => n.toLocaleString("fr-FR") + " FC";
-const SITE_URL = "tonabk.com";
 
 export default function Catalogue() {
   const { boutiqueId } = useOutletContext();
@@ -143,5 +142,5 @@ export default function Catalogue() {
       </div>
     </div>
   );
-        }
-    
+      }
+                

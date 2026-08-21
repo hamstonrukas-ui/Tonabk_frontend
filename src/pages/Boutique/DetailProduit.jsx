@@ -21,9 +21,19 @@ export default function DetailProduit() {
 
   if (!produit) return <p className="text-center text-sm text-gray-400 py-10">Chargement...</p>;
 
-  const partager = () => {
-    const msg = `Regarde ce produit sur TonaBk : ${produit.nom} — ${fmt(produit.prix)}. ${SITE_URL}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
+  const partager = async () => {
+    const texte = `Regarde ce produit sur TonaBk : ${produit.nom} — ${fmt(produit.prix)}`;
+    const url = `${SITE_URL}/boutique/produit/${produit.id}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: produit.nom, text: texte, url });
+      } catch {
+        // Partage annulé par l'utilisateur
+      }
+    } else {
+      window.open(`https://wa.me/?text=${encodeURIComponent(`${texte}. ${url}`)}`, "_blank");
+    }
   };
 
   const handleAjouter = () => {
@@ -53,7 +63,9 @@ export default function DetailProduit() {
           {produit.boutiques?.nom} →
         </Link>
         <p className="text-xl font-extrabold text-[#1B1B1B] mt-2">{fmt(produit.prix)}</p>
-        <p className="text-xs text-gray-400 mt-1">{produit.stock > 0 ? `${produit.stock} en stock` : "Rupture de stock"}</p>
+        <p className={`text-xs mt-1 font-semibold ${produit.stock > 0 ? "text-green-600" : "text-red-500"}`}>
+          {produit.stock > 0 ? `${produit.stock} en stock` : "Rupture de stock"}
+        </p>
 
         {produit.description && <p className="text-sm text-gray-600 mt-3">{produit.description}</p>}
 
@@ -81,4 +93,5 @@ export default function DetailProduit() {
       </div>
     </div>
   );
-}
+  }
+            

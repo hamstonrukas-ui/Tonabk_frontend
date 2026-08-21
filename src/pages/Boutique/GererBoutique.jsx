@@ -2,10 +2,9 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Plus, Trash2, ArrowLeft, Bell, MessageCircle, Copy, Check } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
-import { API_URL } from "../../lib/api";
+import { API_URL, SITE_URL } from "../../lib/api";
 
 const fmt = (n) => n.toLocaleString("fr-FR") + " FC";
-const SITE_URL = "tonabk.com";
 
 export default function GererBoutique() {
   const navigate = useNavigate();

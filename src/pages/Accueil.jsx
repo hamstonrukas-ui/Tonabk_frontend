@@ -1,17 +1,28 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Search, ShoppingBag, BadgeCheck } from "lucide-react";
+import { cachedFetch } from "../lib/cache";
 import { API_URL } from "../lib/api";
+import BandeauHorsLigne from "../components/BandeauHorsLigne";
 
 const fmt = (n) => n.toLocaleString("fr-FR") + " FC";
 
 export default function Accueil() {
   const [produits, setProduits] = useState([]);
   const [boutiques, setBoutiques] = useState([]);
+  const [ageCache, setAgeCache] = useState(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/produits/accueil`).then((r) => r.json()).then(setProduits).catch(console.error);
-    fetch(`${API_URL}/api/boutiques`).then((r) => r.json()).then(setBoutiques).catch(console.error);
+    cachedFetch("produits_accueil", `${API_URL}/api/produits/accueil`)
+      .then(({ data, depuisCache, ageMs }) => {
+        setProduits(data);
+        if (depuisCache) setAgeCache(ageMs);
+      })
+      .catch(console.error);
+
+    cachedFetch("boutiques_accueil", `${API_URL}/api/boutiques`)
+      .then(({ data }) => setBoutiques(data))
+      .catch(console.error);
   }, []);
 
   return (
@@ -30,7 +41,11 @@ export default function Accueil() {
         </Link>
       </div>
 
-      <div className="mx-3 mt-3 bg-[#1B1B1B] rounded-xl p-3 flex items-center gap-3">
+      <div className="px-3 pt-3">
+        {ageCache !== null && <BandeauHorsLigne ageMs={ageCache} />}
+      </div>
+
+      <div className="mx-3 bg-[#1B1B1B] rounded-xl p-3 flex items-center gap-3">
         <span className="text-xl">🔎</span>
         <div className="flex-1">
           <p className="text-xs font-bold text-white">Introuvable ? On le cherche pour vous.</p>
@@ -98,4 +113,5 @@ export default function Accueil() {
       </div>
     </div>
   );
-}
+          }
+      

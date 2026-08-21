@@ -2,9 +2,7 @@ import { useState, useEffect } from "react";
 import { useOutletContext, useNavigate } from "react-router-dom";
 import { MessageCircle, Copy, Check as CheckIcon } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
-import { API_URL } from "../../lib/api";
-
-const SITE_URL = "tonabk.com";
+import { API_URL, SITE_URL } from "../../lib/api";
 
 export default function Parrainage() {
   const { boutiqueId, boutique } = useOutletContext();
@@ -116,7 +114,5 @@ export default function Parrainage() {
       </div>
     </div>
   );
-                                     }
+    }
               
-
-  

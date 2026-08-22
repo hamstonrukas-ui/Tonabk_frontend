@@ -1,18 +1,28 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Heart, MapPin } from "lucide-react";
+import { Heart, MapPin, Plus } from "lucide-react";
 import { useFavoris } from "../../lib/favoris";
+import { cachedFetch } from "../../lib/cache";
 import { API_URL } from "../../lib/api";
+import BandeauHorsLigne from "../../components/BandeauHorsLigne";
 
 const fmt = (n, devise) => n.toLocaleString("fr-FR") + " " + devise;
 
 export default function Accueil() {
   const [maisons, setMaisons] = useState([]);
+  const [ageCache, setAgeCache] = useState(null);
+  const [chargement, setChargement] = useState(true);
   const [quartierFiltre, setQuartierFiltre] = useState("Tous");
   const { favoris, toggleFavori } = useFavoris();
 
   useEffect(() => {
-    fetch(`${API_URL}/api/maisons`).then((r) => r.json()).then(setMaisons).catch(console.error);
+    cachedFetch("maisons_accueil", `${API_URL}/api/maisons`)
+      .then(({ data, depuisCache, ageMs }) => {
+        setMaisons(data);
+        setAgeCache(depuisCache ? ageMs : null);
+      })
+      .catch(console.error)
+      .finally(() => setChargement(false));
   }, []);
 
   const quartiers = ["Tous", ...new Set(maisons.map((m) => m.quartier))];
@@ -20,6 +30,21 @@ export default function Accueil() {
 
   return (
     <div className="p-3">
+      {ageCache !== null && <BandeauHorsLigne ageMs={ageCache} />}
+
+      <Link
+        to="/location/publier"
+        className="flex items-center gap-3 bg-[#F5720C] rounded-xl p-3.5 mb-3"
+      >
+        <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+          <Plus size={18} className="text-white" />
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-bold text-white">Publier une maison</p>
+          <p className="text-[11px] text-white/80">Louez votre bien via TonaBk</p>
+        </div>
+      </Link>
+
       <div className="flex gap-2 overflow-x-auto mb-3 pb-1">
         {quartiers.map((q) => (
           <button
@@ -59,7 +84,14 @@ export default function Accueil() {
             </div>
           </Link>
         ))}
+
+        {!chargement && filtered.length === 0 && (
+          <div className="text-center py-10">
+            <p className="text-3xl mb-2">🏠</p>
+            <p className="text-sm text-gray-400">Aucune maison disponible pour l'instant</p>
+          </div>
+        )}
       </div>
     </div>
   );
-}
+            }

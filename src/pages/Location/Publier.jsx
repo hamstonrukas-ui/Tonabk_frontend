@@ -15,7 +15,9 @@ export default function Publier() {
     titre: "", type_bien: "maison", quartier: "", commune: "Ibanda",
     prix: "", devise: "USD", nb_chambres: "", nb_salles_bain: "", description: "", telephone: "",
   });
+  const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [erreur, setErreur] = useState("");
 
   useEffect(() => {
     async function verifier() {
@@ -31,20 +33,55 @@ export default function Publier() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErreur("");
     setLoading(true);
 
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) { alert("Connectez-vous d'abord"); setLoading(false); return; }
 
+    // 1. Créer la maison
     const res = await fetch(`${API_URL}/api/maisons`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
       body: JSON.stringify(form),
     });
 
+    if (!res.ok) {
+      setErreur("Erreur lors de la publication");
+      setLoading(false);
+      return;
+    }
+
+    const nouvelleMaison = await res.json();
+
+    // 2. Uploader les photos sélectionnées, une par une
+    for (let i = 0; i < photos.length; i++) {
+      try {
+        const formData = new FormData();
+        formData.append("photo", photos[i]);
+        formData.append("maisonId", nouvelleMaison.id);
+
+        const resUpload = await fetch(`${API_URL}/api/upload/photo-maison`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${session.access_token}` },
+          body: formData,
+        });
+
+        if (resUpload.ok) {
+          const { url } = await resUpload.json();
+          await fetch(`${API_URL}/api/maisons/${nouvelleMaison.id}/photos`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+            body: JSON.stringify({ url, ordre: i }),
+          });
+        }
+      } catch {
+        // On continue même si une photo échoue, la maison est déjà créée
+      }
+    }
+
     setLoading(false);
-    if (res.ok) navigate("/location");
-    else alert("Erreur lors de la publication");
+    navigate("/location");
   };
 
   const contacterEquipe = () => {
@@ -76,9 +113,10 @@ export default function Publier() {
     );
   }
 
-  // --- Vue admin : formulaire de publication habituel ---
+  // --- Vue admin : formulaire de publication avec photos ---
   return (
     <form onSubmit={handleSubmit} className="p-3 space-y-2">
+      {erreur && <p className="text-xs text-red-500">{erreur}</p>}
       <input name="titre" placeholder="Titre" onChange={handleChange} required className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full" />
       <select name="type_bien" onChange={handleChange} className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full">
         <option value="maison">Maison</option>
@@ -93,10 +131,24 @@ export default function Publier() {
       <input name="nb_chambres" type="number" placeholder="Nb chambres" onChange={handleChange} className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full" />
       <input name="telephone" placeholder="Téléphone" onChange={handleChange} required className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full" />
       <textarea name="description" placeholder="Description" onChange={handleChange} rows={3} className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full" />
+
+      <div>
+        <p className="text-xs font-semibold text-gray-500 mb-1">Photos (plusieurs possibles)</p>
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={(e) => setPhotos(Array.from(e.target.files))}
+          className="text-xs w-full"
+        />
+        {photos.length > 0 && (
+          <p className="text-[11px] text-gray-400 mt-1">{photos.length} photo(s) sélectionnée(s)</p>
+        )}
+      </div>
+
       <button type="submit" disabled={loading} className="w-full bg-[#F5720C] text-white text-sm font-semibold rounded-md py-2.5">
         {loading ? "Publication..." : "Publier"}
       </button>
     </form>
   );
-  }
-                         
+}

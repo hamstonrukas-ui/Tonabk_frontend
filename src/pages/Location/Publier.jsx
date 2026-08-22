@@ -39,49 +39,60 @@ export default function Publier() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) { alert("Connectez-vous d'abord"); setLoading(false); return; }
 
-    // 1. Créer la maison
-    const res = await fetch(`${API_URL}/api/maisons`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-      body: JSON.stringify(form),
-    });
+    try {
+      // 1. Créer la maison (conversion des champs numériques, comme pour les produits)
+      const res = await fetch(`${API_URL}/api/maisons`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({
+          ...form,
+          prix: Number(form.prix),
+          nb_chambres: form.nb_chambres ? Number(form.nb_chambres) : null,
+          nb_salles_bain: form.nb_salles_bain ? Number(form.nb_salles_bain) : null,
+        }),
+      });
 
-    if (!res.ok) {
-      setErreur("Erreur lors de la publication");
-      setLoading(false);
-      return;
-    }
-
-    const nouvelleMaison = await res.json();
-
-    // 2. Uploader les photos sélectionnées, une par une
-    for (let i = 0; i < photos.length; i++) {
-      try {
-        const formData = new FormData();
-        formData.append("photo", photos[i]);
-        formData.append("maisonId", nouvelleMaison.id);
-
-        const resUpload = await fetch(`${API_URL}/api/upload/photo-maison`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${session.access_token}` },
-          body: formData,
-        });
-
-        if (resUpload.ok) {
-          const { url } = await resUpload.json();
-          await fetch(`${API_URL}/api/maisons/${nouvelleMaison.id}/photos`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-            body: JSON.stringify({ url, ordre: i }),
-          });
-        }
-      } catch {
-        // On continue même si une photo échoue, la maison est déjà créée
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setErreur(data.error || "Erreur lors de la publication");
+        setLoading(false);
+        return;
       }
-    }
 
-    setLoading(false);
-    navigate("/location");
+      const nouvelleMaison = await res.json();
+
+      // 2. Uploader les photos sélectionnées, une par une
+      for (let i = 0; i < photos.length; i++) {
+        try {
+          const formData = new FormData();
+          formData.append("photo", photos[i]);
+          formData.append("maisonId", nouvelleMaison.id);
+
+          const resUpload = await fetch(`${API_URL}/api/upload/photo-maison`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${session.access_token}` },
+            body: formData,
+          });
+
+          if (resUpload.ok) {
+            const { url } = await resUpload.json();
+            await fetch(`${API_URL}/api/maisons/${nouvelleMaison.id}/photos`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+              body: JSON.stringify({ url, ordre: i }),
+            });
+          }
+        } catch {
+          // On continue même si une photo échoue, la maison est déjà créée
+        }
+      }
+
+      setLoading(false);
+      navigate("/location");
+    } catch (err) {
+      setErreur("Connexion instable — la publication n'a pas pu aboutir. Réessayez.");
+      setLoading(false);
+    }
   };
 
   const contacterEquipe = () => {
@@ -151,4 +162,5 @@ export default function Publier() {
       </button>
     </form>
   );
-}
+    }
+    

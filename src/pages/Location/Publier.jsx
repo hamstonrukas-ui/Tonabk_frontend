@@ -1,15 +1,31 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { MessageCircle } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 import { API_URL } from "../../lib/api";
 
+const NUMERO_EQUIPE = "243855841999";
+
 export default function Publier() {
   const navigate = useNavigate();
+  const [chargement, setChargement] = useState(true);
+  const [estAdmin, setEstAdmin] = useState(false);
+
   const [form, setForm] = useState({
     titre: "", type_bien: "maison", quartier: "", commune: "Ibanda",
     prix: "", devise: "USD", nb_chambres: "", nb_salles_bain: "", description: "", telephone: "",
   });
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    async function verifier() {
+      const { data: { user } } = await supabase.auth.getUser();
+      const role = user?.app_metadata?.role || user?.user_metadata?.role;
+      setEstAdmin(role === "admin");
+      setChargement(false);
+    }
+    verifier();
+  }, []);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -18,11 +34,7 @@ export default function Publier() {
     setLoading(true);
 
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      alert("Connectez-vous d'abord pour publier une maison");
-      setLoading(false);
-      return navigate("/inscription?redirect=/location/publier");
-    }
+    if (!session) { alert("Connectez-vous d'abord"); setLoading(false); return; }
 
     const res = await fetch(`${API_URL}/api/maisons`, {
       method: "POST",
@@ -35,6 +47,36 @@ export default function Publier() {
     else alert("Erreur lors de la publication");
   };
 
+  const contacterEquipe = () => {
+    const msg = "Bonjour, je suis commissionnaire immobilier et j'aimerais publier des annonces de location sur TonaBk.";
+    window.open(`https://wa.me/${NUMERO_EQUIPE}?text=${encodeURIComponent(msg)}`, "_blank");
+  };
+
+  if (chargement) return <p className="text-center text-sm text-gray-400 py-10">Chargement...</p>;
+
+  // --- Vue pour tout le monde sauf l'admin ---
+  if (!estAdmin) {
+    return (
+      <div className="p-3">
+        <div className="bg-white rounded-xl p-5 text-center">
+          <p className="text-3xl mb-3">🏠</p>
+          <p className="text-sm font-bold text-[#1B1B1B] mb-2">Vous êtes commissionnaire immobilier ?</p>
+          <p className="text-sm text-gray-500 mb-4">
+            Pour l'instant, seule l'équipe TonaBk publie les annonces de location. Si vous souhaitez publier
+            vos propres biens, contactez l'équipe pour devenir commissionnaire partenaire.
+          </p>
+          <button
+            onClick={contacterEquipe}
+            className="w-full flex items-center justify-center gap-2 text-sm font-medium text-white rounded-lg py-3 bg-[#25D366]"
+          >
+            <MessageCircle size={18} /> Contacter l'équipe TonaBk
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // --- Vue admin : formulaire de publication habituel ---
   return (
     <form onSubmit={handleSubmit} className="p-3 space-y-2">
       <input name="titre" placeholder="Titre" onChange={handleChange} required className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full" />
@@ -56,4 +98,5 @@ export default function Publier() {
       </button>
     </form>
   );
-}
+  }
+                         

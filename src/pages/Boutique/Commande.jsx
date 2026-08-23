@@ -4,7 +4,7 @@ import { MessageCircle } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { API_URL } from "../../lib/api";
 
-const fmt = (n) => n.toLocaleString("fr-FR") + " FC";
+const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
 
 export default function Commande() {
   const { boutiqueId, boutique } = useOutletContext();
@@ -21,14 +21,19 @@ export default function Commande() {
   const cartItems = Object.entries(cart)
     .map(([id, qty]) => ({ product: produits.find((p) => p.id === id), qty }))
     .filter((i) => i.product);
-  const total = cartItems.reduce((sum, i) => sum + i.product.prix * i.qty, 0);
+
+  const sousTotauxParDevise = cartItems.reduce((acc, i) => {
+    const devise = i.product.devise || "USD";
+    acc[devise] = (acc[devise] || 0) + i.product.prix * i.qty;
+    return acc;
+  }, {});
 
   const codeParrainage = localStorage.getItem(`parrainage_${boutiqueId}`);
 
   const buildMessage = () => {
     let msg = `Bonjour, je souhaite commander :%0A`;
-    cartItems.forEach((i) => { msg += `- ${i.product.nom} x${i.qty} (${fmt(i.product.prix * i.qty)})%0A`; });
-    msg += `%0ATotal : ${fmt(total)}%0A`;
+    cartItems.forEach((i) => { msg += `- ${i.product.nom} x${i.qty} (${fmt(i.product.prix * i.qty, i.product.devise)})%0A`; });
+    msg += `%0ATotal : ${Object.entries(sousTotauxParDevise).map(([d, t]) => fmt(t, d)).join(" + ")}%0A`;
     if (nom.trim()) msg += `%0ANom : ${nom.trim()}%0A`;
     if (adresse.trim()) msg += `Adresse : ${adresse.trim()}%0A`;
     msg += `Connu via : ${source}`;
@@ -70,11 +75,15 @@ export default function Commande() {
         {cartItems.map((i) => (
           <div key={i.product.id} className="flex justify-between text-xs py-1">
             <span>{i.product.nom} x{i.qty}</span>
-            <span className="font-semibold">{fmt(i.product.prix * i.qty)}</span>
+            <span className="font-semibold">{fmt(i.product.prix * i.qty, i.product.devise)}</span>
           </div>
         ))}
-        <div className="flex justify-between text-sm font-extrabold pt-2 border-t border-gray-100 mt-2">
-          <span>Total</span><span>{fmt(total)}</span>
+        <div className="pt-2 border-t border-gray-100 mt-2 space-y-0.5">
+          {Object.entries(sousTotauxParDevise).map(([devise, total]) => (
+            <div key={devise} className="flex justify-between text-sm font-extrabold">
+              <span>Total {devise}</span><span>{fmt(total, devise)}</span>
+            </div>
+          ))}
         </div>
         {codeParrainage && (
           <p className="text-[11px] text-[#F5720C] mt-2">Code de parrainage appliqué : {codeParrainage}</p>
@@ -100,4 +109,5 @@ export default function Commande() {
       </button>
     </div>
   );
-}
+          }
+    

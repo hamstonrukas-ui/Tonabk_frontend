@@ -1,12 +1,21 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Heart, MapPin, Plus } from "lucide-react";
+import { Heart, MapPin, Plus, ArrowUpRight, BedDouble, Bath } from "lucide-react";
 import { useFavoris } from "../../lib/favoris";
 import { cachedFetch } from "../../lib/cache";
 import { API_URL } from "../../lib/api";
 import BandeauHorsLigne from "../../components/BandeauHorsLigne";
 
 const fmt = (n, devise) => n.toLocaleString("fr-FR") + " " + devise;
+
+const LABELS_TYPE = {
+  maison: "Maison",
+  appartement: "Appartement",
+  studio: "Studio",
+  chambre: "Chambre",
+  terrain: "Terrain",
+  commerce: "Commerce",
+};
 
 export default function Accueil() {
   const [maisons, setMaisons] = useState([]);
@@ -61,26 +70,55 @@ export default function Accueil() {
 
       <div className="space-y-3">
         {filtered.map((m) => (
-          <Link key={m.id} to={`/location/maison/${m.id}`} className="block bg-white rounded-xl overflow-hidden shadow-sm">
-            <div className="relative h-40 bg-[#F6F6F6]">
+          <Link key={m.id} to={`/location/maison/${m.id}`} className="block bg-white rounded-xl overflow-hidden shadow-sm active:scale-[0.98] transition-transform">
+            <div className="relative h-44 bg-[#F6F6F6]">
               {m.photos_maisons?.[0]?.url ? (
                 <img src={m.photos_maisons[0].url} alt={m.titre} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-4xl">🏠</div>
               )}
+
+              {/* Badge type de bien, en haut à gauche */}
+              <span className="absolute top-2 left-2 bg-white/95 text-[10px] font-semibold text-[#1B1B1B] px-2 py-1 rounded-full">
+                {LABELS_TYPE[m.type_bien] || m.type_bien}
+              </span>
+
+              {/* Favori */}
               <button
                 onClick={(e) => { e.preventDefault(); toggleFavori(m.id); }}
                 className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center"
               >
                 <Heart size={16} fill={favoris.includes(m.id) ? "#F5720C" : "none"} className="text-[#F5720C]" />
               </button>
+
+              {/* Flèche "voir en détail" — signal visuel clair que la carte est cliquable */}
+              <div className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-[#F5720C] flex items-center justify-center shadow-md">
+                <ArrowUpRight size={16} className="text-white" />
+              </div>
             </div>
+
             <div className="p-3">
               <p className="text-sm font-semibold text-[#1B1B1B]">{m.titre}</p>
               <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
                 <MapPin size={11} /> {m.quartier}, {m.commune}
               </p>
-              <p className="text-sm font-extrabold text-[#F5720C] mt-1">{fmt(m.prix, m.devise)}/mois</p>
+
+              {(m.nb_chambres || m.nb_salles_bain) && (
+                <div className="flex items-center gap-3 mt-1.5">
+                  {m.nb_chambres && (
+                    <span className="flex items-center gap-1 text-xs text-gray-500">
+                      <BedDouble size={13} /> {m.nb_chambres}
+                    </span>
+                  )}
+                  {m.nb_salles_bain && (
+                    <span className="flex items-center gap-1 text-xs text-gray-500">
+                      <Bath size={13} /> {m.nb_salles_bain}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              <p className="text-sm font-extrabold text-[#F5720C] mt-1.5">{fmt(m.prix, m.devise)}/mois</p>
             </div>
           </Link>
         ))}
@@ -94,4 +132,4 @@ export default function Accueil() {
       </div>
     </div>
   );
-            }
+}

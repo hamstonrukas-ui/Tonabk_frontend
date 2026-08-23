@@ -4,7 +4,7 @@ import { ArrowLeft, Share2, Check, ShoppingBag } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { API_URL, SITE_URL } from "../../lib/api";
 
-const fmt = (n) => n.toLocaleString("fr-FR") + " FC";
+const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
 
 export default function DetailProduit() {
   const { id } = useParams();
@@ -21,7 +21,7 @@ export default function DetailProduit() {
   if (!produit) return <p className="text-center text-sm text-gray-400 py-10">Chargement...</p>;
 
   const partager = async () => {
-    const texte = `Regarde ce produit sur TonaBk : ${produit.nom} — ${fmt(produit.prix)}`;
+    const texte = `Regarde ce produit sur TonaBk : ${produit.nom} — ${fmt(produit.prix, produit.devise)}`;
     const url = `${SITE_URL}/boutique/produit/${produit.id}`;
 
     if (navigator.share) {
@@ -61,7 +61,7 @@ export default function DetailProduit() {
         <Link to={`/boutique/${produit.boutique_id}`} className="text-xs text-[#F5720C] font-medium">
           {produit.boutiques?.nom} →
         </Link>
-        <p className="text-xl font-extrabold text-[#1B1B1B] mt-2">{fmt(produit.prix)}</p>
+        <p className="text-xl font-extrabold text-[#1B1B1B] mt-2">{fmt(produit.prix, produit.devise)}</p>
         <p className={`text-xs mt-1 font-semibold ${produit.stock > 0 ? "text-green-600" : "text-red-500"}`}>
           {produit.stock > 0 ? `${produit.stock} en stock` : "Rupture de stock"}
         </p>
@@ -92,5 +92,5 @@ export default function DetailProduit() {
       </div>
     </div>
   );
-      }
-    
+                                                                          }
+          

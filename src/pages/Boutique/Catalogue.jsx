@@ -1,41 +1,34 @@
-    import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import { Star, Share2, Bell, BellRing } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { supabase } from "../../lib/supabaseClient";
 import { API_URL, SITE_URL } from "../../lib/api";
-import { cachedFetch } from "../../lib/cache";
-import BandeauHorsLigne from "../../components/BandeauHorsLigne";
+import { useCachedData } from "../../lib/useCachedData";
 
-const fmt = (n) => n.toLocaleString("fr-FR") + " FC";
+const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
 
 export default function Catalogue() {
   const { boutiqueId } = useOutletContext();
-  const [produits, setProduits] = useState([]);
-  const [ageCache, setAgeCache] = useState(null);
-  const [abonne, setAbonne] = useState(false);
-  const [chargementAbo, setChargementAbo] = useState(true);
-  const { addToCart } = useCart();
+  const { data: produitsData } = useCachedData(
+    `produits_boutique_${boutiqueId}`,
+    `${API_URL}/api/produits?boutique_id=${boutiqueId}`,
+    {},
+    [boutiqueId]
+  );
+  const produits = produitsData || [];
 
-  useEffect(() => {
-    cachedFetch(`produits_boutique_${boutiqueId}`, `${API_URL}/api/produits?boutique_id=${boutiqueId}`)
-      .then(({ data, depuisCache, ageMs }) => {
-        setProduits(data);
-        setAgeCache(depuisCache ? ageMs : null);
-      })
-      .catch(console.error);
-  }, [boutiqueId]);
+  const [abonne, setAbonne] = useState(false);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     async function verifierAbonnement() {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { setChargementAbo(false); return; }
-
+      if (!session) return;
       const res = await fetch(`${API_URL}/api/boutiques/${boutiqueId}/est-abonne`, {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       if (res.ok) setAbonne((await res.json()).abonne);
-      setChargementAbo(false);
     }
     verifierAbonnement();
   }, [boutiqueId]);
@@ -58,38 +51,31 @@ export default function Catalogue() {
   };
 
   const shareProduct = async (p) => {
-    const texte = `Regarde ce produit sur TonaBk : ${p.nom} — ${fmt(p.prix)}`;
+    const texte = `Regarde ce produit sur TonaBk : ${p.nom} — ${fmt(p.prix, p.devise)}`;
     const url = `${SITE_URL}/boutique/produit/${p.id}`;
 
-    // Partage natif du téléphone — l'utilisateur choisit lui-même l'app (WhatsApp, Instagram, TikTok, Facebook...)
     if (navigator.share) {
       try {
         await navigator.share({ title: p.nom, text: texte, url });
       } catch {
-        // L'utilisateur a annulé le partage, rien à faire
+        // Partage annulé par l'utilisateur
       }
     } else {
-      // Repli pour les navigateurs qui ne supportent pas le partage natif (ex: desktop)
       window.open(`https://wa.me/?text=${encodeURIComponent(`${texte}. ${url}`)}`, "_blank");
     }
   };
 
   return (
     <div>
-      {ageCache !== null && <BandeauHorsLigne ageMs={ageCache} />}
-
-      {/* Bouton S'abonner — en haut, bien visible */}
-      {!chargementAbo && (
-        <button
-          onClick={toggleAbonnement}
-          className={`w-full flex items-center justify-center gap-2 text-sm font-semibold rounded-xl py-2.5 mb-3 ${
-            abonne ? "bg-[#FFF1E4] text-[#C9560A]" : "bg-[#1B1B1B] text-white"
-          }`}
-        >
-          {abonne ? <BellRing size={15} /> : <Bell size={15} />}
-          {abonne ? "Abonné aux nouveautés" : "S'abonner aux nouveautés de cette boutique"}
-        </button>
-      )}
+      <button
+        onClick={toggleAbonnement}
+        className={`w-full flex items-center justify-center gap-2 text-sm font-semibold rounded-xl py-2.5 mb-3 ${
+          abonne ? "bg-[#FFF1E4] text-[#C9560A]" : "bg-[#1B1B1B] text-white"
+        }`}
+      >
+        {abonne ? <BellRing size={15} /> : <Bell size={15} />}
+        {abonne ? "Abonné aux nouveautés" : "S'abonner aux nouveautés de cette boutique"}
+      </button>
 
       <div className="bg-gradient-to-r from-[#FFEDE0] to-[#FFF6EE] border border-[#FFD3AC] rounded-xl p-3 mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -120,7 +106,7 @@ export default function Catalogue() {
                 <Star size={10} fill="#FFB400" className="text-[#FFB400]" />
                 <span className="text-[9px] text-gray-400">({p.avis || 0})</span>
               </div>
-              <p className="text-sm font-extrabold text-[#1B1B1B] mt-1">{fmt(p.prix)}</p>
+              <p className="text-sm font-extrabold text-[#1B1B1B] mt-1">{fmt(p.prix, p.devise)}</p>
               <div className="flex gap-1.5 mt-2">
                 <button
                   onClick={() => addToCart(p.id)}
@@ -142,5 +128,5 @@ export default function Catalogue() {
       </div>
     </div>
   );
-      }
-                
+    }
+            

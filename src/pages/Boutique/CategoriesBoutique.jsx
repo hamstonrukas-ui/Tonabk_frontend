@@ -48,7 +48,9 @@ export default function CategoriesBoutique() {
           </div>
           <div className="flex-1">
             <p className="text-sm font-bold text-white">Ma boutique</p>
-            <p className="text-[11px] text-gray-300">{maBoutique.nom} — gérer mes produits</p>
+            <p className="text-[11px] text-gray-300">
+              {maBoutique.nom} — Aller dans ma boutique et gérer mes produits
+            </p>
           </div>
         </Link>
       )}
@@ -84,4 +86,5 @@ export default function CategoriesBoutique() {
       </div>
     </div>
   );
-}
+        }
+          

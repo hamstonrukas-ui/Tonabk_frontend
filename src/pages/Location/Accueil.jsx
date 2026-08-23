@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Heart, MapPin, Plus, ArrowUpRight, BedDouble, Bath } from "lucide-react";
 import { useFavoris } from "../../lib/favoris";
-import { cachedFetch } from "../../lib/cache";
+import { useCachedData } from "../../lib/useCachedData";
 import { API_URL } from "../../lib/api";
-import BandeauHorsLigne from "../../components/BandeauHorsLigne";
 
 const fmt = (n, devise) => n.toLocaleString("fr-FR") + " " + devise;
 
@@ -18,29 +17,16 @@ const LABELS_TYPE = {
 };
 
 export default function Accueil() {
-  const [maisons, setMaisons] = useState([]);
-  const [ageCache, setAgeCache] = useState(null);
-  const [chargement, setChargement] = useState(true);
+  const { data } = useCachedData("maisons_accueil", `${API_URL}/api/maisons`);
+  const maisons = data || [];
   const [quartierFiltre, setQuartierFiltre] = useState("Tous");
   const { favoris, toggleFavori } = useFavoris();
-
-  useEffect(() => {
-    cachedFetch("maisons_accueil", `${API_URL}/api/maisons`)
-      .then(({ data, depuisCache, ageMs }) => {
-        setMaisons(data);
-        setAgeCache(depuisCache ? ageMs : null);
-      })
-      .catch(console.error)
-      .finally(() => setChargement(false));
-  }, []);
 
   const quartiers = ["Tous", ...new Set(maisons.map((m) => m.quartier))];
   const filtered = quartierFiltre === "Tous" ? maisons : maisons.filter((m) => m.quartier === quartierFiltre);
 
   return (
     <div className="p-3">
-      {ageCache !== null && <BandeauHorsLigne ageMs={ageCache} />}
-
       <Link
         to="/location/publier"
         className="flex items-center gap-3 bg-[#F5720C] rounded-xl p-3.5 mb-3"
@@ -78,12 +64,10 @@ export default function Accueil() {
                 <div className="w-full h-full flex items-center justify-center text-4xl">🏠</div>
               )}
 
-              {/* Badge type de bien, en haut à gauche */}
               <span className="absolute top-2 left-2 bg-white/95 text-[10px] font-semibold text-[#1B1B1B] px-2 py-1 rounded-full">
                 {LABELS_TYPE[m.type_bien] || m.type_bien}
               </span>
 
-              {/* Favori */}
               <button
                 onClick={(e) => { e.preventDefault(); toggleFavori(m.id); }}
                 className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center"
@@ -91,7 +75,6 @@ export default function Accueil() {
                 <Heart size={16} fill={favoris.includes(m.id) ? "#F5720C" : "none"} className="text-[#F5720C]" />
               </button>
 
-              {/* Flèche "voir en détail" — signal visuel clair que la carte est cliquable */}
               <div className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-[#F5720C] flex items-center justify-center shadow-md">
                 <ArrowUpRight size={16} className="text-white" />
               </div>
@@ -123,7 +106,7 @@ export default function Accueil() {
           </Link>
         ))}
 
-        {!chargement && filtered.length === 0 && (
+        {filtered.length === 0 && (
           <div className="text-center py-10">
             <p className="text-3xl mb-2">🏠</p>
             <p className="text-sm text-gray-400">Aucune maison disponible pour l'instant</p>
@@ -132,4 +115,5 @@ export default function Accueil() {
       </div>
     </div>
   );
-}
+                                                                          }
+        

@@ -4,7 +4,7 @@ import { Plus, Trash2, ArrowLeft, Bell, MessageCircle, Copy, Check } from "lucid
 import { supabase } from "../../lib/supabaseClient";
 import { API_URL, SITE_URL } from "../../lib/api";
 
-const fmt = (n) => n.toLocaleString("fr-FR") + " FC";
+const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
 
 export default function GererBoutique() {
   const navigate = useNavigate();
@@ -16,6 +16,7 @@ export default function GererBoutique() {
 
   const [nom, setNom] = useState("");
   const [prix, setPrix] = useState("");
+  const [devise, setDevise] = useState("USD");
   const [stock, setStock] = useState("");
   const [description, setDescription] = useState("");
   const [photo, setPhoto] = useState(null);
@@ -141,6 +142,7 @@ export default function GererBoutique() {
           boutique_id: boutique.id,
           nom,
           prix: Number(prix),
+          devise,
           stock: Number(stock) || 0,
           description,
           photo_url,
@@ -155,7 +157,7 @@ export default function GererBoutique() {
         return;
       }
 
-      setNom(""); setPrix(""); setStock(""); setDescription(""); setPhoto(null);
+      setNom(""); setPrix(""); setDevise("USD"); setStock(""); setDescription(""); setPhoto(null);
       setAfficherForm(false);
       setEnvoiEnCours(false);
       charger();
@@ -288,8 +290,13 @@ export default function GererBoutique() {
           {erreur && <p className="text-xs text-red-500">{erreur}</p>}
           <input value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Nom du produit" required
             className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full" />
-          <input value={prix} onChange={(e) => setPrix(e.target.value)} type="number" placeholder="Prix (FC)" required
+          <input value={prix} onChange={(e) => setPrix(e.target.value)} type="number" placeholder="Prix" required
             className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full" />
+          <select value={devise} onChange={(e) => setDevise(e.target.value)}
+            className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full">
+            <option value="USD">USD ($)</option>
+            <option value="CDF">CDF (FC)</option>
+          </select>
           <input value={stock} onChange={(e) => setStock(e.target.value)} type="number" placeholder="Stock"
             className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full" />
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" rows={2}
@@ -311,7 +318,7 @@ export default function GererBoutique() {
             </div>
             <div className="p-2.5">
               <p className="text-[11.5px] font-medium leading-tight h-8 overflow-hidden">{p.nom}</p>
-              <p className="text-sm font-extrabold mt-1">{fmt(p.prix)}</p>
+              <p className="text-sm font-extrabold mt-1">{fmt(p.prix, p.devise)}</p>
               <button
                 onClick={() => supprimerProduit(p.id)}
                 className="mt-2 flex items-center justify-center gap-1 w-full border border-red-200 text-red-500 text-[11px] font-semibold rounded-md py-1.5"

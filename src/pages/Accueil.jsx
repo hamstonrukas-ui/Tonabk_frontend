@@ -1,29 +1,13 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Search, ShoppingBag, BadgeCheck } from "lucide-react";
-import { cachedFetch } from "../lib/cache";
+import { useCachedData } from "../lib/useCachedData";
 import { API_URL } from "../lib/api";
-import BandeauHorsLigne from "../components/BandeauHorsLigne";
 
-const fmt = (n) => n.toLocaleString("fr-FR") + " FC";
+const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
 
 export default function Accueil() {
-  const [produits, setProduits] = useState([]);
-  const [boutiques, setBoutiques] = useState([]);
-  const [ageCache, setAgeCache] = useState(null);
-
-  useEffect(() => {
-    cachedFetch("produits_accueil", `${API_URL}/api/produits/accueil`)
-      .then(({ data, depuisCache, ageMs }) => {
-        setProduits(data);
-        if (depuisCache) setAgeCache(ageMs);
-      })
-      .catch(console.error);
-
-    cachedFetch("boutiques_accueil", `${API_URL}/api/boutiques`)
-      .then(({ data }) => setBoutiques(data))
-      .catch(console.error);
-  }, []);
+  const { data: produits } = useCachedData("produits_accueil", `${API_URL}/api/produits/accueil`);
+  const { data: boutiques } = useCachedData("boutiques_accueil", `${API_URL}/api/boutiques`);
 
   return (
     <div className="min-h-screen bg-[#F3F3F3] pb-4">
@@ -41,11 +25,7 @@ export default function Accueil() {
         </Link>
       </div>
 
-      <div className="px-3 pt-3">
-        {ageCache !== null && <BandeauHorsLigne ageMs={ageCache} />}
-      </div>
-
-      <div className="mx-3 bg-[#1B1B1B] rounded-xl p-3 flex items-center gap-3">
+      <div className="mx-3 mt-3 bg-[#1B1B1B] rounded-xl p-3 flex items-center gap-3">
         <span className="text-xl">🔎</span>
         <div className="flex-1">
           <p className="text-xs font-bold text-white">Introuvable ? On le cherche pour vous.</p>
@@ -59,7 +39,7 @@ export default function Accueil() {
         <h2 className="text-sm font-extrabold text-[#1B1B1B]">Articles</h2>
       </div>
       <div className="grid grid-cols-2 gap-2.5 px-3">
-        {produits.map((p) => (
+        {(produits || []).map((p) => (
           <Link key={p.id} to={`/boutique/produit/${p.id}`} className="bg-white rounded-xl overflow-hidden shadow-sm relative">
             {p.sponsorise && (
               <span className="absolute top-1.5 left-1.5 z-10 bg-[#F5720C] text-white text-[8px] font-bold px-1.5 py-0.5 rounded">
@@ -71,7 +51,7 @@ export default function Accueil() {
             </div>
             <div className="p-2.5">
               <p className="text-[11.5px] text-gray-800 font-medium leading-tight h-8 overflow-hidden">{p.nom}</p>
-              <p className="text-sm font-extrabold mt-1">{fmt(p.prix)}</p>
+              <p className="text-sm font-extrabold mt-1">{fmt(p.prix, p.devise)}</p>
               <div className="flex items-center gap-1">
                 <p className="text-[9px] text-gray-400">{p.boutiques?.nom}</p>
                 {p.boutiques?.certifiee && <BadgeCheck size={10} className="text-[#F5720C]" />}
@@ -85,7 +65,7 @@ export default function Accueil() {
         <h2 className="text-sm font-extrabold text-[#1B1B1B]">Boutiques populaires</h2>
       </div>
       <div className="flex gap-2.5 px-3 overflow-x-auto">
-        {boutiques.map((b) => (
+        {(boutiques || []).map((b) => (
           <Link key={b.id} to={`/boutique/${b.id}`} className="flex-shrink-0 w-24 bg-white rounded-xl p-2.5 text-center shadow-sm">
             <div className="w-11 h-11 rounded-full bg-[#F5720C] text-white font-bold flex items-center justify-center mx-auto mb-1.5">
               {b.nom.slice(0, 2).toUpperCase()}
@@ -113,5 +93,5 @@ export default function Accueil() {
       </div>
     </div>
   );
-          }
-      
+                }
+            

@@ -1,32 +1,36 @@
 import { useEffect, useState } from "react";
+import { useOutletContext } from "react-router-dom";
 import { Plus, Minus, Trash2, MessageCircle } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { API_URL } from "../../lib/api";
 
-const fmt = (n) => n.toLocaleString("fr-FR") + " FC";
-const LIVRAISON_GRATUITE_SEUIL = 100000;
-const SITE_URL = "tonabk.com";
+const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
 
 export default function Panier() {
+  const { boutiqueId } = useOutletContext();
   const { cart, addToCart, decFromCart, removeFromCart } = useCart();
   const [produits, setProduits] = useState([]);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/produits`).then((r) => r.json()).then(setProduits);
-  }, []);
+    fetch(`${API_URL}/api/produits?boutique_id=${boutiqueId}`).then((r) => r.json()).then(setProduits);
+  }, [boutiqueId]);
 
   const cartItems = Object.entries(cart)
     .map(([id, qty]) => ({ product: produits.find((p) => p.id === id), qty }))
     .filter((i) => i.product);
 
-  const total = cartItems.reduce((sum, i) => sum + i.product.prix * i.qty, 0);
-  const resteAvantLivraison = Math.max(0, LIVRAISON_GRATUITE_SEUIL - total);
-  const progression = Math.min(100, (total / LIVRAISON_GRATUITE_SEUIL) * 100);
+  // Sous-totaux séparés par devise, au cas où le panier contient des produits en USD et CDF
+  const sousTotauxParDevise = cartItems.reduce((acc, i) => {
+    const devise = i.product.devise || "USD";
+    acc[devise] = (acc[devise] || 0) + i.product.prix * i.qty;
+    return acc;
+  }, {});
 
   const suggestions = produits.filter((p) => !cart[p.id]).slice(0, 2);
 
   const sendReminder = () => {
-    const msg = `Bonjour, il vous reste des articles dans votre panier chez TonaBk 👀 Total : ${fmt(total)}. Finalisez votre commande ici : ${SITE_URL}`;
+    const totalTexte = Object.entries(sousTotauxParDevise).map(([d, t]) => fmt(t, d)).join(" + ");
+    const msg = `Bonjour, il vous reste des articles dans votre panier chez TonaBk 👀 Total : ${totalTexte}. Finalisez votre commande.`;
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
@@ -37,14 +41,10 @@ export default function Panier() {
   return (
     <div className="space-y-3">
       <div className="bg-white rounded-xl p-3">
-        <p className="text-xs text-gray-500 mb-1">
-          {resteAvantLivraison > 0
-            ? `Plus que ${fmt(resteAvantLivraison)} pour la livraison gratuite`
-            : "🎉 Livraison gratuite débloquée !"}
-        </p>
-        <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-          <div className="h-full bg-[#F5720C]" style={{ width: `${progression}%` }} />
-        </div>
+        <p className="text-xs font-semibold mb-1">Total</p>
+        {Object.entries(sousTotauxParDevise).map(([devise, total]) => (
+          <p key={devise} className="text-sm font-extrabold text-[#1B1B1B]">{fmt(total, devise)}</p>
+        ))}
       </div>
 
       {cartItems.map(({ product, qty }) => (
@@ -52,7 +52,7 @@ export default function Panier() {
           <div className="w-14 h-14 bg-[#F6F6F6] rounded-lg flex items-center justify-center text-xl">📦</div>
           <div className="flex-1">
             <p className="text-xs font-medium">{product.nom}</p>
-            <p className="text-sm font-extrabold">{fmt(product.prix * qty)}</p>
+            <p className="text-sm font-extrabold">{fmt(product.prix * qty, product.devise)}</p>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => decFromCart(product.id)}><Minus size={14} /></button>
@@ -69,7 +69,7 @@ export default function Panier() {
           <div className="flex gap-2">
             {suggestions.map((p) => (
               <button key={p.id} onClick={() => addToCart(p.id)} className="bg-white rounded-lg p-2 text-[10px] flex-1">
-                {p.nom} — {fmt(p.prix)}
+                {p.nom} — {fmt(p.prix, p.devise)}
               </button>
             ))}
           </div>
@@ -84,4 +84,5 @@ export default function Panier() {
       </button>
     </div>
   );
-}
+                                                                                               }
+      

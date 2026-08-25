@@ -1,13 +1,10 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { API_URL } from "../../lib/api";
+import { useCachedData } from "../../lib/useCachedData";
 
 export default function ListeRequetes() {
-  const [requetes, setRequetes] = useState([]);
-
-  useEffect(() => {
-    fetch(`${API_URL}/api/requetes`).then((r) => r.json()).then(setRequetes).catch(console.error);
-  }, []);
+  const { data } = useCachedData("requetes", `${API_URL}/api/requetes`);
+  const requetes = data || [];
 
   return (
     <div className="p-3">

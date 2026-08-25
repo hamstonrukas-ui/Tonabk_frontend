@@ -3,16 +3,14 @@ import { Link } from "react-router-dom";
 import { Store, Plus } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 import { API_URL } from "../../lib/api";
+import { useCachedData } from "../../lib/useCachedData";
 
 export default function CategoriesBoutique() {
-  const [categories, setCategories] = useState([]);
+  const { data: categoriesData } = useCachedData("categories", `${API_URL}/api/categories`);
+  const categories = categoriesData || [];
   const [connecte, setConnecte] = useState(false);
   const [maBoutique, setMaBoutique] = useState(null);
   const [chargementCompte, setChargementCompte] = useState(true);
-
-  useEffect(() => {
-    fetch(`${API_URL}/api/categories`).then((r) => r.json()).then(setCategories).catch(console.error);
-  }, []);
 
   useEffect(() => {
     async function verifierCompte() {
@@ -86,5 +84,4 @@ export default function CategoriesBoutique() {
       </div>
     </div>
   );
-        }
-          
+}

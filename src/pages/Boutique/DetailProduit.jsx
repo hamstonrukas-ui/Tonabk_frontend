@@ -1,22 +1,18 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Share2, Check, ShoppingBag } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { API_URL, SITE_URL } from "../../lib/api";
+import { useCachedData } from "../../lib/useCachedData";
 
 const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
 
 export default function DetailProduit() {
   const { id } = useParams();
-  const [produit, setProduit] = useState(null);
+  const { data: tousLesProduits } = useCachedData("produits_tous", `${API_URL}/api/produits`);
+  const produit = (tousLesProduits || []).find((p) => p.id === id);
   const [ajoute, setAjoute] = useState(false);
   const { addToCart } = useCart();
-
-  useEffect(() => {
-    fetch(`${API_URL}/api/produits`).then((r) => r.json()).then((data) => {
-      setProduit(data.find((p) => p.id === id));
-    });
-  }, [id]);
 
   if (!produit) return <p className="text-center text-sm text-gray-400 py-10">Chargement...</p>;
 
@@ -92,5 +88,4 @@ export default function DetailProduit() {
       </div>
     </div>
   );
-                                                                          }
-          
+}

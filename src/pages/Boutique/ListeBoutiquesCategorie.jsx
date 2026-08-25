@@ -1,24 +1,21 @@
-import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, BadgeCheck, MapPin } from "lucide-react";
 import { API_URL } from "../../lib/api";
+import { useCachedData } from "../../lib/useCachedData";
 
 export default function ListeBoutiquesCategorie() {
   const { categorieId } = useParams();
-  const [boutiques, setBoutiques] = useState([]);
-  const [categorie, setCategorie] = useState(null);
 
-  useEffect(() => {
-    fetch(`${API_URL}/api/boutiques?categorie_id=${categorieId}`)
-      .then((r) => r.json())
-      .then(setBoutiques)
-      .catch(console.error);
+  const { data: boutiquesData } = useCachedData(
+    `boutiques_categorie_${categorieId}`,
+    `${API_URL}/api/boutiques?categorie_id=${categorieId}`,
+    {},
+    [categorieId]
+  );
+  const boutiques = boutiquesData || [];
 
-    fetch(`${API_URL}/api/categories`)
-      .then((r) => r.json())
-      .then((cats) => setCategorie(cats.find((c) => c.id === categorieId)))
-      .catch(() => {});
-  }, [categorieId]);
+  const { data: categoriesData } = useCachedData("categories", `${API_URL}/api/categories`);
+  const categorie = (categoriesData || []).find((c) => c.id === categorieId);
 
   return (
     <div className="p-3">
@@ -56,5 +53,4 @@ export default function ListeBoutiquesCategorie() {
       </div>
     </div>
   );
-            }
-            
+}

@@ -1,19 +1,21 @@
-import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { Plus, Minus, Trash2, MessageCircle } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { API_URL } from "../../lib/api";
+import { useCachedData } from "../../lib/useCachedData";
 
 const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
 
 export default function Panier() {
   const { boutiqueId } = useOutletContext();
   const { cart, addToCart, decFromCart, removeFromCart } = useCart();
-  const [produits, setProduits] = useState([]);
-
-  useEffect(() => {
-    fetch(`${API_URL}/api/produits?boutique_id=${boutiqueId}`).then((r) => r.json()).then(setProduits);
-  }, [boutiqueId]);
+  const { data: produitsData } = useCachedData(
+    `produits_boutique_${boutiqueId}`,
+    `${API_URL}/api/produits?boutique_id=${boutiqueId}`,
+    {},
+    [boutiqueId]
+  );
+  const produits = produitsData || [];
 
   const cartItems = Object.entries(cart)
     .map(([id, qty]) => ({ product: produits.find((p) => p.id === id), qty }))
@@ -84,5 +86,4 @@ export default function Panier() {
       </button>
     </div>
   );
-                                                                                               }
-      
+      }

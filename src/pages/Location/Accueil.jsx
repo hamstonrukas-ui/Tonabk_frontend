@@ -75,8 +75,8 @@ export default function Accueil() {
                 <Heart size={16} fill={favoris.includes(m.id) ? "#F5720C" : "none"} className="text-[#F5720C]" />
               </button>
 
-              <div className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-[#F5720C] flex items-center justify-center shadow-md">
-                <ArrowUpRight size={16} className="text-white" />
+              <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-[#F5720C] text-white text-[10px] font-semibold pl-2.5 pr-2 py-1.5 rounded-full shadow-md">
+                Voir détails <ArrowUpRight size={13} />
               </div>
             </div>
 
@@ -115,5 +115,4 @@ export default function Accueil() {
       </div>
     </div>
   );
-                                                                          }
-        
+}

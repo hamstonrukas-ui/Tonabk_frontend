@@ -1,13 +1,40 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Search, ShoppingBag, BadgeCheck } from "lucide-react";
+import { Search, ShoppingBag, BadgeCheck, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCachedData } from "../lib/useCachedData";
 import { API_URL } from "../lib/api";
 
 const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
+const PRODUITS_PAR_PAGE = 30;
 
 export default function Accueil() {
-  const { data: produits } = useCachedData("produits_accueil", `${API_URL}/api/produits/accueil`);
+  const [page, setPage] = useState(1);
+
+  const { data: reponseProduits } = useCachedData(
+    `produits_accueil_page_${page}`,
+    `${API_URL}/api/produits/accueil?page=${page}&limit=${PRODUITS_PAR_PAGE}`,
+    {},
+    [page]
+  );
   const { data: boutiques } = useCachedData("boutiques_accueil", `${API_URL}/api/boutiques`);
+
+  const produits = reponseProduits?.data || [];
+  const totalPages = reponseProduits?.totalPages || 1;
+
+  const allerPage = (p) => {
+    if (p < 1 || p > totalPages) return;
+    setPage(p);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Génère une liste de numéros de page à afficher (max 5 visibles, centrés sur la page actuelle)
+  const numerosPages = () => {
+    const debut = Math.max(1, page - 2);
+    const fin = Math.min(totalPages, debut + 4);
+    const nums = [];
+    for (let i = Math.max(1, fin - 4); i <= fin; i++) nums.push(i);
+    return nums;
+  };
 
   return (
     <div className="min-h-screen bg-[#F3F3F3] pb-4">
@@ -39,7 +66,7 @@ export default function Accueil() {
         <h2 className="text-sm font-extrabold text-[#1B1B1B]">Articles</h2>
       </div>
       <div className="grid grid-cols-2 gap-2.5 px-3">
-        {(produits || []).map((p) => (
+        {produits.map((p) => (
           <Link key={p.id} to={`/boutique/produit/${p.id}`} className="bg-white rounded-xl overflow-hidden shadow-sm relative">
             {p.sponsorise && (
               <span className="absolute top-1.5 left-1.5 z-10 bg-[#F5720C] text-white text-[8px] font-bold px-1.5 py-0.5 rounded">
@@ -52,6 +79,7 @@ export default function Accueil() {
             <div className="p-2.5">
               <p className="text-[11.5px] text-gray-800 font-medium leading-tight h-8 overflow-hidden">{p.nom}</p>
               <p className="text-sm font-extrabold mt-1">{fmt(p.prix, p.devise)}</p>
+              <p className="text-[9px] font-semibold text-[#F5720C] mt-0.5">Voir détails →</p>
               <div className="flex items-center gap-1">
                 <p className="text-[9px] text-gray-400">{p.boutiques?.nom}</p>
                 {p.boutiques?.certifiee && <BadgeCheck size={10} className="text-[#F5720C]" />}
@@ -60,6 +88,45 @@ export default function Accueil() {
           </Link>
         ))}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-1.5 px-3 pt-4">
+          <button
+            onClick={() => allerPage(page - 1)}
+            disabled={page === 1}
+            className="w-8 h-8 rounded-full bg-white flex items-center justify-center disabled:opacity-30"
+          >
+            <ChevronLeft size={16} className="text-[#1B1B1B]" />
+          </button>
+
+          {numerosPages()[0] > 1 && <span className="text-xs text-gray-400 px-1">...</span>}
+
+          {numerosPages().map((n) => (
+            <button
+              key={n}
+              onClick={() => allerPage(n)}
+              className={`w-8 h-8 rounded-full text-xs font-semibold ${
+                n === page ? "bg-[#F5720C] text-white" : "bg-white text-[#1B1B1B]"
+              }`}
+            >
+              {n}
+            </button>
+          ))}
+
+          {numerosPages()[numerosPages().length - 1] < totalPages && (
+            <span className="text-xs text-gray-400 px-1">...</span>
+          )}
+
+          <button
+            onClick={() => allerPage(page + 1)}
+            disabled={page === totalPages}
+            className="w-8 h-8 rounded-full bg-white flex items-center justify-center disabled:opacity-30"
+          >
+            <ChevronRight size={16} className="text-[#1B1B1B]" />
+          </button>
+        </div>
+      )}
 
       <div className="flex justify-between items-baseline px-3 pt-4 pb-2">
         <h2 className="text-sm font-extrabold text-[#1B1B1B]">Boutiques populaires</h2>
@@ -93,5 +160,5 @@ export default function Accueil() {
       </div>
     </div>
   );
-                }
-            
+      }
+      

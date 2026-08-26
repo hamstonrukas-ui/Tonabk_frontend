@@ -79,7 +79,6 @@ export default function Accueil() {
             <div className="p-2.5">
               <p className="text-[11.5px] text-gray-800 font-medium leading-tight h-8 overflow-hidden">{p.nom}</p>
               <p className="text-sm font-extrabold mt-1">{fmt(p.prix, p.devise)}</p>
-              <p className="text-[9px] font-semibold text-[#F5720C] mt-0.5">Voir détails →</p>
               <div className="flex items-center gap-1">
                 <p className="text-[9px] text-gray-400">{p.boutiques?.nom}</p>
                 {p.boutiques?.certifiee && <BadgeCheck size={10} className="text-[#F5720C]" />}

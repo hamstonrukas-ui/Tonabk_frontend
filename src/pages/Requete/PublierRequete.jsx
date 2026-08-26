@@ -11,6 +11,7 @@ export default function PublierRequete() {
   const [telephone, setTelephone] = useState("");
   const [budget, setBudget] = useState("");
   const [loading, setLoading] = useState(false);
+  const [erreur, setErreur] = useState("");
 
   useEffect(() => {
     fetch(`${API_URL}/api/categories`).then((r) => r.json()).then(setCategories).catch(() => {});
@@ -18,38 +19,57 @@ export default function PublierRequete() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErreur("");
     setLoading(true);
 
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-      alert("Connectez-vous d'abord pour publier une requête");
       setLoading(false);
+      alert("Connectez-vous d'abord pour publier une requête");
       return navigate("/inscription?redirect=/requete/publier");
     }
 
-    const res = await fetch(`${API_URL}/api/requetes`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-      body: JSON.stringify({
-        description,
-        categorie_id: categorieId || null,
-        telephone,
-        budget_estime: budget ? Number(budget) : null,
-      }),
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
 
-    setLoading(false);
-    if (res.ok) {
-      alert("Requête publiée ! Notre équipe s'en occupe.");
+    try {
+      const res = await fetch(`${API_URL}/api/requetes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({
+          description,
+          categorie_id: categorieId || null,
+          telephone,
+          budget_estime: budget ? Number(budget) : null,
+        }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeout);
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setErreur(data.error || "Erreur lors de la publication");
+        setLoading(false);
+        return;
+      }
+
       navigate("/requete");
-    } else {
-      alert("Erreur lors de la publication");
+    } catch (err) {
+      clearTimeout(timeout);
+      setErreur("Connexion instable — la publication n'a pas abouti. Réessayez.");
+      setLoading(false);
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="p-3 space-y-2">
       <p className="text-sm font-semibold text-[#1B1B1B] mb-1">Décrivez ce que vous cherchez</p>
+
+      {erreur && (
+        <div className="bg-red-50 text-red-600 text-xs rounded-lg p-3">{erreur}</div>
+      )}
+
       <textarea
         value={description}
         onChange={(e) => setDescription(e.target.value)}

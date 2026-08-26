@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useOutletContext } from "react-router-dom";
+import { useOutletContext, Link } from "react-router-dom";
 import { Star, Share2, Bell, BellRing } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { supabase } from "../../lib/supabaseClient";
@@ -90,23 +90,28 @@ export default function Catalogue() {
       <div className="grid grid-cols-2 gap-2.5">
         {produits.map((p) => (
           <div key={p.id} className="bg-white rounded-xl overflow-hidden shadow-sm">
-            <div className="bg-[#F6F6F6] h-24 flex items-center justify-center text-3xl relative">
-              {p.photo_url ? <img src={p.photo_thumb_url || p.photo_url} alt={p.nom} className="w-full h-full object-cover" /> : "📦"}
-              <span
-                className={`absolute top-1.5 left-1.5 text-[8px] font-bold px-1.5 py-0.5 rounded ${
-                  p.stock > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"
-                }`}
-              >
-                {p.stock > 0 ? `${p.stock} en stock` : "Rupture"}
-              </span>
-            </div>
-            <div className="p-2.5">
-              <p className="text-[11.5px] text-gray-800 font-medium leading-tight h-8 overflow-hidden">{p.nom}</p>
-              <div className="flex items-center gap-1 mt-1">
-                <Star size={10} fill="#FFB400" className="text-[#FFB400]" />
-                <span className="text-[9px] text-gray-400">({p.avis || 0})</span>
+            <Link to={`/boutique/produit/${p.id}`}>
+              <div className="bg-[#F6F6F6] h-24 flex items-center justify-center text-3xl relative">
+                {p.photo_url ? <img src={p.photo_thumb_url || p.photo_url} alt={p.nom} className="w-full h-full object-cover" /> : "📦"}
+                <span
+                  className={`absolute top-1.5 left-1.5 text-[8px] font-bold px-1.5 py-0.5 rounded ${
+                    p.stock > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"
+                  }`}
+                >
+                  {p.stock > 0 ? `${p.stock} en stock` : "Rupture"}
+                </span>
               </div>
-              <p className="text-sm font-extrabold text-[#1B1B1B] mt-1">{fmt(p.prix, p.devise)}</p>
+              <div className="px-2.5 pt-2.5">
+                <p className="text-[11.5px] text-gray-800 font-medium leading-tight h-8 overflow-hidden">{p.nom}</p>
+                <div className="flex items-center gap-1 mt-1">
+                  <Star size={10} fill="#FFB400" className="text-[#FFB400]" />
+                  <span className="text-[9px] text-gray-400">({p.avis || 0})</span>
+                </div>
+                <p className="text-sm font-extrabold text-[#1B1B1B] mt-1">{fmt(p.prix, p.devise)}</p>
+                <p className="text-[9px] font-semibold text-[#F5720C] mt-0.5">Voir détails →</p>
+              </div>
+            </Link>
+            <div className="px-2.5 pb-2.5">
               <div className="flex gap-1.5 mt-2">
                 <button
                   onClick={() => addToCart(p.id)}
@@ -128,5 +133,4 @@ export default function Catalogue() {
       </div>
     </div>
   );
-    }
-            
+}

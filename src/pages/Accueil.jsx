@@ -160,5 +160,4 @@ export default function Accueil() {
       </div>
     </div>
   );
-      }
-      
+}

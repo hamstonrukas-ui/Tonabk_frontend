@@ -36,6 +36,9 @@ export default function Connexion() {
           type="password" placeholder="Mot de passe" value={password} onChange={(e) => setPassword(e.target.value)} required
           className="border border-gray-200 rounded-md px-3 py-2.5 text-sm w-full"
         />
+        <p className="text-right -mt-1">
+          <Link to="/mot-de-passe-oublie" className="text-xs text-[#F5720C] font-medium">Mot de passe oublié ?</Link>
+        </p>
         <button type="submit" disabled={loading} className="w-full bg-[#F5720C] text-white text-sm font-semibold rounded-md py-2.5">
           {loading ? "Connexion..." : "Se connecter"}
         </button>
@@ -48,4 +51,5 @@ export default function Connexion() {
       </form>
     </div>
   );
-}
+        }
+          

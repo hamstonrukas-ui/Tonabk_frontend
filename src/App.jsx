@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import BarreNavigation from "./components/BarreNavigation";
 import InstallPrompt from "./components/InstallPrompt";
+import InstallButton from "./components/InstallButton";
 import { CartProvider } from "./context/CartContext";
 
 // Accueil
@@ -36,6 +37,8 @@ import DetailRequete from "./pages/Requete/DetailRequete";
 // Auth
 import Connexion from "./pages/Auth/Connexion";
 import Inscription from "./pages/Auth/Inscription";
+import MotDePasseOublie from "./pages/Auth/MotDePasseOublie";
+import ReinitialiserMotDePasse from "./pages/Auth/ReinitialiserMotDePasse";
 
 function AppLayout({ children }) {
   return (
@@ -51,6 +54,7 @@ export default function App() {
     <BrowserRouter>
       <CartProvider>
         <InstallPrompt />
+        <InstallButton />
         <Routes>
           {/* Accueil */}
           <Route path="/" element={<AppLayout><Accueil /></AppLayout>} />
@@ -88,9 +92,10 @@ export default function App() {
           {/* Auth */}
           <Route path="/connexion" element={<Connexion />} />
           <Route path="/inscription" element={<Inscription />} />
+          <Route path="/mot-de-passe-oublie" element={<MotDePasseOublie />} />
+          <Route path="/reinitialiser-mot-de-passe" element={<ReinitialiserMotDePasse />} />
         </Routes>
       </CartProvider>
     </BrowserRouter>
   );
-  }
-  
+}

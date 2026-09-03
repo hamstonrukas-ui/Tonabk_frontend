@@ -27,7 +27,6 @@ export default function Accueil() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Génère une liste de numéros de page à afficher (max 5 visibles, centrés sur la page actuelle)
   const numerosPages = () => {
     const debut = Math.max(1, page - 2);
     const fin = Math.min(totalPages, debut + 4);
@@ -38,8 +37,8 @@ export default function Accueil() {
 
   return (
     <div className="min-h-screen bg-[#F3F3F3] pb-4">
-      <div className="bg-gradient-to-b from-[#F5720C] to-[#C9560A] px-4 pt-3 pb-4">
-        <div className="flex items-center justify-between mb-2.5">
+      <div className="bg-gradient-to-b from-[#F5720C] to-[#C9560A] px-4 lg:px-8 pt-3 pb-4">
+        <div className="flex items-center justify-between mb-2.5 max-w-3xl mx-auto lg:mx-0">
           <span className="text-xl font-extrabold text-white">
             Tona<span className="bg-white text-[#1B1B1B] px-1 rounded">Bk</span>
           </span>
@@ -47,12 +46,12 @@ export default function Accueil() {
             <ShoppingBag size={16} className="text-white" />
           </Link>
         </div>
-        <Link to="/boutique/recherche" className="bg-white rounded-lg flex items-center gap-2 px-3 py-2.5 text-xs text-gray-400">
+        <Link to="/boutique/recherche" className="max-w-3xl bg-white rounded-lg flex items-center gap-2 px-3 py-2.5 text-xs text-gray-400">
           <Search size={15} /> Chaussures, smartphone, riz...
         </Link>
       </div>
 
-      <div className="mx-3 mt-3 bg-[#1B1B1B] rounded-xl p-3 flex items-center gap-3">
+      <div className="mx-3 lg:mx-8 mt-3 bg-[#1B1B1B] rounded-xl p-3 flex items-center gap-3 max-w-3xl">
         <span className="text-xl">🔎</span>
         <div className="flex-1">
           <p className="text-xs font-bold text-white">Introuvable ? On le cherche pour vous.</p>
@@ -62,10 +61,10 @@ export default function Accueil() {
         </Link>
       </div>
 
-      <div className="flex justify-between items-baseline px-3 pt-4 pb-2">
+      <div className="flex justify-between items-baseline px-3 lg:px-8 pt-4 pb-2">
         <h2 className="text-sm font-extrabold text-[#1B1B1B]">Articles</h2>
       </div>
-      <div className="grid grid-cols-2 gap-2.5 px-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 px-3 lg:px-8">
         {produits.map((p) => (
           <Link key={p.id} to={`/boutique/produit/${p.id}`} className="bg-white rounded-xl overflow-hidden shadow-sm relative">
             {p.sponsorise && (
@@ -73,12 +72,13 @@ export default function Accueil() {
                 Sponsorisé
               </span>
             )}
-            <div className="bg-[#F6F6F6] h-24 flex items-center justify-center text-3xl">
+            <div className="bg-[#F6F6F6] h-24 lg:h-36 flex items-center justify-center text-3xl">
               {p.photo_url ? <img src={p.photo_thumb_url || p.photo_url} className="w-full h-full object-cover" /> : "📦"}
             </div>
             <div className="p-2.5">
               <p className="text-[11.5px] text-gray-800 font-medium leading-tight h-8 overflow-hidden">{p.nom}</p>
               <p className="text-sm font-extrabold mt-1">{fmt(p.prix, p.devise)}</p>
+              <p className="text-[9px] font-semibold text-[#F5720C] mt-0.5">Voir détails →</p>
               <div className="flex items-center gap-1">
                 <p className="text-[9px] text-gray-400">{p.boutiques?.nom}</p>
                 {p.boutiques?.certifiee && <BadgeCheck size={10} className="text-[#F5720C]" />}
@@ -88,7 +88,6 @@ export default function Accueil() {
         ))}
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-1.5 px-3 pt-4">
           <button
@@ -127,10 +126,10 @@ export default function Accueil() {
         </div>
       )}
 
-      <div className="flex justify-between items-baseline px-3 pt-4 pb-2">
+      <div className="flex justify-between items-baseline px-3 lg:px-8 pt-4 pb-2">
         <h2 className="text-sm font-extrabold text-[#1B1B1B]">Boutiques populaires</h2>
       </div>
-      <div className="flex gap-2.5 px-3 overflow-x-auto">
+      <div className="flex gap-2.5 px-3 lg:px-8 overflow-x-auto">
         {(boutiques || []).map((b) => (
           <Link key={b.id} to={`/boutique/${b.id}`} className="flex-shrink-0 w-24 bg-white rounded-xl p-2.5 text-center shadow-sm">
             <div className="w-11 h-11 rounded-full bg-[#F5720C] text-white font-bold flex items-center justify-center mx-auto mb-1.5">
@@ -148,7 +147,7 @@ export default function Accueil() {
         ))}
       </div>
 
-      <div className="mx-3 mt-4 border-[1.5px] border-dashed border-[#F5720C] rounded-xl p-3.5 flex items-center gap-2.5 bg-[#FFF8F2]">
+      <div className="mx-3 lg:mx-8 mt-4 border-[1.5px] border-dashed border-[#F5720C] rounded-xl p-3.5 flex items-center gap-2.5 bg-[#FFF8F2] max-w-3xl">
         <div className="flex-1">
           <p className="text-xs font-extrabold text-[#1B1B1B]">Vendez sur TonaBk</p>
           <p className="text-[10px] text-gray-400">Créez votre boutique gratuitement</p>

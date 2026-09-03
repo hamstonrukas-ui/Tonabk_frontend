@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Plus, Trash2, ArrowLeft, Bell, MessageCircle, Copy, Check } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Bell, MessageCircle, Copy, Check, NotebookPen } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 import { API_URL, SITE_URL } from "../../lib/api";
 
@@ -22,6 +22,11 @@ export default function GererBoutique() {
   const [photo, setPhoto] = useState(null);
   const [envoiEnCours, setEnvoiEnCours] = useState(false);
   const [erreur, setErreur] = useState("");
+
+  // --- Journal privé ---
+  const [noteTexte, setNoteTexte] = useState("");
+  const [notes, setNotes] = useState([]);
+  const [envoiNoteEnCours, setEnvoiNoteEnCours] = useState(false);
 
   // --- Nouveautés / abonnés ---
   const [annonce, setAnnonce] = useState("");
@@ -60,6 +65,9 @@ export default function GererBoutique() {
         const resP = await fetch(`${API_URL}/api/produits?boutique_id=${b.id}`);
         if (resP.ok) setProduits(await resP.json());
 
+        const resN = await fetch(`${API_URL}/api/boutiques/${b.id}/notes`, { headers });
+        if (resN.ok) setNotes(await resN.json());
+
         const resA = await fetch(`${API_URL}/api/boutiques/${b.id}/annonces`);
         if (resA.ok) {
           const dataA = await resA.json();
@@ -97,6 +105,35 @@ export default function GererBoutique() {
     } else {
       copierLien();
     }
+  };
+
+  const ajouterNote = async (e) => {
+    e.preventDefault();
+    if (!noteTexte.trim()) return;
+    setEnvoiNoteEnCours(true);
+
+    const headers = await authHeaders();
+    if (!headers) { setEnvoiNoteEnCours(false); return; }
+
+    const res = await fetch(`${API_URL}/api/boutiques/${boutique.id}/notes`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ texte: noteTexte.trim() }),
+    });
+
+    if (res.ok) {
+      const nouvelle = await res.json();
+      setNotes([nouvelle, ...notes]);
+      setNoteTexte("");
+    }
+    setEnvoiNoteEnCours(false);
+  };
+
+  const supprimerNote = async (noteId) => {
+    const headers = await authHeaders();
+    if (!headers) return;
+    await fetch(`${API_URL}/api/boutiques/notes/${noteId}`, { method: "DELETE", headers });
+    setNotes(notes.filter((n) => n.id !== noteId));
   };
 
   const ajouterProduit = async (e) => {
@@ -254,6 +291,50 @@ export default function GererBoutique() {
           Votre boutique est en attente de validation par l'équipe. Vous pouvez déjà ajouter vos produits.
         </div>
       )}
+
+      {/* Journal privé — juste pour vous, note ce que vous voulez sur votre activité */}
+      <div className="bg-[#1B1B1B] rounded-xl p-3.5 mb-3">
+        <div className="flex items-center gap-2 mb-2">
+          <NotebookPen size={16} className="text-[#F5720C]" />
+          <p className="text-sm font-bold text-white">Mon journal</p>
+        </div>
+        <p className="text-[11px] text-gray-400 mb-2">
+          Notez ce que vous voulez : ventes du jour, dettes, rappels... Visible par vous seul.
+        </p>
+        <form onSubmit={ajouterNote} className="flex gap-2 mb-2">
+          <input
+            value={noteTexte}
+            onChange={(e) => setNoteTexte(e.target.value)}
+            placeholder="Ex: Vendu 5 chemises, Jean me doit 20$..."
+            className="flex-1 bg-white/10 text-white placeholder-gray-500 rounded-md px-3 py-2 text-sm outline-none"
+          />
+          <button
+            type="submit"
+            disabled={envoiNoteEnCours}
+            className="bg-[#F5720C] text-white text-xs font-semibold px-3 rounded-md"
+          >
+            {envoiNoteEnCours ? "..." : "Noter"}
+          </button>
+        </form>
+        <div className="space-y-1.5 max-h-52 overflow-y-auto">
+          {notes.map((n) => (
+            <div key={n.id} className="flex items-start justify-between bg-white/5 rounded-md px-3 py-2">
+              <div>
+                <p className="text-xs text-white">{n.texte}</p>
+                <p className="text-[10px] text-gray-500 mt-0.5">
+                  {new Date(n.created_at).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                </p>
+              </div>
+              <button onClick={() => supprimerNote(n.id)} className="text-gray-500 ml-2 flex-shrink-0">
+                <Trash2 size={12} />
+              </button>
+            </div>
+          ))}
+          {notes.length === 0 && (
+            <p className="text-center text-[11px] text-gray-500 py-3">Aucune note pour l'instant</p>
+          )}
+        </div>
+      </div>
 
       {/* Lien de la boutique — à partager */}
       <div className="bg-white rounded-xl p-3 mb-3">

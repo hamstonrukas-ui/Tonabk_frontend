@@ -26,10 +26,10 @@ export default function Accueil() {
   const filtered = quartierFiltre === "Tous" ? maisons : maisons.filter((m) => m.quartier === quartierFiltre);
 
   return (
-    <div className="p-3">
+    <div className="p-3 lg:p-8">
       <Link
         to="/location/publier"
-        className="flex items-center gap-3 bg-[#F5720C] rounded-xl p-3.5 mb-3"
+        className="flex items-center gap-3 bg-[#F5720C] rounded-xl p-3.5 mb-3 max-w-3xl"
       >
         <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
           <Plus size={18} className="text-white" />
@@ -54,7 +54,7 @@ export default function Accueil() {
         ))}
       </div>
 
-      <div className="space-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {filtered.map((m) => (
           <Link key={m.id} to={`/location/maison/${m.id}`} className="block bg-white rounded-xl overflow-hidden shadow-sm active:scale-[0.98] transition-transform">
             <div className="relative h-44 bg-[#F6F6F6]">
@@ -107,7 +107,7 @@ export default function Accueil() {
         ))}
 
         {filtered.length === 0 && (
-          <div className="text-center py-10">
+          <div className="col-span-full text-center py-10">
             <p className="text-3xl mb-2">🏠</p>
             <p className="text-sm text-gray-400">Aucune maison disponible pour l'instant</p>
           </div>

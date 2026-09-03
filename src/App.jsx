@@ -42,7 +42,7 @@ import ReinitialiserMotDePasse from "./pages/Auth/ReinitialiserMotDePasse";
 
 function AppLayout({ children }) {
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-[#F3F3F3] flex flex-col">
+    <div className="min-h-screen bg-[#F3F3F3] flex flex-col max-w-6xl mx-auto">
       <div className="flex-1 pb-20">{children}</div>
       <BarreNavigation />
     </div>
@@ -98,4 +98,5 @@ export default function App() {
       </CartProvider>
     </BrowserRouter>
   );
-}
+            }
+                                                                

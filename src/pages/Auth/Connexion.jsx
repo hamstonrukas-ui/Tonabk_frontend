@@ -8,14 +8,14 @@ export default function Connexion() {
   const redirect = searchParams.get("redirect") || "/";
 
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [surnom, setSurnom] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password: surnom });
 
     setLoading(false);
     if (error) return alert("Email ou mot de passe incorrect");
@@ -33,7 +33,7 @@ export default function Connexion() {
           className="border border-gray-200 rounded-md px-3 py-2.5 text-sm w-full"
         />
         <input
-          type="password" placeholder="Mot de passe" value={password} onChange={(e) => setPassword(e.target.value)} required
+          type="text" placeholder="Votre mot de passe" value={surnom} onChange={(e) => setSurnom(e.target.value)} required
           className="border border-gray-200 rounded-md px-3 py-2.5 text-sm w-full"
         />
         <p className="text-right -mt-1">
@@ -51,5 +51,4 @@ export default function Connexion() {
       </form>
     </div>
   );
-        }
-          
+      }

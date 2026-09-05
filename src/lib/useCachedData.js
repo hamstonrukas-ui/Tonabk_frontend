@@ -37,14 +37,13 @@ export function useCachedData(key, url, options = {}, deps = []) {
   const cache = lireCache(cacheKey);
 
   const [data, setData] = useState(cache?.data ?? null);
-  const [loading, setLoading] = useState(!cache); // pas d'écran de chargement si on a déjà du cache
-  const [revalidating, setRevalidating] = useState(!!cache); // rafraîchissement silencieux en cours
+  const [loading, setLoading] = useState(!cache);
+  const [revalidating, setRevalidating] = useState(!!cache);
   const [erreur, setErreur] = useState(null);
   const optionsRef = useRef(options);
   optionsRef.current = options;
 
   useEffect(() => {
-    // Affiche immédiatement le cache existant pour cette clé (utile si `key` change, ex: autre boutique)
     const c = lireCache(cacheKey);
     if (c) {
       setData(c.data);
@@ -71,7 +70,6 @@ export function useCachedData(key, url, options = {}, deps = []) {
       })
       .catch(() => {
         clearTimeout(timeout);
-        // Le cache déjà affiché reste tel quel — on ne casse pas l'affichage
         if (!c) setErreur("Impossible de charger les données");
       })
       .finally(() => {

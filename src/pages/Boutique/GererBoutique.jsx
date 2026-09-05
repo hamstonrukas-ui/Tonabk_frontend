@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+
+     import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Plus, Trash2, ArrowLeft, Bell, MessageCircle, Copy, Check, NotebookPen } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
@@ -23,19 +24,16 @@ export default function GererBoutique() {
   const [envoiEnCours, setEnvoiEnCours] = useState(false);
   const [erreur, setErreur] = useState("");
 
-  // --- Journal privé ---
   const [noteTexte, setNoteTexte] = useState("");
   const [notes, setNotes] = useState([]);
   const [envoiNoteEnCours, setEnvoiNoteEnCours] = useState(false);
 
-  // --- Nouveautés / abonnés ---
   const [annonce, setAnnonce] = useState("");
   const [envoiAnnonceEnCours, setEnvoiAnnonceEnCours] = useState(false);
   const [annonces, setAnnonces] = useState([]);
   const [nbAbonnes, setNbAbonnes] = useState(0);
   const [abonnesTel, setAbonnesTel] = useState([]);
 
-  // --- Ajout manuel d'un ami ---
   const [afficherFormAmi, setAfficherFormAmi] = useState(false);
   const [nomAmi, setNomAmi] = useState("");
   const [telAmi, setTelAmi] = useState("");
@@ -286,13 +284,6 @@ export default function GererBoutique() {
         <p className="text-sm font-bold text-[#1B1B1B]">{boutique.nom}</p>
       </div>
 
-      {boutique.statut === "en_attente" && (
-        <div className="bg-yellow-50 text-yellow-700 text-xs rounded-lg p-3 mb-3">
-          Votre boutique est en attente de validation par l'équipe. Vous pouvez déjà ajouter vos produits.
-        </div>
-      )}
-
-      {/* Journal privé — juste pour vous, note ce que vous voulez sur votre activité */}
       <div className="bg-[#1B1B1B] rounded-xl p-3.5 mb-3">
         <div className="flex items-center gap-2 mb-2">
           <NotebookPen size={16} className="text-[#F5720C]" />
@@ -336,7 +327,6 @@ export default function GererBoutique() {
         </div>
       </div>
 
-      {/* Lien de la boutique — à partager */}
       <div className="bg-white rounded-xl p-3 mb-3">
         <p className="text-xs font-semibold text-gray-500 mb-2">Lien de ma boutique</p>
         <div className="flex items-center justify-between rounded-md px-3 py-2 mb-2 bg-[#FFF1E4]">
@@ -414,7 +404,6 @@ export default function GererBoutique() {
         )}
       </div>
 
-      {/* --- Nouveautés --- */}
       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Nouveautés</p>
 
       <div className="bg-white rounded-xl p-3 mb-3">
@@ -434,7 +423,6 @@ export default function GererBoutique() {
         </button>
       </div>
 
-      {/* --- Ajouter un ami manuellement --- */}
       <div className="bg-white rounded-xl p-3 mb-3">
         <div className="flex items-center justify-between">
           <p className="text-xs font-semibold text-gray-500">Ajouter un ami par son numéro</p>
@@ -492,3 +480,4 @@ export default function GererBoutique() {
     </div>
   );
 }
+                     

@@ -38,7 +38,7 @@ export default function Accueil() {
   return (
     <div className="min-h-screen bg-[#F3F3F3] pb-4">
       <div className="bg-gradient-to-b from-[#F5720C] to-[#C9560A] px-4 lg:px-8 pt-3 pb-4">
-        <div className="flex items-center justify-between mb-2.5 max-w-3xl mx-auto lg:mx-0">
+        <div className="flex items-center justify-between mb-1 max-w-3xl mx-auto lg:mx-0">
           <span className="text-xl font-extrabold text-white">
             Tona<span className="bg-white text-[#1B1B1B] px-1 rounded">Bk</span>
           </span>
@@ -46,6 +46,7 @@ export default function Accueil() {
             <ShoppingBag size={16} className="text-white" />
           </Link>
         </div>
+        <p className="text-[11px] text-white/80 mb-2.5">Grand marché de Bukavu</p>
         <Link to="/boutique/recherche" className="max-w-3xl bg-white rounded-lg flex items-center gap-2 px-3 py-2.5 text-xs text-gray-400">
           <Search size={15} /> Chaussures, smartphone, riz...
         </Link>
@@ -158,4 +159,5 @@ export default function Accueil() {
       </div>
     </div>
   );
-}
+  }
+    

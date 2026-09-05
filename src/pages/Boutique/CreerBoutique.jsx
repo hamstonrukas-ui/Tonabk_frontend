@@ -17,7 +17,6 @@ export default function CreerBoutique() {
     fetch(`${API_URL}/api/categories`).then((r) => r.json()).then(setCategories).catch(() => {});
   }, []);
 
-  // Vérifie dès l'arrivée : connecté ? boutique déjà existante ?
   useEffect(() => {
     async function verifier() {
       const { data: { session } } = await supabase.auth.getSession();
@@ -66,8 +65,7 @@ export default function CreerBoutique() {
 
     setLoading(false);
     if (res.ok) {
-      alert("Boutique créée ! Elle sera visible après validation par l'équipe.");
-      navigate("/boutique");
+      navigate("/boutique/gerer");
     } else {
       const data = await res.json();
       setErreur(data.error || "Erreur lors de la création");
@@ -78,7 +76,6 @@ export default function CreerBoutique() {
     return <p className="text-center text-sm text-gray-400 py-10">Vérification...</p>;
   }
 
-  // --- Pas connecté : montrer le message AVANT le formulaire, pas après l'avoir rempli ---
   if (!connecte) {
     return (
       <div className="p-3">
@@ -107,7 +104,6 @@ export default function CreerBoutique() {
     );
   }
 
-  // --- Connecté, sans boutique : formulaire habituel ---
   return (
     <div className="p-3">
       <p className="text-sm font-bold text-[#1B1B1B] mb-3">Créer ma boutique</p>
@@ -134,7 +130,7 @@ export default function CreerBoutique() {
           className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full resize-none"
         />
         <p className="text-[11px] text-gray-400">
-          Vous pourrez ajouter jusqu'à 30 photos gratuitement une fois votre boutique validée. Un seul compte ne peut créer qu'une boutique.
+          Vous pourrez ajouter jusqu'à 30 photos gratuitement. Un seul compte ne peut créer qu'une boutique.
         </p>
         <button type="submit" disabled={loading} className="w-full bg-[#F5720C] text-white text-sm font-semibold rounded-md py-2.5">
           {loading ? "Création..." : "Créer ma boutique"}
@@ -142,4 +138,5 @@ export default function CreerBoutique() {
       </form>
     </div>
   );
-}
+        }
+        

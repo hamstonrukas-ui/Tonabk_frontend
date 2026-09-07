@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Share2, Check, ShoppingBag } from "lucide-react";
+import { useParams, useLocation, Link } from "react-router-dom";
+import { ArrowLeft, Share2, Check, ShoppingBag, MessageCircle } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { API_URL, SITE_URL } from "../../lib/api";
 import { useCachedData } from "../../lib/useCachedData";
@@ -9,6 +9,8 @@ const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
 
 export default function DetailProduit() {
   const { id } = useParams();
+  const location = useLocation();
+  const depuisAccueil = !!location.state?.depuisAccueil;
   const { data: tousLesProduits } = useCachedData("produits_tous", `${API_URL}/api/produits`);
   const produit = (tousLesProduits || []).find((p) => p.id === id);
   const [ajoute, setAjoute] = useState(false);
@@ -34,6 +36,16 @@ export default function DetailProduit() {
   const handleAjouter = () => {
     addToCart(produit.id);
     setAjoute(true);
+  };
+
+  const handleAcheter = () => {
+    const numero = produit.boutiques?.telephone?.replace(/\D/g, "");
+    const msg = `Bonjour, je suis intéressé(e) par "${produit.nom}" (${fmt(produit.prix, produit.devise)}) vu sur TonaBk.`;
+    if (numero) {
+      window.open(`https://wa.me/${numero}?text=${encodeURIComponent(msg)}`, "_blank");
+    } else {
+      alert("Cette boutique n'a pas encore de numéro WhatsApp renseigné.");
+    }
   };
 
   return (
@@ -64,7 +76,19 @@ export default function DetailProduit() {
 
         {produit.description && <p className="text-sm text-gray-600 mt-3">{produit.description}</p>}
 
-        {!ajoute ? (
+        {depuisAccueil ? (
+          <button
+            onClick={handleAcheter}
+            disabled={produit.stock === 0}
+            className="w-full mt-4 flex items-center justify-center gap-2 bg-[#25D366] text-white text-sm font-semibold rounded-lg py-3 disabled:bg-gray-300"
+          >
+            {produit.stock === 0 ? "Rupture de stock" : (
+              <>
+                <MessageCircle size={16} /> Acheter sur WhatsApp
+              </>
+            )}
+          </button>
+        ) : !ajoute ? (
           <button
             onClick={handleAjouter}
             disabled={produit.stock === 0}
@@ -88,4 +112,4 @@ export default function DetailProduit() {
       </div>
     </div>
   );
-}
+        }

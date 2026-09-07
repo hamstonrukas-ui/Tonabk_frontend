@@ -1,7 +1,7 @@
-
-     import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Plus, Trash2, ArrowLeft, Bell, MessageCircle, Copy, Check, NotebookPen } from "lucide-react";
+import Calculatrice from "../../components/Calculatrice";
 import { supabase } from "../../lib/supabaseClient";
 import { API_URL, SITE_URL } from "../../lib/api";
 
@@ -327,6 +327,8 @@ export default function GererBoutique() {
         </div>
       </div>
 
+      <Calculatrice />
+
       <div className="bg-white rounded-xl p-3 mb-3">
         <p className="text-xs font-semibold text-gray-500 mb-2">Lien de ma boutique</p>
         <div className="flex items-center justify-between rounded-md px-3 py-2 mb-2 bg-[#FFF1E4]">
@@ -480,4 +482,3 @@ export default function GererBoutique() {
     </div>
   );
 }
-                     

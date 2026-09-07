@@ -31,8 +31,12 @@ export default function ListeBoutiquesCategorie() {
       <div className="space-y-2.5">
         {boutiques.map((b) => (
           <Link key={b.id} to={`/boutique/${b.id}`} className="bg-white rounded-xl p-3 flex items-center gap-3 shadow-sm">
-            <div className="w-12 h-12 rounded-full bg-[#F5720C] text-white font-bold flex items-center justify-center flex-shrink-0">
-              {b.nom.slice(0, 2).toUpperCase()}
+            <div className="w-12 h-12 rounded-full bg-[#F5720C] text-white font-bold flex items-center justify-center flex-shrink-0 overflow-hidden">
+              {b.logo_url ? (
+                <img src={b.logo_url} alt={b.nom} className="w-full h-full object-cover" />
+              ) : (
+                b.nom.slice(0, 2).toUpperCase()
+              )}
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-1">
@@ -53,4 +57,4 @@ export default function ListeBoutiquesCategorie() {
       </div>
     </div>
   );
-}
+                }

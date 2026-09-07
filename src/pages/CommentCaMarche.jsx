@@ -3,15 +3,19 @@ import { ArrowLeft, Building2, Store, Search } from "lucide-react";
 
 export default function CommentCaMarche() {
   return (
-    <div className="p-3">
-      <div className="flex items-center gap-2 mb-4">
-        <Link to="/" className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
-          <ArrowLeft size={16} />
+    <div>
+      <div className="bg-[#F5720C] px-4 pt-4 pb-6">
+        <Link to="/" className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center mb-3">
+          <ArrowLeft size={16} className="text-white" />
         </Link>
-        <p className="text-sm font-bold text-[#1B1B1B]">Comment fonctionne TonaBk</p>
+        <h1 className="text-xl font-extrabold text-white mb-1.5">Comment fonctionne TonaBk</h1>
+        <p className="text-[12.5px] text-white/80 leading-relaxed">
+          Trois façons simples d'utiliser TonaBk : louer une maison, acheter dans une boutique, ou
+          demander ce que vous ne trouvez pas.
+        </p>
       </div>
 
-      <div className="space-y-3">
+      <div className="p-3 space-y-3">
         <div className="bg-white rounded-xl p-4">
           <div className="flex items-center gap-2 mb-1.5">
             <Building2 size={16} className="text-[#F5720C]" />
@@ -50,4 +54,4 @@ export default function CommentCaMarche() {
       </div>
     </div>
   );
-      }
+}

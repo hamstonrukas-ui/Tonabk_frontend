@@ -7,6 +7,7 @@ export default function CreerBoutique() {
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [form, setForm] = useState({ nom: "", categorie_id: "", description: "", telephone: "", quartier: "" });
+  const [logo, setLogo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [erreur, setErreur] = useState("");
 
@@ -63,10 +64,38 @@ export default function CreerBoutique() {
       body: JSON.stringify(form),
     });
 
-    setLoading(false);
     if (res.ok) {
+      const nouvelleBoutique = await res.json();
+
+      if (logo) {
+        try {
+          const formData = new FormData();
+          formData.append("photo", logo);
+          formData.append("boutiqueId", nouvelleBoutique.id);
+
+          const resUpload = await fetch(`${API_URL}/api/upload/photo-boutique-logo`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${session.access_token}` },
+            body: formData,
+          });
+
+          if (resUpload.ok) {
+            const { url } = await resUpload.json();
+            await fetch(`${API_URL}/api/boutiques/${nouvelleBoutique.id}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+              body: JSON.stringify({ ...form, logo_url: url }),
+            });
+          }
+        } catch {
+          // La boutique est créée même si la photo échoue ; on pourra l'ajouter plus tard depuis l'espace boutique
+        }
+      }
+
+      setLoading(false);
       navigate("/boutique/gerer");
     } else {
+      setLoading(false);
       const data = await res.json();
       setErreur(data.error || "Erreur lors de la création");
     }
@@ -129,6 +158,10 @@ export default function CreerBoutique() {
           name="description" placeholder="Décrivez votre boutique" onChange={handleChange} rows={3}
           className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full resize-none"
         />
+        <div>
+          <label className="text-[11px] text-gray-500 mb-1 block">Photo de profil de la boutique (optionnel)</label>
+          <input type="file" accept="image/*" onChange={(e) => setLogo(e.target.files[0])} className="text-xs w-full" />
+        </div>
         <p className="text-[11px] text-gray-400">
           Vous pourrez ajouter jusqu'à 30 photos gratuitement. Un seul compte ne peut créer qu'une boutique.
         </p>
@@ -139,4 +172,5 @@ export default function CreerBoutique() {
     </div>
   );
         }
-        
+
+            

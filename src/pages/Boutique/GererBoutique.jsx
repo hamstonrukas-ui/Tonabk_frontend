@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Plus, Trash2, ArrowLeft, Bell, MessageCircle, Copy, Check, NotebookPen } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Bell, MessageCircle, Copy, Check, NotebookPen, ChevronDown, ChevronUp, Camera } from "lucide-react";
 import Calculatrice from "../../components/Calculatrice";
 import { supabase } from "../../lib/supabaseClient";
 import { API_URL, SITE_URL } from "../../lib/api";
@@ -37,6 +37,14 @@ export default function GererBoutique() {
   const [afficherFormAmi, setAfficherFormAmi] = useState(false);
   const [nomAmi, setNomAmi] = useState("");
   const [telAmi, setTelAmi] = useState("");
+  const [erreurAmi, setErreurAmi] = useState("");
+  const [envoiAmiEnCours, setEnvoiAmiEnCours] = useState(false);
+
+  const [voirAidePublier, setVoirAidePublier] = useState(false);
+  const [voirAideLien, setVoirAideLien] = useState(false);
+
+  const [logoEnvoiEnCours, setLogoEnvoiEnCours] = useState(false);
+  const [logoErreur, setLogoErreur] = useState("");
 
   async function authHeaders(json = true) {
     const { data: { session } } = await supabase.auth.getSession();
@@ -49,7 +57,63 @@ export default function GererBoutique() {
       : { Authorization: `Bearer ${session.access_token}` };
   }
 
-  async function charger() {
+  async function changerLogo(e) {
+    const fichier = e.target.files[0];
+    if (!fichier) return;
+    setLogoErreur("");
+    setLogoEnvoiEnCours(true);
+
+    try {
+      const headersUpload = await authHeaders(false);
+      if (!headersUpload) { setLogoEnvoiEnCours(false); return; }
+
+      const formData = new FormData();
+      formData.append("photo", fichier);
+      formData.append("boutiqueId", boutique.id);
+
+      const resUpload = await fetch(`${API_URL}/api/upload/photo-boutique-logo`, {
+        method: "POST",
+        headers: headersUpload,
+        body: formData,
+      });
+
+      if (!resUpload.ok) {
+        const data = await resUpload.json().catch(() => ({}));
+        setLogoErreur(data.message || data.error || "Échec de l'upload de la photo");
+        setLogoEnvoiEnCours(false);
+        return;
+      }
+
+      const { url } = await resUpload.json();
+
+      const headersJson = await authHeaders();
+      if (!headersJson) { setLogoEnvoiEnCours(false); return; }
+
+      const resMaj = await fetch(`${API_URL}/api/boutiques/${boutique.id}`, {
+        method: "PUT",
+        headers: headersJson,
+        body: JSON.stringify({
+          nom: boutique.nom,
+          description: boutique.description,
+          telephone: boutique.telephone,
+          quartier: boutique.quartier,
+          logo_url: url,
+        }),
+      });
+
+      if (resMaj.ok) {
+        const majBoutique = await resMaj.json();
+        setBoutique(majBoutique);
+      } else {
+        setLogoErreur("La photo a été envoyée mais n'a pas pu être enregistrée. Réessayez.");
+      }
+    } catch (err) {
+      setLogoErreur("Une erreur est survenue. Vérifiez votre connexion et réessayez.");
+    }
+    setLogoEnvoiEnCours(false);
+  }
+
+
     setChargement(true);
     const headers = await authHeaders();
     if (!headers) return;
@@ -233,21 +297,39 @@ export default function GererBoutique() {
 
   const ajouterAmi = async (e) => {
     e.preventDefault();
+    setErreurAmi("");
     if (!telAmi.trim()) return;
-    const headers = await authHeaders();
-    if (!headers) return;
+    setEnvoiAmiEnCours(true);
 
-    const res = await fetch(`${API_URL}/api/boutiques/${boutique.id}/contacts`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ nom: nomAmi.trim(), telephone: telAmi.trim() }),
-    });
+    try {
+      const headers = await authHeaders();
+      if (!headers) { setEnvoiAmiEnCours(false); return; }
 
-    if (res.ok) {
-      const nouveau = await res.json();
-      setAbonnesTel([...abonnesTel, { ...nouveau, source: "manuel" }]);
+      const res = await fetch(`${API_URL}/api/boutiques/${boutique.id}/contacts`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ nom: nomAmi.trim(), telephone: telAmi.trim() }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setErreurAmi(data.error || "Échec de l'ajout du client. Vérifiez le numéro et réessayez.");
+        setEnvoiAmiEnCours(false);
+        return;
+      }
+
       setNomAmi(""); setTelAmi(""); setAfficherFormAmi(false);
+
+      // On recharge la liste depuis le serveur pour être sûr que le nouveau client apparaît bien
+      const headersAb = await authHeaders();
+      if (headersAb) {
+        const resAb = await fetch(`${API_URL}/api/boutiques/${boutique.id}/abonnes`, { headers: headersAb });
+        if (resAb.ok) setAbonnesTel(await resAb.json());
+      }
+    } catch (err) {
+      setErreurAmi("Une erreur est survenue. Vérifiez votre connexion et réessayez.");
     }
+    setEnvoiAmiEnCours(false);
   };
 
   const retirerAmi = async (contactId) => {
@@ -282,6 +364,29 @@ export default function GererBoutique() {
           <ArrowLeft size={16} />
         </Link>
         <p className="text-sm font-bold text-[#1B1B1B]">{boutique.nom}</p>
+      </div>
+
+      <div className="bg-white rounded-xl p-3.5 mb-3 flex items-center gap-3">
+        <div className="relative flex-shrink-0">
+          {boutique.logo_url ? (
+            <img src={boutique.logo_url} alt={boutique.nom} className="w-16 h-16 rounded-full object-cover" />
+          ) : (
+            <div className="w-16 h-16 rounded-full bg-[#F5720C] text-white font-bold text-xl flex items-center justify-center">
+              {boutique.nom.slice(0, 2).toUpperCase()}
+            </div>
+          )}
+          <label className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[#1B1B1B] flex items-center justify-center cursor-pointer">
+            <Camera size={12} className="text-white" />
+            <input type="file" accept="image/*" onChange={changerLogo} className="hidden" />
+          </label>
+        </div>
+        <div className="flex-1">
+          <p className="text-xs font-semibold text-[#1B1B1B]">Photo de profil de la boutique</p>
+          <p className="text-[11px] text-gray-400 mt-0.5">
+            {logoEnvoiEnCours ? "Envoi en cours..." : "Elle apparaît partout où votre boutique est affichée sur TonaBk."}
+          </p>
+          {logoErreur && <p className="text-[11px] text-red-500 mt-1">{logoErreur}</p>}
+        </div>
       </div>
 
       <div className="bg-[#1B1B1B] rounded-xl p-3.5 mb-3">
@@ -330,7 +435,24 @@ export default function GererBoutique() {
       <Calculatrice />
 
       <div className="bg-white rounded-xl p-3 mb-3">
-        <p className="text-xs font-semibold text-gray-500 mb-2">Lien de ma boutique</p>
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-xs font-semibold text-gray-500">Lien de ma boutique</p>
+          <button
+            onClick={() => setVoirAideLien(!voirAideLien)}
+            className="flex items-center gap-1 text-[11px] font-semibold text-[#F5720C]"
+          >
+            Pourquoi ce lien ? {voirAideLien ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+          </button>
+        </div>
+
+        {voirAideLien && (
+          <div className="bg-[#FFF8F2] border border-[#FFD3AC] rounded-xl p-3 mb-2 text-[11.5px] text-gray-600 leading-relaxed">
+            C'est l'adresse unique de votre boutique sur TonaBk. Partagez-la sur WhatsApp, dans vos statuts,
+            sur Facebook ou Instagram : toute personne qui clique dessus arrive directement sur votre catalogue,
+            même sans passer par la page d'accueil. Plus vous le partagez, plus vous avez de visiteurs et de ventes.
+          </div>
+        )}
+
         <div className="flex items-center justify-between rounded-md px-3 py-2 mb-2 bg-[#FFF1E4]">
           <span className="text-xs font-mono text-[#C9560A] truncate mr-2">{lienBoutique}</span>
           <button onClick={copierLien} className="flex-shrink-0 flex items-center gap-1 text-xs font-medium text-[#C9560A]">
@@ -406,7 +528,26 @@ export default function GererBoutique() {
         )}
       </div>
 
-      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Nouveautés</p>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Nouveautés</p>
+        <button
+          onClick={() => setVoirAidePublier(!voirAidePublier)}
+          className="flex items-center gap-1 text-[11px] font-semibold text-[#F5720C]"
+        >
+          Comment ça marche ? {voirAidePublier ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+        </button>
+      </div>
+
+      {voirAidePublier && (
+        <div className="bg-[#FFF8F2] border border-[#FFD3AC] rounded-xl p-3 mb-3 text-[11.5px] text-gray-600 leading-relaxed">
+          Une annonce sert à prévenir vos clients d'une nouveauté : nouvel arrivage, promotion, réouverture...
+          <br /><br />
+          <b>Comment procéder :</b>
+          <br />1. Écrivez votre message dans la zone de texte ci-dessous.
+          <br />2. Cliquez sur "Publier l'annonce" — elle est enregistrée et visible dans l'historique plus bas.
+          <br />3. Faites défiler jusqu'à la liste de vos clients : un clic sur un nom envoie l'annonce directement à ce client sur WhatsApp.
+        </div>
+      )}
 
       <div className="bg-white rounded-xl p-3 mb-3">
         <textarea
@@ -427,19 +568,23 @@ export default function GererBoutique() {
 
       <div className="bg-white rounded-xl p-3 mb-3">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold text-gray-500">Ajouter un ami par son numéro</p>
-          <button onClick={() => setAfficherFormAmi(!afficherFormAmi)} className="text-xs font-semibold text-[#F5720C]">
+          <p className="text-xs font-semibold text-gray-500">Ajouter un client par son numéro</p>
+          <button
+            onClick={() => { setAfficherFormAmi(!afficherFormAmi); setErreurAmi(""); }}
+            className="text-xs font-semibold text-[#F5720C]"
+          >
             {afficherFormAmi ? "Annuler" : "+ Ajouter"}
           </button>
         </div>
         {afficherFormAmi && (
           <form onSubmit={ajouterAmi} className="mt-2 space-y-2">
+            {erreurAmi && <p className="text-xs text-red-500">{erreurAmi}</p>}
             <input value={nomAmi} onChange={(e) => setNomAmi(e.target.value)} placeholder="Nom (optionnel)"
               className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full" />
             <input value={telAmi} onChange={(e) => setTelAmi(e.target.value)} type="tel" placeholder="Numéro WhatsApp" required
               className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full" />
-            <button type="submit" className="w-full bg-[#1B1B1B] text-white text-xs font-semibold rounded-md py-2">
-              Ajouter cet ami
+            <button type="submit" disabled={envoiAmiEnCours} className="w-full bg-[#1B1B1B] text-white text-xs font-semibold rounded-md py-2">
+              {envoiAmiEnCours ? "Ajout..." : "Ajouter ce client"}
             </button>
           </form>
         )}

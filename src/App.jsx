@@ -6,6 +6,9 @@ import { CartProvider } from "./context/CartContext";
 
 // Accueil
 import Accueil from "./pages/Accueil";
+import APropos from "./pages/APropos";
+import CommentCaMarche from "./pages/CommentCaMarche";
+import Confidentialite from "./pages/Confidentialite";
 
 // Boutique
 import CategoriesBoutique from "./pages/Boutique/CategoriesBoutique";
@@ -59,6 +62,9 @@ export default function App() {
         <Routes>
           {/* Accueil */}
           <Route path="/" element={<AppLayout><Accueil /></AppLayout>} />
+          <Route path="/a-propos" element={<AppLayout><APropos /></AppLayout>} />
+          <Route path="/comment-ca-marche" element={<AppLayout><CommentCaMarche /></AppLayout>} />
+          <Route path="/confidentialite" element={<AppLayout><Confidentialite /></AppLayout>} />
 
           {/* Boutique — découverte par catégorie */}
           <Route path="/boutique" element={<AppLayout><CategoriesBoutique /></AppLayout>} />
@@ -100,5 +106,4 @@ export default function App() {
       </CartProvider>
     </BrowserRouter>
   );
-            }
-          
+}

@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, ShoppingBag, BadgeCheck, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, ShoppingBag, BadgeCheck, ChevronLeft, ChevronRight, Store } from "lucide-react";
 import { useCachedData } from "../lib/useCachedData";
+import { supabase } from "../lib/supabaseClient";
 import { API_URL } from "../lib/api";
 
 const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
@@ -9,6 +10,23 @@ const PRODUITS_PAR_PAGE = 30;
 
 export default function Accueil() {
   const [page, setPage] = useState(1);
+  const [maBoutique, setMaBoutique] = useState(null);
+
+  useEffect(() => {
+    async function verifierMaBoutique() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const res = await fetch(`${API_URL}/api/boutiques/mine`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (res.ok) {
+        const mesBoutiques = await res.json();
+        setMaBoutique(mesBoutiques[0] || null);
+      }
+    }
+    verifierMaBoutique();
+  }, []);
 
   const { data: reponseProduits } = useCachedData(
     `produits_accueil_page_${page}`,
@@ -42,9 +60,20 @@ export default function Accueil() {
           <span className="text-xl font-extrabold text-white">
             Tona<span className="bg-white text-[#1B1B1B] px-1 rounded">Bk</span>
           </span>
-          <Link to="/boutique/panier" className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-            <ShoppingBag size={16} className="text-white" />
-          </Link>
+          <div className="flex items-center gap-2">
+            {maBoutique && (
+              <Link
+                to="/boutique/gerer"
+                className="flex items-center gap-1 bg-white/20 rounded-full pl-2 pr-2.5 py-1.5"
+              >
+                <Store size={13} className="text-white" />
+                <span className="text-[10px] font-bold text-white whitespace-nowrap">Entrer dans boutique</span>
+              </Link>
+            )}
+            <Link to="/boutique/panier" className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+              <ShoppingBag size={16} className="text-white" />
+            </Link>
+          </div>
         </div>
         <p className="text-[16px] text-white/80 mb-2.5">Grand marché de Bukavu</p>
         <Link to="/boutique/recherche" className="max-w-3xl bg-white rounded-lg flex items-center gap-2 px-3 py-2.5 text-xs text-gray-400">
@@ -67,7 +96,12 @@ export default function Accueil() {
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 px-3 lg:px-8">
         {produits.map((p) => (
-          <Link key={p.id} to={`/boutique/produit/${p.id}`} className="bg-white rounded-xl overflow-hidden shadow-sm relative">
+          <Link
+            key={p.id}
+            to={`/boutique/produit/${p.id}`}
+            state={{ depuisAccueil: true }}
+            className="bg-white rounded-xl overflow-hidden shadow-sm relative"
+          >
             {p.sponsorise && (
               <span className="absolute top-1.5 left-1.5 z-10 bg-[#F5720C] text-white text-[8px] font-bold px-1.5 py-0.5 rounded">
                 Sponsorisé
@@ -129,13 +163,20 @@ export default function Accueil() {
 
       <div className="flex justify-between items-baseline px-3 lg:px-8 pt-4 pb-2">
         <h2 className="text-sm font-extrabold text-[#1B1B1B]">Boutiques populaires</h2>
+        <Link to="/boutique/populaires" className="text-[10px] font-bold text-[#F5720C] flex items-center gap-0.5">
+          Voir tout <ChevronRight size={12} />
+        </Link>
       </div>
       <div className="flex gap-2.5 px-3 lg:px-8 overflow-x-auto">
-        {(boutiques || []).map((b) => (
+        {(boutiques || []).slice(0, 10).map((b) => (
           <Link key={b.id} to={`/boutique/${b.id}`} className="flex-shrink-0 w-24 bg-white rounded-xl p-2.5 text-center shadow-sm">
-            <div className="w-11 h-11 rounded-full bg-[#F5720C] text-white font-bold flex items-center justify-center mx-auto mb-1.5">
-              {b.nom.slice(0, 2).toUpperCase()}
-            </div>
+            {b.logo_url ? (
+              <img src={b.logo_url} alt={b.nom} className="w-11 h-11 rounded-full object-cover mx-auto mb-1.5" />
+            ) : (
+              <div className="w-11 h-11 rounded-full bg-[#F5720C] text-white font-bold flex items-center justify-center mx-auto mb-1.5">
+                {b.nom.slice(0, 2).toUpperCase()}
+              </div>
+            )}
             <p className="text-[10.5px] font-bold">{b.nom}</p>
             {b.certifiee && (
               <div className="flex items-center justify-center gap-0.5 mt-0.5">

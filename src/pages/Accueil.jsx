@@ -4,6 +4,7 @@ import { Search, ShoppingBag, BadgeCheck, ChevronLeft, ChevronRight, Store } fro
 import { useCachedData } from "../lib/useCachedData";
 import { supabase } from "../lib/supabaseClient";
 import { API_URL } from "../lib/api";
+import Footer from "../components/Footer";
 
 const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
 const PRODUITS_PAR_PAGE = 30;
@@ -198,6 +199,8 @@ export default function Accueil() {
           Créer
         </Link>
       </div>
+
+      <Footer />
     </div>
   );
   }

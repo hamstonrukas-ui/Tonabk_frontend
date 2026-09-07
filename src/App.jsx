@@ -21,6 +21,7 @@ import CreerBoutique from "./pages/Boutique/CreerBoutique";
 import GererBoutique from "./pages/Boutique/GererBoutique";
 import DetailProduit from "./pages/Boutique/DetailProduit";
 import RechercheBoutique from "./pages/Boutique/Recherche";
+import Populaires from "./pages/Boutique/Populaires";
 
 // Location
 import LocationAccueil from "./pages/Location/Accueil";
@@ -65,6 +66,7 @@ export default function App() {
           <Route path="/boutique/creer" element={<AppLayout><CreerBoutique /></AppLayout>} />
           <Route path="/boutique/gerer" element={<AppLayout><GererBoutique /></AppLayout>} />
           <Route path="/boutique/recherche" element={<AppLayout><RechercheBoutique /></AppLayout>} />
+          <Route path="/boutique/populaires" element={<AppLayout><Populaires /></AppLayout>} />
           <Route path="/boutique/produit/:id" element={<AppLayout><DetailProduit /></AppLayout>} />
 
           {/* Boutique — mini-site d'une boutique précise */}
@@ -98,4 +100,5 @@ export default function App() {
       </CartProvider>
     </BrowserRouter>
   );
-          }
+            }
+          

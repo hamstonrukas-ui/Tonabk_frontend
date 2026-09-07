@@ -27,8 +27,12 @@ export default function DetailBoutique() {
           <ArrowLeft size={18} className="text-white" />
         </Link>
         <div className="flex items-center gap-3">
-          <div className="w-16 h-16 rounded-full bg-white text-[#F5720C] font-extrabold text-xl flex items-center justify-center">
-            {boutique.nom.slice(0, 2).toUpperCase()}
+          <div className="w-16 h-16 rounded-full bg-white text-[#F5720C] font-extrabold text-xl flex items-center justify-center overflow-hidden">
+            {boutique.logo_url ? (
+              <img src={boutique.logo_url} alt={boutique.nom} className="w-full h-full object-cover" />
+            ) : (
+              boutique.nom.slice(0, 2).toUpperCase()
+            )}
           </div>
           <div>
             <div className="flex items-center gap-1.5">
@@ -75,4 +79,4 @@ export default function DetailBoutique() {
       </div>
     </div>
   );
-}
+                                       }

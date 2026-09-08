@@ -40,7 +40,8 @@ export default function DetailBoutique() {
               {boutique.certifiee && <BadgeCheck size={15} className="text-white" />}
             </div>
             <p className="text-white/80 text-xs flex items-center gap-1 mt-0.5">
-              <MapPin size={11} /> {boutique.quartier}
+              <MapPin size={11} />
+              {[boutique.ville, [boutique.quartier, boutique.commune].filter(Boolean).join(", ")].filter(Boolean).join(" — ")}
             </p>
           </div>
         </div>
@@ -79,4 +80,5 @@ export default function DetailBoutique() {
       </div>
     </div>
   );
-                                       }
+              }
+            

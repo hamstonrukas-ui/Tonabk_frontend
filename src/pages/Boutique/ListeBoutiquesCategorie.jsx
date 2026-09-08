@@ -43,9 +43,10 @@ export default function ListeBoutiquesCategorie() {
                 <p className="text-sm font-semibold text-[#1B1B1B]">{b.nom}</p>
                 {b.certifiee && <BadgeCheck size={13} className="text-[#F5720C]" />}
               </div>
-              {b.quartier && (
+              {(b.ville || b.quartier) && (
                 <p className="text-[11px] text-gray-400 flex items-center gap-1 mt-0.5">
-                  <MapPin size={10} /> {b.quartier}
+                  <MapPin size={10} />
+                  {[b.ville, [b.quartier, b.commune].filter(Boolean).join(", ")].filter(Boolean).join(" — ")}
                 </p>
               )}
             </div>
@@ -57,4 +58,5 @@ export default function ListeBoutiquesCategorie() {
       </div>
     </div>
   );
-                }
+          }
+                

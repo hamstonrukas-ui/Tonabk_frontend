@@ -39,9 +39,10 @@ export default function Populaires() {
                 {b.categories?.nom && (
                   <p className="text-[11px] font-semibold text-[#F5720C] mt-0.5">{b.categories.nom}</p>
                 )}
-                {b.quartier && (
+                {(b.ville || b.quartier) && (
                   <p className="text-[11px] text-gray-400 flex items-center gap-1 mt-0.5">
-                    <MapPin size={10} /> {b.quartier}
+                    <MapPin size={10} />
+                    {[b.ville, [b.quartier, b.commune].filter(Boolean).join(", ")].filter(Boolean).join(" — ")}
                   </p>
                 )}
               </div>
@@ -59,4 +60,4 @@ export default function Populaires() {
       </div>
     </div>
   );
-}
+                               }

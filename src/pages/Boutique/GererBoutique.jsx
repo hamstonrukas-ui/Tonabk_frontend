@@ -96,6 +96,8 @@ export default function GererBoutique() {
           nom: boutique.nom,
           description: boutique.description,
           telephone: boutique.telephone,
+          ville: boutique.ville,
+          commune: boutique.commune,
           quartier: boutique.quartier,
           logo_url: url,
         }),
@@ -513,117 +515,4 @@ export default function GererBoutique() {
             </div>
             <div className="p-2.5">
               <p className="text-[11.5px] font-medium leading-tight h-8 overflow-hidden">{p.nom}</p>
-              <p className="text-sm font-extrabold mt-1">{fmt(p.prix, p.devise)}</p>
-              <button
-                onClick={() => supprimerProduit(p.id)}
-                className="mt-2 flex items-center justify-center gap-1 w-full border border-red-200 text-red-500 text-[11px] font-semibold rounded-md py-1.5"
-              >
-                <Trash2 size={12} /> Supprimer
-              </button>
-            </div>
-          </div>
-        ))}
-        {produits.length === 0 && !afficherForm && (
-          <p className="col-span-2 text-center text-sm text-gray-400 py-8">Aucun produit publié pour l'instant</p>
-        )}
-      </div>
-
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Nouveautés</p>
-        <button
-          onClick={() => setVoirAidePublier(!voirAidePublier)}
-          className="flex items-center gap-1 text-[11px] font-semibold text-[#F5720C]"
-        >
-          Comment ça marche ? {voirAidePublier ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-        </button>
-      </div>
-
-      {voirAidePublier && (
-        <div className="bg-[#FFF8F2] border border-[#FFD3AC] rounded-xl p-3 mb-3 text-[11.5px] text-gray-600 leading-relaxed">
-          Une annonce sert à prévenir vos clients d'une nouveauté : nouvel arrivage, promotion, réouverture...
-          <br /><br />
-          <b>Comment procéder :</b>
-          <br />1. Écrivez votre message dans la zone de texte ci-dessous.
-          <br />2. Cliquez sur "Publier l'annonce" — elle est enregistrée et visible dans l'historique plus bas.
-          <br />3. Faites défiler jusqu'à la liste de vos clients : un clic sur un nom envoie l'annonce directement à ce client sur WhatsApp.
-        </div>
-      )}
-
-      <div className="bg-white rounded-xl p-3 mb-3">
-        <textarea
-          value={annonce}
-          onChange={(e) => setAnnonce(e.target.value)}
-          placeholder="Ex: Nouvelle collection disponible cette semaine !"
-          rows={2}
-          className="border border-gray-200 rounded-md px-3 py-2 text-sm resize-none w-full mb-2"
-        />
-        <button
-          onClick={publierAnnonce}
-          disabled={envoiAnnonceEnCours}
-          className="w-full flex items-center justify-center gap-2 text-sm font-medium text-white rounded-md py-2.5 bg-[#F5720C]"
-        >
-          <Bell size={16} /> {envoiAnnonceEnCours ? "Publication..." : "Publier l'annonce"}
-        </button>
-      </div>
-
-      <div className="bg-white rounded-xl p-3 mb-3">
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold text-gray-500">Ajouter un client par son numéro</p>
-          <button
-            onClick={() => { setAfficherFormAmi(!afficherFormAmi); setErreurAmi(""); }}
-            className="text-xs font-semibold text-[#F5720C]"
-          >
-            {afficherFormAmi ? "Annuler" : "+ Ajouter"}
-          </button>
-        </div>
-        {afficherFormAmi && (
-          <form onSubmit={ajouterAmi} className="mt-2 space-y-2">
-            {erreurAmi && <p className="text-xs text-red-500">{erreurAmi}</p>}
-            <input value={nomAmi} onChange={(e) => setNomAmi(e.target.value)} placeholder="Nom (optionnel)"
-              className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full" />
-            <input value={telAmi} onChange={(e) => setTelAmi(e.target.value)} type="tel" placeholder="Numéro WhatsApp" required
-              className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full" />
-            <button type="submit" disabled={envoiAmiEnCours} className="w-full bg-[#1B1B1B] text-white text-xs font-semibold rounded-md py-2">
-              {envoiAmiEnCours ? "Ajout..." : "Ajouter ce client"}
-            </button>
-          </form>
-        )}
-      </div>
-
-      {abonnesTel.length > 0 && (
-        <div className="bg-white rounded-xl p-3 mb-3">
-          <p className="text-[11px] text-gray-400 mb-2">
-            Envoyer la dernière annonce sur WhatsApp — un clic par contact
-          </p>
-          <div className="space-y-1.5">
-            {abonnesTel.map((a) => (
-              <div key={a.id} className="flex items-center gap-1.5">
-                <button
-                  onClick={() => envoyerWhatsApp(a.telephone, annonces[0]?.texte || annonce)}
-                  disabled={!annonces[0] && !annonce.trim()}
-                  className="flex-1 flex items-center justify-center gap-2 text-xs font-medium text-white rounded-md py-2 bg-[#25D366] disabled:opacity-40"
-                >
-                  <MessageCircle size={13} /> {a.nom ? `${a.nom} — ` : ""}{a.telephone}
-                </button>
-                {a.source === "manuel" && (
-                  <button onClick={() => retirerAmi(a.id)} className="text-red-400 px-2">
-                    <Trash2 size={14} />
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="space-y-2">
-        {annonces.map((a) => (
-          <div key={a.id} className="bg-white rounded-xl p-3">
-            <p className="text-sm text-[#1B1B1B]">{a.texte}</p>
-            <p className="text-xs text-gray-400 mt-1">{new Date(a.created_at).toLocaleDateString("fr-FR")}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+              <p className="text-sm font-extrabold mt-1">{fmt(p.prix, p.devise

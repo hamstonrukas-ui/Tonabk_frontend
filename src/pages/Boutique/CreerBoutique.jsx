@@ -6,7 +6,7 @@ import { API_URL } from "../../lib/api";
 export default function CreerBoutique() {
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
-  const [form, setForm] = useState({ nom: "", categorie_id: "", description: "", telephone: "", quartier: "" });
+  const [form, setForm] = useState({ nom: "", categorie_id: "", description: "", telephone: "", ville: "Bukavu", commune: "", quartier: "" });
   const [logo, setLogo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [erreur, setErreur] = useState("");
@@ -146,6 +146,29 @@ export default function CreerBoutique() {
           <option value="">Catégorie</option>
           {categories.map((c) => <option key={c.id} value={c.id}>{c.icone} {c.nom}</option>)}
         </select>
+
+        <div>
+          <label className="text-[11px] text-gray-500 mb-1 block">Ville</label>
+          <div className="flex gap-2">
+            {["Bukavu", "Goma"].map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => setForm({ ...form, ville: v })}
+                className={`flex-1 text-sm font-semibold rounded-md py-2 border ${
+                  form.ville === v ? "bg-[#F5720C] text-white border-[#F5720C]" : "bg-white text-gray-600 border-gray-200"
+                }`}
+              >
+                {v}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <input
+          name="commune" placeholder="Commune" onChange={handleChange}
+          className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full"
+        />
         <input
           name="quartier" placeholder="Quartier" onChange={handleChange}
           className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full"
@@ -172,5 +195,4 @@ export default function CreerBoutique() {
     </div>
   );
         }
-
-            
+        

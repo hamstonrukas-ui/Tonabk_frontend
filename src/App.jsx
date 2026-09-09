@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+          import { BrowserRouter, Routes, Route } from "react-router-dom";
 import BarreNavigation from "./components/BarreNavigation";
 import InstallPrompt from "./components/InstallPrompt";
 import InstallButton from "./components/InstallButton";
@@ -32,6 +32,7 @@ import RechercheLocation from "./pages/Location/Recherche";
 import Fiche from "./pages/Location/Fiche";
 import FavorisLocation from "./pages/Location/Favoris";
 import Publier from "./pages/Location/Publier";
+import GererMesMaisons from "./pages/Location/GererMesMaisons";
 
 // Requête
 import ListeRequetes from "./pages/Requete/ListeRequetes";
@@ -91,6 +92,7 @@ export default function App() {
           <Route path="/location/maison/:id" element={<AppLayout><Fiche /></AppLayout>} />
           <Route path="/location/favoris" element={<AppLayout><FavorisLocation /></AppLayout>} />
           <Route path="/location/publier" element={<AppLayout><Publier /></AppLayout>} />
+          <Route path="/location/mes-maisons" element={<AppLayout><GererMesMaisons /></AppLayout>} />
 
           {/* Requête */}
           <Route path="/requete" element={<AppLayout><ListeRequetes /></AppLayout>} />
@@ -106,4 +108,4 @@ export default function App() {
       </CartProvider>
     </BrowserRouter>
   );
-}
+            }

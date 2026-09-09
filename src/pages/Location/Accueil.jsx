@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Heart, MapPin, Plus, ArrowUpRight, BedDouble, Bath } from "lucide-react";
+import { Heart, MapPin, Plus, ArrowUpRight, BedDouble, Bath, Home } from "lucide-react";
 import { useFavoris } from "../../lib/favoris";
 import { useCachedData } from "../../lib/useCachedData";
+import { supabase } from "../../lib/supabaseClient";
 import { API_URL } from "../../lib/api";
 
 const fmt = (n, devise) => n.toLocaleString("fr-FR") + " " + devise;
@@ -21,6 +22,19 @@ export default function Accueil() {
   const maisons = data || [];
   const [quartierFiltre, setQuartierFiltre] = useState("Tous");
   const { favoris, toggleFavori } = useFavoris();
+  const [mesMaisons, setMesMaisons] = useState(null);
+
+  useEffect(() => {
+    async function verifier() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const res = await fetch(`${API_URL}/api/maisons/mine`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (res.ok) setMesMaisons(await res.json());
+    }
+    verifier();
+  }, []);
 
   const quartiers = ["Tous", ...new Set(maisons.map((m) => m.quartier))];
   const filtered = quartierFiltre === "Tous" ? maisons : maisons.filter((m) => m.quartier === quartierFiltre);
@@ -39,6 +53,23 @@ export default function Accueil() {
           <p className="text-[11px] text-white/80">Louez votre bien via TonaBk</p>
         </div>
       </Link>
+
+      {mesMaisons && mesMaisons.length > 0 && (
+        <Link
+          to="/location/mes-maisons"
+          className="flex items-center gap-3 bg-[#1B1B1B] rounded-xl p-3.5 mb-3 max-w-3xl"
+        >
+          <div className="w-10 h-10 rounded-full bg-[#F5720C] text-white flex items-center justify-center flex-shrink-0">
+            <Home size={18} />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-bold text-white">Mes maisons</p>
+            <p className="text-[11px] text-gray-300">
+              {mesMaisons.length} annonce{mesMaisons.length > 1 ? "s" : ""} — gérer mes publications
+            </p>
+          </div>
+        </Link>
+      )}
 
       <div className="flex gap-2 overflow-x-auto mb-3 pb-1">
         {quartiers.map((q) => (
@@ -83,7 +114,7 @@ export default function Accueil() {
             <div className="p-3">
               <p className="text-sm font-semibold text-[#1B1B1B]">{m.titre}</p>
               <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
-                <MapPin size={11} /> {m.quartier}, {m.commune}
+                <MapPin size={11} /> {m.ville ? `${m.ville} — ` : ""}{m.quartier}, {m.commune}
               </p>
 
               {(m.nb_chambres || m.nb_salles_bain) && (
@@ -115,4 +146,5 @@ export default function Accueil() {
       </div>
     </div>
   );
-}
+            }
+                

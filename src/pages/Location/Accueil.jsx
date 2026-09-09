@@ -54,7 +54,7 @@ export default function Accueil() {
         </div>
       </Link>
 
-      {mesMaisons && mesMaisons.length > 0 && (
+      {mesMaisons !== null && (
         <Link
           to="/location/mes-maisons"
           className="flex items-center gap-3 bg-[#1B1B1B] rounded-xl p-3.5 mb-3 max-w-3xl"
@@ -65,7 +65,9 @@ export default function Accueil() {
           <div className="flex-1">
             <p className="text-sm font-bold text-white">Mes maisons</p>
             <p className="text-[11px] text-gray-300">
-              {mesMaisons.length} annonce{mesMaisons.length > 1 ? "s" : ""} — gérer mes publications
+              {mesMaisons.length > 0
+                ? `${mesMaisons.length} annonce${mesMaisons.length > 1 ? "s" : ""} — gérer mes publications`
+                : "Voir mon espace commissionnaire"}
             </p>
           </div>
         </Link>
@@ -116,6 +118,9 @@ export default function Accueil() {
               <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
                 <MapPin size={11} /> {m.ville ? `${m.ville} — ` : ""}{m.quartier}, {m.commune}
               </p>
+              {m.nom_agence && (
+                <p className="text-[10px] text-[#F5720C] font-semibold mt-0.5">{m.nom_agence}</p>
+              )}
 
               {(m.nb_chambres || m.nb_salles_bain) && (
                 <div className="flex items-center gap-3 mt-1.5">
@@ -146,5 +151,5 @@ export default function Accueil() {
       </div>
     </div>
   );
-            }
-                
+      }
+            

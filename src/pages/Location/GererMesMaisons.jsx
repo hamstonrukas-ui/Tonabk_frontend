@@ -9,6 +9,7 @@ const fmt = (n, devise) => n.toLocaleString("fr-FR") + " " + devise;
 export default function GererMesMaisons() {
   const navigate = useNavigate();
   const [maisons, setMaisons] = useState(null);
+  const [nomAgence, setNomAgence] = useState(null);
   const [erreur, setErreur] = useState("");
 
   async function authHeaders() {
@@ -26,6 +27,12 @@ export default function GererMesMaisons() {
 
     const res = await fetch(`${API_URL}/api/maisons/mine`, { headers });
     if (res.ok) setMaisons(await res.json());
+
+    const resProfil = await fetch(`${API_URL}/api/commissionnaires/mon-profil`, { headers });
+    if (resProfil.ok) {
+      const profil = await resProfil.json();
+      setNomAgence(profil?.nom_agence || null);
+    }
   }
 
   useEffect(() => { charger(); }, []);
@@ -70,7 +77,10 @@ export default function GererMesMaisons() {
         <Link to="/location" className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
           <ArrowLeft size={16} />
         </Link>
-        <p className="text-sm font-bold text-[#1B1B1B] flex-1">Mes maisons</p>
+        <p className="text-sm font-bold text-[#1B1B1B] flex-1">
+          Mes maisons
+          {nomAgence && <span className="block text-[11px] font-medium text-gray-400">{nomAgence}</span>}
+        </p>
         <Link
           to="/location/publier"
           className="flex items-center gap-1 bg-[#F5720C] text-white text-xs font-semibold px-3 py-2 rounded-lg"

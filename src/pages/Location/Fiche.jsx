@@ -36,7 +36,7 @@ export default function Fiche() {
       <div className="p-4">
         <p className="text-lg font-bold text-[#1B1B1B]">{maison.titre}</p>
         <p className="text-sm text-gray-400 flex items-center gap-1 mt-1">
-          <MapPin size={13} /> {maison.quartier}, {maison.commune}
+          <MapPin size={13} /> {maison.ville ? `${maison.ville} — ` : ""}{maison.quartier}, {maison.commune}
         </p>
         <p className="text-xl font-extrabold text-[#F5720C] mt-2">{fmt(maison.prix, maison.devise)}/mois</p>
 

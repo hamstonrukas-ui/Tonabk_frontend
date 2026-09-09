@@ -51,7 +51,7 @@ export default function Inscription() {
           className="border border-gray-200 rounded-md px-3 py-2.5 text-sm w-full"
         />
         <input
-          type="tel" placeholder="Numéro de téléphone (WhatsApp) commence avec +243" value={telephone} onChange={(e) => setTelephone(e.target.value)} required
+          type="tel" placeholder="Numéro de téléphone (WhatsApp)+243..." value={telephone} onChange={(e) => setTelephone(e.target.value)} required
           className="border border-gray-200 rounded-md px-3 py-2.5 text-sm w-full"
         />
         <div>

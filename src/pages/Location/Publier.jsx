@@ -9,6 +9,10 @@ export default function Publier() {
   const [chargement, setChargement] = useState(true);
   const [connecte, setConnecte] = useState(false);
   const [estAdmin, setEstAdmin] = useState(false);
+  const [profilAgence, setProfilAgence] = useState(null);
+  const [nomAgence, setNomAgence] = useState("");
+  const [enregistrementAgence, setEnregistrementAgence] = useState(false);
+  const [erreurAgence, setErreurAgence] = useState("");
 
   const [form, setForm] = useState({
     titre: "", type_bien: "maison", ville: "Bukavu", quartier: "", commune: "Ibanda",
@@ -26,12 +30,42 @@ export default function Publier() {
       if (session) {
         const { data: { user } } = await supabase.auth.getUser();
         const role = user?.app_metadata?.role || user?.user_metadata?.role;
-        setEstAdmin(role === "admin");
+        const admin = role === "admin";
+        setEstAdmin(admin);
+
+        if (!admin) {
+          const res = await fetch(`${API_URL}/api/commissionnaires/mon-profil`, {
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          });
+          if (res.ok) setProfilAgence(await res.json());
+        }
       }
       setChargement(false);
     }
     verifier();
   }, []);
+
+  const creerAgence = async (e) => {
+    e.preventDefault();
+    setErreurAgence("");
+    if (!nomAgence.trim()) return;
+    setEnregistrementAgence(true);
+
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch(`${API_URL}/api/commissionnaires/mon-profil`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ nom_agence: nomAgence.trim() }),
+    });
+
+    if (res.ok) {
+      setProfilAgence(await res.json());
+    } else {
+      const data = await res.json().catch(() => ({}));
+      setErreurAgence(data.error || "Erreur lors de l'enregistrement");
+    }
+    setEnregistrementAgence(false);
+  };
 
   const MAX_PHOTOS = 3;
 
@@ -165,6 +199,38 @@ export default function Publier() {
     );
   }
 
+  // --- Vue commissionnaire sans profil d'agence : le créer avant de publier ---
+  if (!estAdmin && !profilAgence) {
+    return (
+      <div className="p-3">
+        <div className="bg-white rounded-xl p-5">
+          <p className="text-sm font-bold text-[#1B1B1B] mb-1">Nom de votre agence</p>
+          <p className="text-[12.5px] text-gray-500 mb-4">
+            Ce nom apparaîtra sur toutes vos annonces, pour que les visiteurs sachent qui les publie.
+            Vous ne le renseignez qu'une seule fois.
+          </p>
+          <form onSubmit={creerAgence} className="space-y-2">
+            {erreurAgence && <p className="text-xs text-red-500">{erreurAgence}</p>}
+            <input
+              value={nomAgence}
+              onChange={(e) => setNomAgence(e.target.value)}
+              placeholder="Ex : Agence Immo Kivu"
+              required
+              className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full"
+            />
+            <button
+              type="submit"
+              disabled={enregistrementAgence}
+              className="w-full bg-[#F5720C] text-white text-sm font-semibold rounded-md py-2.5"
+            >
+              {enregistrementAgence ? "Enregistrement..." : "Continuer"}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   // --- Vue connectée : formulaire de publication avec photos ---
   return (
     <form onSubmit={handleSubmit} className="p-3 space-y-2">
@@ -246,5 +312,5 @@ export default function Publier() {
       </button>
     </form>
   );
-        }
+                      }
     

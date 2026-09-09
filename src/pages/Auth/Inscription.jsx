@@ -56,7 +56,7 @@ export default function Inscription() {
         />
         <div>
           <input
-            type="text" placeholder="Choisissez un surnom" value={surnom}
+            type="text" placeholder="Choisissez un mot de passe" value={surnom}
             onChange={(e) => setSurnom(e.target.value)} required minLength={6}
             className="border border-gray-200 rounded-md px-3 py-2.5 text-sm w-full"
           />

@@ -10,6 +10,7 @@ export default function GererMesMaisons() {
   const navigate = useNavigate();
   const [maisons, setMaisons] = useState(null);
   const [nomAgence, setNomAgence] = useState(null);
+  const [estAdmin, setEstAdmin] = useState(false);
   const [erreur, setErreur] = useState("");
 
   async function authHeaders() {
@@ -24,6 +25,10 @@ export default function GererMesMaisons() {
   async function charger() {
     const headers = await authHeaders();
     if (!headers) return;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    const role = user?.app_metadata?.role || user?.user_metadata?.role;
+    setEstAdmin(role === "admin");
 
     const res = await fetch(`${API_URL}/api/maisons/mine`, { headers });
     if (res.ok) setMaisons(await res.json());
@@ -73,7 +78,7 @@ export default function GererMesMaisons() {
 
   return (
     <div className="p-3">
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-1">
         <Link to="/location" className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
           <ArrowLeft size={16} />
         </Link>
@@ -81,13 +86,17 @@ export default function GererMesMaisons() {
           Mes maisons
           {nomAgence && <span className="block text-[11px] font-medium text-gray-400">{nomAgence}</span>}
         </p>
-        <Link
-          to="/location/publier"
-          className="flex items-center gap-1 bg-[#F5720C] text-white text-xs font-semibold px-3 py-2 rounded-lg"
-        >
-          <Plus size={14} /> Publier
-        </Link>
+        {estAdmin || maisons.length < 10 ? (
+          <Link
+            to="/location/publier"
+            className="flex items-center gap-1 bg-[#F5720C] text-white text-xs font-semibold px-3 py-2 rounded-lg"
+          >
+            <Plus size={14} /> Publier
+          </Link>
+        ) : null}
       </div>
+
+      {!estAdmin && <p className="text-[11px] text-gray-400 mb-3">{maisons.length}/10 annonces utilisées</p>}
 
       {erreur && <p className="text-xs text-red-500 mb-2">{erreur}</p>}
 
@@ -149,4 +158,5 @@ export default function GererMesMaisons() {
       </div>
     </div>
   );
-}
+          }
+                  

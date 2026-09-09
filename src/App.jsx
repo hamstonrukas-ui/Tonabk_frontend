@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import BarreNavigation from "./components/BarreNavigation";
 import InstallPrompt from "./components/InstallPrompt";
 import InstallButton from "./components/InstallButton";
+import ActualiserBouton from "./components/ActualiserBouton";
 import { CartProvider } from "./context/CartContext";
 
 // Accueil
@@ -50,6 +51,7 @@ function AppLayout({ children }) {
   return (
     <div className="min-h-screen bg-[#F3F3F3] flex flex-col max-w-6xl mx-auto">
       <div className="flex-1 pb-20">{children}</div>
+      <ActualiserBouton />
       <BarreNavigation />
     </div>
   );
@@ -121,5 +123,4 @@ export default function App() {
       </CartProvider>
     </BrowserRouter>
   );
-                  }
-            
+          }

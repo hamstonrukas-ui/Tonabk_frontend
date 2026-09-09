@@ -1,4 +1,5 @@
-          import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import BarreNavigation from "./components/BarreNavigation";
 import InstallPrompt from "./components/InstallPrompt";
 import InstallButton from "./components/InstallButton";
@@ -55,6 +56,18 @@ function AppLayout({ children }) {
 }
 
 export default function App() {
+  useEffect(() => {
+    const declencher = () => window.dispatchEvent(new Event("tonabk:revalidate"));
+
+    const auDemarrage = setTimeout(declencher, 3000);
+    window.addEventListener("online", declencher);
+
+    return () => {
+      clearTimeout(auDemarrage);
+      window.removeEventListener("online", declencher);
+    };
+  }, []);
+
   return (
     <BrowserRouter>
       <CartProvider>
@@ -108,4 +121,5 @@ export default function App() {
       </CartProvider>
     </BrowserRouter>
   );
-            }
+                  }
+            

@@ -11,6 +11,7 @@ export default function Publier() {
   const [estAdmin, setEstAdmin] = useState(false);
   const [profilAgence, setProfilAgence] = useState(null);
   const [nomAgence, setNomAgence] = useState("");
+  const [telephoneAgence, setTelephoneAgence] = useState("");
   const [enregistrementAgence, setEnregistrementAgence] = useState(false);
   const [erreurAgence, setErreurAgence] = useState("");
 
@@ -48,14 +49,14 @@ export default function Publier() {
   const creerAgence = async (e) => {
     e.preventDefault();
     setErreurAgence("");
-    if (!nomAgence.trim()) return;
+    if (!nomAgence.trim() || !telephoneAgence.trim()) return;
     setEnregistrementAgence(true);
 
     const { data: { session } } = await supabase.auth.getSession();
     const res = await fetch(`${API_URL}/api/commissionnaires/mon-profil`, {
       method: "PUT",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-      body: JSON.stringify({ nom_agence: nomAgence.trim() }),
+      body: JSON.stringify({ nom_agence: nomAgence.trim(), telephone: telephoneAgence.trim() }),
     });
 
     if (res.ok) {
@@ -120,6 +121,7 @@ export default function Publier() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
         body: JSON.stringify({
           ...form,
+          telephone: estAdmin ? form.telephone : profilAgence.telephone,
           prix: Number(form.prix),
           nb_chambres: form.nb_chambres ? Number(form.nb_chambres) : null,
           nb_salles_bain: form.nb_salles_bain ? Number(form.nb_salles_bain) : null,
@@ -207,7 +209,8 @@ export default function Publier() {
           <p className="text-sm font-bold text-[#1B1B1B] mb-1">Nom de votre agence</p>
           <p className="text-[12.5px] text-gray-500 mb-4">
             Ce nom apparaîtra sur toutes vos annonces, pour que les visiteurs sachent qui les publie.
-            Vous ne le renseignez qu'une seule fois.
+            Votre numéro doit être unique : il ne peut pas être partagé avec une autre agence. Vous ne
+            renseignez ces informations qu'une seule fois.
           </p>
           <form onSubmit={creerAgence} className="space-y-2">
             {erreurAgence && <p className="text-xs text-red-500">{erreurAgence}</p>}
@@ -215,6 +218,14 @@ export default function Publier() {
               value={nomAgence}
               onChange={(e) => setNomAgence(e.target.value)}
               placeholder="Ex : Agence Immo Kivu"
+              required
+              className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full"
+            />
+            <input
+              value={telephoneAgence}
+              onChange={(e) => setTelephoneAgence(e.target.value)}
+              placeholder="Numéro de téléphone de l'agence"
+              type="tel"
               required
               className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full"
             />
@@ -279,7 +290,14 @@ export default function Publier() {
         <input name="nb_salles_bain" type="number" placeholder="Nb salles de bain" onChange={handleChange} className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full" />
       </div>
 
-      <input name="telephone" placeholder="Téléphone" onChange={handleChange} required className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full" />
+      {estAdmin ? (
+        <input name="telephone" placeholder="Téléphone" onChange={handleChange} required className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full" />
+      ) : (
+        <div className="bg-gray-50 border border-gray-200 rounded-md px-3 py-2.5">
+          <p className="text-[11px] text-gray-400">Numéro WhatsApp affiché sur cette annonce (celui de votre agence)</p>
+          <p className="text-sm font-semibold text-[#1B1B1B]">{profilAgence?.telephone}</p>
+        </div>
+      )}
       <textarea name="description" placeholder="Description" onChange={handleChange} rows={3} className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full" />
 
       <div>
@@ -312,5 +330,4 @@ export default function Publier() {
       </button>
     </form>
   );
-                      }
-    
+}

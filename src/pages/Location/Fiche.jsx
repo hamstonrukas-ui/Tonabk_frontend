@@ -35,6 +35,9 @@ export default function Fiche() {
 
       <div className="p-4">
         <p className="text-lg font-bold text-[#1B1B1B]">{maison.titre}</p>
+        {maison.nom_agence && (
+          <p className="text-[12px] font-semibold text-[#F5720C] mt-0.5">{maison.nom_agence}</p>
+        )}
         <p className="text-sm text-gray-400 flex items-center gap-1 mt-1">
           <MapPin size={13} /> {maison.ville ? `${maison.ville} — ` : ""}{maison.quartier}, {maison.commune}
         </p>
@@ -64,4 +67,5 @@ export default function Fiche() {
       </div>
     </div>
   );
-}
+                                                                       }
+                                                                       

@@ -76,7 +76,7 @@ export default function Accueil() {
             </Link>
           </div>
         </div>
-        <p className="text-[16px] text-white/80 mb-2.5">Grand marché de Bukavu</p>
+        <p className="text-[16px] text-white/80 mb-2.5">Grand marché du Kivu</p>
         <Link to="/boutique/recherche" className="max-w-3xl bg-white rounded-lg flex items-center gap-2 px-3 py-2.5 text-xs text-gray-400">
           <Search size={15} /> Chaussures, smartphone, riz...
         </Link>

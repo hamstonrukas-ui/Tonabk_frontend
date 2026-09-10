@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Search } from "lucide-react";
 import { API_URL } from "../../lib/api";
 
-const fmt = (n) => n.toLocaleString("fr-FR") + " FC";
+const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
 const VILLES = ["Toutes", "Bukavu", "Goma"];
 
 export default function RechercheBoutique() {
@@ -63,13 +63,18 @@ export default function RechercheBoutique() {
 
       <div className="grid grid-cols-2 gap-2.5">
         {resultats.map((p) => (
-          <Link key={p.id} to={`/boutique/produit/${p.id}`} className="bg-white rounded-xl overflow-hidden shadow-sm">
+          <Link
+            key={p.id}
+            to={`/boutique/produit/${p.id}`}
+            state={{ depuisAccueil: true }}
+            className="bg-white rounded-xl overflow-hidden shadow-sm"
+          >
             <div className="bg-[#F6F6F6] h-24 flex items-center justify-center text-3xl">
               {p.photo_url ? <img src={p.photo_thumb_url || p.photo_url} className="w-full h-full object-cover" /> : "📦"}
             </div>
             <div className="p-2.5">
               <p className="text-[11.5px] font-medium leading-tight h-8 overflow-hidden">{p.nom}</p>
-              <p className="text-sm font-extrabold mt-1">{fmt(p.prix)}</p>
+              <p className="text-sm font-extrabold mt-1">{fmt(p.prix, p.devise)}</p>
             </div>
           </Link>
         ))}

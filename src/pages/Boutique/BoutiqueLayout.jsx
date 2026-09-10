@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet, useParams, Link, useSearchParams } from "react-router-dom";
-import { Store, ShoppingBag, ClipboardList, Star, Users, Bell, ArrowLeft, BadgeCheck, Share2 } from "lucide-react";
+import { Store, ShoppingBag, ClipboardList, Star, Users, Bell, ArrowLeft, BadgeCheck, Share2, MapPin } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { API_URL, SITE_URL } from "../../lib/api";
 import { cachedFetch } from "../../lib/cache";
@@ -53,17 +53,41 @@ export default function BoutiqueLayout() {
 
   return (
     <div className="min-h-screen bg-[#F3F3F3]">
-      <div className="bg-gradient-to-r from-[#F5720C] to-[#C9560A] px-3 pt-3 pb-2 flex items-center gap-2">
-        <Link to="/boutique" className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-          <ArrowLeft size={16} className="text-white" />
-        </Link>
-        <div className="flex items-center gap-1.5 min-w-0 flex-1">
-          <p className="text-sm font-bold text-white truncate">{boutique?.nom || "Boutique"}</p>
-          {boutique?.certifiee && <BadgeCheck size={14} className="text-white flex-shrink-0" />}
+      <div className="bg-gradient-to-r from-[#F5720C] to-[#C9560A] px-3 pt-3 pb-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Link to="/boutique" className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+            <ArrowLeft size={16} className="text-white" />
+          </Link>
+          <div className="flex-1" />
+          <button onClick={partagerBoutique} className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+            <Share2 size={14} className="text-white" />
+          </button>
         </div>
-        <button onClick={partagerBoutique} className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-          <Share2 size={14} className="text-white" />
-        </button>
+
+        <div className="flex items-center gap-3">
+          {boutique?.logo_url ? (
+            <img src={boutique.logo_url} alt={boutique.nom} className="w-16 h-16 rounded-full object-cover flex-shrink-0 border-2 border-white/40" />
+          ) : (
+            <div className="w-16 h-16 rounded-full bg-white/20 text-white font-extrabold text-xl flex items-center justify-center flex-shrink-0 border-2 border-white/40">
+              {(boutique?.nom || "B").slice(0, 2).toUpperCase()}
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              <p className="text-lg font-extrabold text-white truncate">{boutique?.nom || "Boutique"}</p>
+              {boutique?.certifiee && <BadgeCheck size={16} className="text-white flex-shrink-0" />}
+            </div>
+            {boutique?.description && (
+              <p className="text-[11.5px] text-white/80 leading-snug mt-0.5 line-clamp-2">{boutique.description}</p>
+            )}
+            {(boutique?.ville || boutique?.quartier) && (
+              <p className="text-[11px] text-white/70 flex items-center gap-1 mt-1">
+                <MapPin size={11} />
+                {[boutique.ville, [boutique.quartier, boutique.commune].filter(Boolean).join(", ")].filter(Boolean).join(" — ")}
+              </p>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="sticky top-0 z-20 bg-white border-b border-gray-100 overflow-x-auto">

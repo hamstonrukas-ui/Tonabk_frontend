@@ -23,15 +23,28 @@ export default function Accueil() {
   const [quartierFiltre, setQuartierFiltre] = useState("Tous");
   const { favoris, toggleFavori } = useFavoris();
   const [mesMaisons, setMesMaisons] = useState(null);
+  const [peutPublier, setPeutPublier] = useState(false);
 
   useEffect(() => {
     async function verifier() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
-      const res = await fetch(`${API_URL}/api/maisons/mine`, {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
+
+      const { data: { user } } = await supabase.auth.getUser();
+      const role = user?.app_metadata?.role || user?.user_metadata?.role;
+      const admin = role === "admin";
+
+      const headers = { Authorization: `Bearer ${session.access_token}` };
+
+      const res = await fetch(`${API_URL}/api/maisons/mine`, { headers });
       if (res.ok) setMesMaisons(await res.json());
+
+      if (admin) {
+        setPeutPublier(true);
+      } else {
+        const resProfil = await fetch(`${API_URL}/api/commissionnaires/mon-profil`, { headers });
+        if (resProfil.ok) setPeutPublier(!!(await resProfil.json()));
+      }
     }
     verifier();
   }, []);
@@ -54,7 +67,7 @@ export default function Accueil() {
         </div>
       </Link>
 
-      {mesMaisons !== null && (
+      {peutPublier && mesMaisons !== null && (
         <Link
           to="/location/mes-maisons"
           className="flex items-center gap-3 bg-[#1B1B1B] rounded-xl p-3.5 mb-3 max-w-3xl"
@@ -151,5 +164,4 @@ export default function Accueil() {
       </div>
     </div>
   );
-      }
-            
+}

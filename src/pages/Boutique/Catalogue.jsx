@@ -10,7 +10,7 @@ const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
 
 export default function Catalogue() {
   const { boutiqueId } = useOutletContext();
-  const { data: produitsData } = useCachedData(
+  const { data: produitsData, loading } = useCachedData(
     `produits_boutique_${boutiqueId}`,
     `${API_URL}/api/produits?boutique_id=${boutiqueId}`,
     {},
@@ -127,7 +127,10 @@ export default function Catalogue() {
             </div>
           </div>
         ))}
-        {produits.length === 0 && (
+        {loading && produits.length === 0 && (
+          <p className="col-span-2 sm:col-span-3 lg:col-span-4 text-center text-sm text-gray-400 py-10">Chargement...</p>
+        )}
+        {!loading && produits.length === 0 && (
           <p className="col-span-2 sm:col-span-3 lg:col-span-4 text-center text-sm text-gray-400 py-10">Aucun produit publié pour l'instant</p>
         )}
       </div>

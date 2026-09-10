@@ -70,6 +70,14 @@ export default function DetailProduit() {
           {produit.boutiques?.nom} →
         </Link>
         <p className="text-xl font-extrabold text-[#1B1B1B] mt-2">{fmt(produit.prix, produit.devise)}</p>
+        {produit.prix_gros ? (
+          <>
+            <p className="text-[11px] text-gray-400">Prix de détail</p>
+            <p className="text-[12.5px] font-semibold text-[#F5720C] mt-1.5">
+              {fmt(produit.prix_gros, produit.devise)}/unité en gros — à partir de {produit.quantite_min_gros} pièces
+            </p>
+          </>
+        ) : null}
         <p className={`text-xs mt-1 font-semibold ${produit.stock > 0 ? "text-green-600" : "text-red-500"}`}>
           {produit.stock > 0 ? `${produit.stock} en stock` : "Rupture de stock"}
         </p>
@@ -112,4 +120,4 @@ export default function DetailProduit() {
       </div>
     </div>
   );
-        }
+}

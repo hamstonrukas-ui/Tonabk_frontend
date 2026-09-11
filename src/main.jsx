@@ -6,11 +6,12 @@ import "./index.css";
 
 // Enregistre le Service Worker : met l'app à jour automatiquement en arrière-plan
 // dès qu'une connexion est disponible, sans jamais bloquer l'utilisateur.
-registerSW({
+const updateSW = registerSW({
   immediate: true,
   onNeedRefresh() {
-    // Une nouvelle version est prête — appliquée au prochain chargement, en silence
-    console.log("Nouvelle version de TonaBk disponible, sera appliquée au prochain lancement.");
+    // Une nouvelle version est prête — on l'applique tout de suite pour éviter
+    // qu'un appareil reste bloqué sur une ancienne version incompatible (page blanche).
+    updateSW(true);
   },
   onOfflineReady() {
     console.log("TonaBk est prêt à fonctionner hors ligne.");

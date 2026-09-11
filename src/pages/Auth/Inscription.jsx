@@ -35,7 +35,7 @@ export default function Inscription() {
 
     setLoading(false);
     if (error) return setErreur(error.message);
-    alert("Compte créé ! Vérifiez votre email pour confirmer votre inscription.");
+    alert("Compte créé ! Félicitations.");
     navigate(`/connexion?redirect=${encodeURIComponent(redirect)}`);
   };
 

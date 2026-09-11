@@ -24,6 +24,7 @@ import Parrainage from "./pages/Boutique/Parrainage";
 import Nouveautes from "./pages/Boutique/Nouveautes";
 import CreerBoutique from "./pages/Boutique/CreerBoutique";
 import GererBoutique from "./pages/Boutique/GererBoutique";
+import Inventaire from "./pages/Boutique/Inventaire";
 import DetailProduit from "./pages/Boutique/DetailProduit";
 import RechercheBoutique from "./pages/Boutique/Recherche";
 import Populaires from "./pages/Boutique/Populaires";
@@ -46,6 +47,7 @@ import Connexion from "./pages/Auth/Connexion";
 import Inscription from "./pages/Auth/Inscription";
 import MotDePasseOublie from "./pages/Auth/MotDePasseOublie";
 import ReinitialiserMotDePasse from "./pages/Auth/ReinitialiserMotDePasse";
+import { enregistrerVisiteSession } from "./lib/analytics";
 
 function AppLayout({ children }) {
   return (
@@ -58,6 +60,10 @@ function AppLayout({ children }) {
 }
 
 export default function App() {
+  useEffect(() => {
+    enregistrerVisiteSession();
+  }, []);
+
   useEffect(() => {
     const declencher = () => window.dispatchEvent(new Event("tonabk:revalidate"));
 
@@ -87,6 +93,7 @@ export default function App() {
           <Route path="/boutique/categorie/:categorieId" element={<AppLayout><ListeBoutiquesCategorie /></AppLayout>} />
           <Route path="/boutique/creer" element={<AppLayout><CreerBoutique /></AppLayout>} />
           <Route path="/boutique/gerer" element={<AppLayout><GererBoutique /></AppLayout>} />
+          <Route path="/boutique/inventaire" element={<AppLayout><Inventaire /></AppLayout>} />
           <Route path="/boutique/recherche" element={<AppLayout><RechercheBoutique /></AppLayout>} />
           <Route path="/boutique/populaires" element={<AppLayout><Populaires /></AppLayout>} />
           <Route path="/boutique/produit/:id" element={<AppLayout><DetailProduit /></AppLayout>} />
@@ -123,4 +130,4 @@ export default function App() {
       </CartProvider>
     </BrowserRouter>
   );
-          }
+      }

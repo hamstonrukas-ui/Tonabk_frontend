@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, MapPin, BedDouble, Bath, MessageCircle } from "lucide-react";
 import { API_URL } from "../../lib/api";
+import { enregistrerClicWhatsapp } from "../../lib/analytics";
 
 const fmt = (n, devise) => n.toLocaleString("fr-FR") + " " + devise;
 
@@ -17,6 +18,7 @@ export default function Fiche() {
 
   const contacterWhatsApp = () => {
     const msg = `Bonjour, je suis intéressé(e) par "${maison.titre}" à ${maison.quartier} (${fmt(maison.prix, maison.devise)}/mois) sur TonaBk.`;
+    enregistrerClicWhatsapp("maison", maison.id);
     window.open(`https://wa.me/${maison.telephone.replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
@@ -67,5 +69,5 @@ export default function Fiche() {
       </div>
     </div>
   );
-                                                                       }
-                                                                       
+      }
+

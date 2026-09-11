@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams, useLocation, Link } from "react-router-dom";
 import { ArrowLeft, Share2, Check, ShoppingBag, MessageCircle } from "lucide-react";
 import { useCart } from "../../context/CartContext";
-import { API_URL, SITE_URL } from "../../lib/api";
+import { API_URL } from "../../lib/api";
 import { useCachedData } from "../../lib/useCachedData";
 import { enregistrerClicWhatsapp } from "../../lib/analytics";
 
@@ -19,19 +19,11 @@ export default function DetailProduit() {
 
   if (!produit) return <p className="text-center text-sm text-gray-400 py-10">Chargement...</p>;
 
-  const partager = async () => {
-    const texte = `Regarde ce produit sur TonaBk : ${produit.nom} — ${fmt(produit.prix, produit.devise)}`;
-    const url = `${SITE_URL}/boutique/produit/${produit.id}`;
-
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: produit.nom, text: texte, url });
-      } catch {
-        // Partage annulé par l'utilisateur
-      }
-    } else {
-      window.open(`https://wa.me/?text=${encodeURIComponent(`${texte}. ${url}`)}`, "_blank");
-    }
+  const partager = () => {
+    const nomBoutique = produit.boutiques?.nom ? ` (${produit.boutiques.nom})` : "";
+    const texte = `Regarde ce produit sur TonaBk${nomBoutique} : ${produit.nom} — ${fmt(produit.prix, produit.devise)}`;
+    const url = `${API_URL}/partage/produit/${produit.id}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(`${texte}\n${url}`)}`, "_blank");
   };
 
   const handleAjouter = () => {
@@ -62,7 +54,7 @@ export default function DetailProduit() {
           <ArrowLeft size={18} />
         </Link>
         <button onClick={partager} className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 flex items-center justify-center">
-          <Share2 size={16} />
+          <Share2 size={16} className="text-[#25D366]" />
         </button>
       </div>
 
@@ -122,5 +114,4 @@ export default function DetailProduit() {
       </div>
     </div>
   );
-      }
-      
+}

@@ -5,6 +5,21 @@ import { supabase } from "../../lib/supabaseClient";
 import { API_URL } from "../../lib/api";
 
 const fmtMontant = (n, devise) => (devise === "USD" ? "$ " : "") + Number(n).toLocaleString("fr-FR") + (devise === "FC" ? " FC" : "");
+const MAX_ARTICLES = 10;
+
+function estAujourdhui(dateStr) {
+  const d = new Date(dateStr);
+  const maintenant = new Date();
+  return d.toDateString() === maintenant.toDateString();
+}
+
+function fmtHeure(dateStr) {
+  return new Date(dateStr).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+}
+
+function fmtDateCourte(dateStr) {
+  return new Date(dateStr).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
+}
 
 async function authHeaders(navigate) {
   const { data: { session } } = await supabase.auth.getSession();
@@ -136,11 +151,15 @@ function OngletArticles({ navigate }) {
       <div className="flex items-center justify-between mb-2">
         <div>
           <p className="text-lg font-bold text-[#1B1B1B]">Articles</p>
-          <p className="text-[11px] text-gray-400">{articles.length} article(s)</p>
+          <p className="text-[11px] text-gray-400">{articles.length}/{MAX_ARTICLES} article(s)</p>
         </div>
-        <button onClick={ouvrirNouveau} className="flex items-center gap-1 bg-[#F5720C] text-white text-xs font-semibold px-3 py-2 rounded-lg">
-          <Plus size={14} /> Ajouter
-        </button>
+        {articles.length < MAX_ARTICLES ? (
+          <button onClick={ouvrirNouveau} className="flex items-center gap-1 bg-[#F5720C] text-white text-xs font-semibold px-3 py-2 rounded-lg">
+            <Plus size={14} /> Ajouter
+          </button>
+        ) : (
+          <span className="text-[11px] font-semibold text-gray-400">Limite atteinte</span>
+        )}
       </div>
 
       {erreur && <p className="text-xs text-red-500 mb-2">{erreur}</p>}
@@ -276,15 +295,22 @@ function OngletStock({ navigate }) {
       </div>
 
       <div className="bg-white rounded-xl overflow-hidden">
+        <div className="flex items-center gap-2 px-2.5 py-1.5 bg-[#FAF3EC]">
+          <p className="text-[9.5px] font-bold text-gray-500 flex-1">ARTICLE</p>
+          <p className="text-[9.5px] font-bold text-gray-500 w-10 text-center flex-shrink-0">QTÉ</p>
+          <p className="text-[9.5px] font-bold text-gray-500 w-20 text-right flex-shrink-0">TOTAL</p>
+        </div>
         {articles.map((a, i) => (
           <div key={a.id} className={`flex items-center gap-2 p-2.5 ${i > 0 ? "border-t border-gray-100" : ""}`}>
             <div className="flex-1 min-w-0">
               <p className="text-[12.5px] font-medium truncate">{a.nom}</p>
               <p className="text-[10.5px] text-gray-400">{fmtMontant(a.prix, a.devise)} / unité</p>
+              <span className={`inline-block text-[9px] font-bold px-2 py-0.5 rounded-full mt-1 ${badgeEtat[a.etat]}`}>{labelEtat[a.etat]}</span>
             </div>
-            <span className="text-[9px] font-semibold text-gray-400 bg-gray-100 rounded-full px-1.5 py-0.5 flex-shrink-0">{a.devise}</span>
-            <span className="text-sm font-bold w-6 text-center flex-shrink-0">{a.quantite}</span>
-            <span className={`text-[10px] font-bold px-2 py-1 rounded-full flex-shrink-0 ${badgeEtat[a.etat]}`}>{labelEtat[a.etat]}</span>
+            <span className="text-sm font-bold w-10 text-center flex-shrink-0">{a.quantite}</span>
+            <p className="text-[12.5px] font-extrabold text-[#F5720C] w-20 text-right flex-shrink-0">
+              {fmtMontant(a.prix * a.quantite, a.devise)}
+            </p>
           </div>
         ))}
         {articles.length === 0 && <p className="text-center text-sm text-gray-400 py-8">Aucun article</p>}
@@ -349,6 +375,9 @@ function OngletMouvement({ navigate, type, titre, boutonLabel, Icone }) {
 
   if (mouvements === null) return <p className="text-center text-sm text-gray-400 py-10">Chargement...</p>;
 
+  const mouvementsAujourdhui = mouvements.filter((m) => estAujourdhui(m.created_at));
+  const mouvementsHistorique = mouvements.filter((m) => !estAujourdhui(m.created_at));
+
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
@@ -388,17 +417,15 @@ function OngletMouvement({ navigate, type, titre, boutonLabel, Icone }) {
       )}
 
       <div className="bg-white rounded-xl overflow-hidden">
-        {mouvements.map((m, i) => (
+        {mouvementsAujourdhui.length > 0 && (
+          <p className="text-[10px] font-bold text-gray-400 px-2.5 pt-2.5 pb-1 uppercase">Aujourd'hui</p>
+        )}
+        {mouvementsAujourdhui.map((m, i) => (
           <div key={m.id} className={`flex items-center justify-between p-2.5 ${i > 0 ? "border-t border-gray-100" : ""}`}>
-            <p className="text-[12.5px] font-medium">{m.nom_article}</p>
-            <span className="text-[11px] text-gray-400">Qté {m.quantite}</span>
-            <p className="text-[12.5px] font-bold text-[#1B1B1B]">
-              {m.prix_unitaire ? fmtMontant(m.prix_unitaire * m.quantite, m.devise) : "—"}
-            </p>
-          </div>
-        ))}
-        {mouvements.length === 0 && <p className="text-center text-sm text-gray-400 py-8">Aucune {type === "achat" ? "achat" : "vente"}</p>}
-      </div>
-    </div>
-  );
-}
+            <div className="min-w-0">
+              <p className="text-[12.5px] font-medium truncate">{m.nom_article}</p>
+              <p className="text-[10px] text-gray-400">{fmtHeure(m.created_at)}</p>
+            </div>
+            <span className="text-[11px] text-gray-400 flex-shrink-0">Qté {m.quantite}</span>
+            <p className="text-[12.5px] font-bold text-[#1B1B1B] flex-shrink-0">
+              {m.prix_unitaire ? fmtMonta

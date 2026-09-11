@@ -31,8 +31,29 @@ export default function Inventaire() {
   async function charger() {
     const headers = await authHeaders();
     if (!headers) return;
-    const res = await fetch(`${API_URL}/api/inventaire/produits`, { headers });
-    if (res.ok) setProduits(await res.json());
+
+    const controleur = new AbortController();
+    const delai = setTimeout(() => controleur.abort(), 15000);
+
+    try {
+      const res = await fetch(`${API_URL}/api/inventaire/produits`, { headers, signal: controleur.signal });
+      if (res.ok) {
+        setProduits(await res.json());
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setErreur(data.error || "Impossible de charger l'inventaire (erreur serveur).");
+        setProduits([]);
+      }
+    } catch (err) {
+      setErreur(
+        err.name === "AbortError"
+          ? "Le serveur met trop de temps à répondre. Réessayez dans un instant."
+          : "Impossible de contacter le serveur. Vérifiez votre connexion."
+      );
+      setProduits([]);
+    } finally {
+      clearTimeout(delai);
+    }
   }
 
   useEffect(() => { charger(); }, []);
@@ -219,4 +240,5 @@ export default function Inventaire() {
       </div>
     </div>
   );
-}
+      }
+        

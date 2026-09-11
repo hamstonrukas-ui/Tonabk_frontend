@@ -3,7 +3,7 @@ import { useOutletContext, Link } from "react-router-dom";
 import { Star, Share2, Bell, BellRing } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { supabase } from "../../lib/supabaseClient";
-import { API_URL, SITE_URL } from "../../lib/api";
+import { API_URL } from "../../lib/api";
 import { useCachedData } from "../../lib/useCachedData";
 
 const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
@@ -50,19 +50,11 @@ export default function Catalogue() {
     }
   };
 
-  const shareProduct = async (p) => {
-    const texte = `Regarde ce produit sur TonaBk : ${p.nom} — ${fmt(p.prix, p.devise)}`;
-    const url = `${SITE_URL}/boutique/produit/${p.id}`;
-
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: p.nom, text: texte, url });
-      } catch {
-        // Partage annulé par l'utilisateur
-      }
-    } else {
-      window.open(`https://wa.me/?text=${encodeURIComponent(`${texte}. ${url}`)}`, "_blank");
-    }
+  const shareProduct = (p) => {
+    const nomBoutique = p.boutiques?.nom ? ` (${p.boutiques.nom})` : "";
+    const texte = `Regarde ce produit sur TonaBk${nomBoutique} : ${p.nom} — ${fmt(p.prix, p.devise)}`;
+    const url = `${API_URL}/partage/produit/${p.id}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(`${texte}\n${url}`)}`, "_blank");
   };
 
   return (
@@ -107,7 +99,7 @@ export default function Catalogue() {
                   <Star size={10} fill="#FFB400" className="text-[#FFB400]" />
                   <span className="text-[9px] text-gray-400">({p.avis || 0})</span>
                 </div>
-                <p className="text-sm font-extrabold text-[#1B1B1B] mt-1">{fmt(p.prix, p.devise)}</p>
+                <p className="text-sm font-extrabold text-[#1B1B1B] mt-1">{fmt(p.prix_gros || p.prix, p.devise)}</p>
                 <p className="text-[9px] font-semibold text-[#F5720C] mt-0.5">Voir détails →</p>
               </div>
             </Link>
@@ -120,8 +112,8 @@ export default function Catalogue() {
                 >
                   {p.stock === 0 ? "Indisponible" : "Ajouter"}
                 </button>
-                <button onClick={() => shareProduct(p)} className="border border-gray-200 rounded-md px-2">
-                  <Share2 size={13} className="text-gray-500" />
+                <button onClick={() => shareProduct(p)} className="bg-[#25D366] rounded-md px-2.5 flex items-center justify-center">
+                  <Share2 size={13} className="text-white" />
                 </button>
               </div>
             </div>
@@ -138,3 +130,4 @@ export default function Catalogue() {
   );
 }
 
+        

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, MapPin, BadgeCheck, MessageCircle } from "lucide-react";
 import { API_URL } from "../../lib/api";
+import { enregistrerClicWhatsapp } from "../../lib/analytics";
 
 const fmt = (n) => n.toLocaleString("fr-FR") + " FC";
 
@@ -17,6 +18,7 @@ export default function DetailBoutique() {
 
   const contacterWhatsApp = () => {
     const msg = `Bonjour, j'ai vu votre boutique "${boutique.nom}" sur TonaBk.`;
+    enregistrerClicWhatsapp("boutique", boutique.id);
     window.open(`https://wa.me/${boutique.telephone?.replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
@@ -80,5 +82,5 @@ export default function DetailBoutique() {
       </div>
     </div>
   );
-              }
-            
+}
+  

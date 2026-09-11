@@ -4,6 +4,7 @@ import { ArrowLeft, Share2, Check, ShoppingBag, MessageCircle } from "lucide-rea
 import { useCart } from "../../context/CartContext";
 import { API_URL, SITE_URL } from "../../lib/api";
 import { useCachedData } from "../../lib/useCachedData";
+import { enregistrerClicWhatsapp } from "../../lib/analytics";
 
 const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
 
@@ -42,6 +43,7 @@ export default function DetailProduit() {
     const numero = produit.boutiques?.telephone?.replace(/\D/g, "");
     const msg = `Bonjour, je suis intéressé(e) par "${produit.nom}" (${fmt(produit.prix, produit.devise)}) vu sur TonaBk.`;
     if (numero) {
+      enregistrerClicWhatsapp("produit", produit.id);
       window.open(`https://wa.me/${numero}?text=${encodeURIComponent(msg)}`, "_blank");
     } else {
       alert("Cette boutique n'a pas encore de numéro WhatsApp renseigné.");
@@ -120,4 +122,5 @@ export default function DetailProduit() {
       </div>
     </div>
   );
-}
+      }
+      

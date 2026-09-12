@@ -77,9 +77,9 @@ export default function Inventaire() {
             avec les produits publiés publiquement dans votre boutique (certains servent juste à la
             publicité et ne reflètent pas forcément ce que vous avez réellement en stock).
           </p>
-          <p><b>1. Articles</b> — créez ici la liste de vos vrais articles (nom, prix, devise). Maximum {MAX_ARTICLES} articles suivis à la fois.</p>
-          <p><b>2. Achats</b> — chaque fois que vous achetez du stock, enregistrez-le ici : quantité et prix unitaire. La quantité disponible de l'article augmente automatiquement.</p>
-          <p><b>3. Ventes</b> — chaque fois que vous vendez, enregistrez-le ici. La quantité disponible diminue automatiquement — impossible de vendre plus que ce qui est réellement en stock.</p>
+          <p><b>1. Articles</b> — La première chose à faire est de créez la liste de vos vrais articles (nom, prix, devise). Maximum {MAX_ARTICLES} articles suivis à la fois.</p>
+          <p><b>2. Achats</b> — La deuxième chose est d'acheter ( Kulangula) et mettre le prix d'achat 8chaque fois que vous achetez du stock, enregistrez-le ici : quantité et prix unitaire. La quantité disponible de l'article augmente automatiquement.</p>
+          <p><b>3. Ventes</b> — Maintenant ici vous mettez toutes les ventes journalières chaque fois que vous vendez, enregistrez-le ici. La quantité disponible diminue automatiquement — impossible de vendre plus que ce qui est réellement en stock.</p>
           <p><b>4. Stock</b> — cet onglet résume tout : l'état de chaque article (Normal / Faible / Rupture), et la valeur totale de votre stock, calculée automatiquement à partir des prix et quantités.</p>
           <p>Vous n'entrez jamais la quantité à la main : elle se calcule toute seule à partir de vos achats et ventes.</p>
         </div>

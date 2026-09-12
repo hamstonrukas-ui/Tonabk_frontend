@@ -46,7 +46,7 @@ export default function DetailProduit() {
     <div>
       <div className="relative h-64 bg-[#F6F6F6]">
         {produit.photo_url ? (
-          <img src={produit.photo_url} className="w-full h-full object-cover" />
+          <img src={produit.photo_url} className="w-full h-full object-contain" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-5xl">📦</div>
         )}

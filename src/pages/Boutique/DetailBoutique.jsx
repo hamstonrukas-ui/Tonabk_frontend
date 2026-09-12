@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, MapPin, BadgeCheck, MessageCircle } from "lucide-react";
 import { API_URL } from "../../lib/api";
-import { enregistrerClicWhatsapp } from "../../lib/analytics";
+import { enregistrerClicWhatsapp, enregistrerVisiteSession } from "../../lib/analytics";
 
 const fmt = (n) => n.toLocaleString("fr-FR") + " FC";
 
@@ -11,7 +11,12 @@ export default function DetailBoutique() {
   const [boutique, setBoutique] = useState(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/boutiques/${id}`).then((r) => r.json()).then(setBoutique);
+    fetch(`${API_URL}/api/boutiques/${id}`)
+      .then((r) => r.json())
+      .then((data) => {
+        setBoutique(data);
+        enregistrerVisiteSession("boutique", id);
+      });
   }, [id]);
 
   if (!boutique) return <p className="text-center text-sm text-gray-400 py-10">Chargement...</p>;

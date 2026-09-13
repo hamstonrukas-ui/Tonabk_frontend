@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, useLocation, Link } from "react-router-dom";
-import { ArrowLeft, Share2, Check, ShoppingBag, MessageCircle } from "lucide-react";
+import { ArrowLeft, Share2, Check, ShoppingBag, MessageCircle, ZoomIn, X } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { API_URL } from "../../lib/api";
 import { useCachedData } from "../../lib/useCachedData";
@@ -15,6 +15,7 @@ export default function DetailProduit() {
   const { data: tousLesProduits } = useCachedData("produits_tous", `${API_URL}/api/produits`);
   const produit = (tousLesProduits || []).find((p) => p.id === id);
   const [ajoute, setAjoute] = useState(false);
+  const [photoPleinEcran, setPhotoPleinEcran] = useState(false);
   const { addToCart } = useCart();
 
   if (!produit) return <p className="text-center text-sm text-gray-400 py-10">Chargement...</p>;
@@ -46,7 +47,15 @@ export default function DetailProduit() {
     <div>
       <div className="relative h-64 bg-[#F6F6F6]">
         {produit.photo_url ? (
-          <img src={produit.photo_url} className="w-full h-full object-contain" />
+          <>
+            <img src={produit.photo_url} className="w-full h-full object-cover" />
+            <button
+              onClick={() => setPhotoPleinEcran(true)}
+              className="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-white/90 flex items-center justify-center"
+            >
+              <ZoomIn size={16} />
+            </button>
+          </>
         ) : (
           <div className="w-full h-full flex items-center justify-center text-5xl">📦</div>
         )}
@@ -112,6 +121,22 @@ export default function DetailProduit() {
           </div>
         )}
       </div>
+
+      {photoPleinEcran && (
+        <div
+          onClick={() => setPhotoPleinEcran(false)}
+          className="fixed inset-0 bg-black z-50 flex items-center justify-center"
+        >
+          <button
+            onClick={() => setPhotoPleinEcran(false)}
+            className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/20 flex items-center justify-center"
+          >
+            <X size={18} className="text-white" />
+          </button>
+          <img src={produit.photo_url} className="max-w-full max-h-full object-contain" />
+        </div>
+      )}
     </div>
   );
-}
+    }
+    

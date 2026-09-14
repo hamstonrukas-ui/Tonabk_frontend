@@ -1,4 +1,4 @@
-import { useState } from "react";
+          import { useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
 
@@ -22,7 +22,7 @@ function traduireErreurInscription(message) {
 export default function Inscription() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const redirect = searchParams.get("redirect") || "/";
+  const redirect = searchParams.get("redirect") || "/boutique/creer";
 
   const [email, setEmail] = useState("");
   const [surnom, setSurnom] = useState("");
@@ -52,8 +52,14 @@ export default function Inscription() {
 
     setLoading(false);
     if (error) return setErreur(traduireErreurInscription(error.message));
-    alert("Compte créé ! Vérifiez votre email pour confirmer votre inscription.");
-    navigate(`/connexion?redirect=${encodeURIComponent(redirect)}`);
+
+    if (data.session) {
+      // Compte immédiatement actif (pas de confirmation email requise) — on file directement
+      navigate(redirect);
+    } else {
+      alert("Compte créé ! Vérifiez votre email pour confirmer votre inscription.");
+      navigate(`/connexion?redirect=${encodeURIComponent(redirect)}`);
+    }
   };
 
   return (

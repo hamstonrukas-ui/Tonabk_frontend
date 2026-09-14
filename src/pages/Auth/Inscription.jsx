@@ -2,6 +2,23 @@ import { useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
 
+function traduireErreurInscription(message) {
+  const m = (message || "").toLowerCase();
+  if (m.includes("already registered") || m.includes("already exists")) {
+    return "Un compte existe déjà avec cet email. Connectez-vous plutôt, ou réinitialisez votre mot de passe.";
+  }
+  if (m.includes("invalid email") || m.includes("unable to validate email")) {
+    return "Cette adresse email n'est pas valide.";
+  }
+  if (m.includes("password")) {
+    return "Votre mot de passe doit contenir au moins 6 caractères.";
+  }
+  if (m.includes("network") || m.includes("fetch")) {
+    return "Connexion au serveur impossible. Vérifiez votre connexion internet.";
+  }
+  return "Une erreur est survenue lors de la création du compte. Réessayez.";
+}
+
 export default function Inscription() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -34,8 +51,8 @@ export default function Inscription() {
     });
 
     setLoading(false);
-    if (error) return setErreur(error.message);
-    alert("Compte créé ! Félicitations.");
+    if (error) return setErreur(traduireErreurInscription(error.message));
+    alert("Compte créé ! Vérifiez votre email pour confirmer votre inscription.");
     navigate(`/connexion?redirect=${encodeURIComponent(redirect)}`);
   };
 
@@ -51,12 +68,12 @@ export default function Inscription() {
           className="border border-gray-200 rounded-md px-3 py-2.5 text-sm w-full"
         />
         <input
-          type="tel" placeholder="Numéro de téléphone (WhatsApp)+243..." value={telephone} onChange={(e) => setTelephone(e.target.value)} required
+          type="tel" placeholder="Numéro de téléphone (WhatsApp)" value={telephone} onChange={(e) => setTelephone(e.target.value)} required
           className="border border-gray-200 rounded-md px-3 py-2.5 text-sm w-full"
         />
         <div>
           <input
-            type="text" placeholder="Choisissez un mot de passe" value={surnom}
+            type="text" placeholder="Choisissez un surnom" value={surnom}
             onChange={(e) => setSurnom(e.target.value)} required minLength={6}
             className="border border-gray-200 rounded-md px-3 py-2.5 text-sm w-full"
           />

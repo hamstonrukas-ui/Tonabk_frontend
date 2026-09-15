@@ -170,7 +170,7 @@ export default function CreerBoutique() {
           className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full"
         />
         <input
-          name="quartier" placeholder="Quartier" onChange={handleChange}
+          name="quartier" placeholder="Address" onChange={handleChange}
           className="border border-gray-200 rounded-md px-3 py-2 text-sm w-full"
         />
         <input

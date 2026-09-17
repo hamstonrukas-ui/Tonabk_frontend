@@ -5,7 +5,6 @@ import { useFavoris } from "../../lib/favoris";
 import { useCachedData } from "../../lib/useCachedData";
 import { supabase } from "../../lib/supabaseClient";
 import { API_URL } from "../../lib/api";
-import { obtenirMarque } from "../../lib/marque";
 
 const fmt = (n, devise) => n.toLocaleString("fr-FR") + " " + devise;
 

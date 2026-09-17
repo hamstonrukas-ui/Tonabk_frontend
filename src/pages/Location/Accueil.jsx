@@ -5,6 +5,7 @@ import { useFavoris } from "../../lib/favoris";
 import { useCachedData } from "../../lib/useCachedData";
 import { supabase } from "../../lib/supabaseClient";
 import { API_URL } from "../../lib/api";
+import { obtenirMarque } from "../../lib/marque";
 
 const fmt = (n, devise) => n.toLocaleString("fr-FR") + " " + devise;
 
@@ -18,7 +19,8 @@ const LABELS_TYPE = {
 };
 
 export default function Accueil() {
-  const { data } = useCachedData("maisons_accueil", `${API_URL}/api/maisons`);
+  const marque = obtenirMarque();
+  const { data } = useCachedData(`maisons_accueil_${marque.ville}`, `${API_URL}/api/maisons?ville=${marque.ville}`);
   const maisons = data || [];
   const [quartierFiltre, setQuartierFiltre] = useState("Tous");
   const { favoris, toggleFavori } = useFavoris();
@@ -164,4 +166,5 @@ export default function Accueil() {
       </div>
     </div>
   );
-}
+                }
+                

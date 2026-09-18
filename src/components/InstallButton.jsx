@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Download, X, Share } from "lucide-react";
+import { obtenirMarque } from "../lib/marque";
 
 function estIOS() {
   return /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -10,6 +11,7 @@ function estInstalle() {
 }
 
 export default function InstallButton() {
+  const marque = obtenirMarque();
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [afficherInstructionsIOS, setAfficherInstructionsIOS] = useState(false);
   const [installe, setInstalle] = useState(estInstalle());
@@ -58,7 +60,7 @@ export default function InstallButton() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-bold text-[#1B1B1B]">Installer TonaBk</p>
+              <p className="text-sm font-bold text-[#1B1B1B]">Installer {marque.nom}</p>
               <button onClick={() => setAfficherInstructionsIOS(false)}>
                 <X size={18} className="text-gray-400" />
               </button>
@@ -80,4 +82,4 @@ export default function InstallButton() {
     </>
   );
     }
-        
+

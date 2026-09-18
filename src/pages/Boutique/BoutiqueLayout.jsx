@@ -4,8 +4,10 @@ import { Store, ShoppingBag, ClipboardList, Star, Users, Bell, ArrowLeft, BadgeC
 import { useCart } from "../../context/CartContext";
 import { API_URL, SITE_URL } from "../../lib/api";
 import { cachedFetch } from "../../lib/cache";
+import { obtenirMarque } from "../../lib/marque";
 
 export default function BoutiqueLayout() {
+  const marque = obtenirMarque();
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const { cart } = useCart();
@@ -28,7 +30,7 @@ export default function BoutiqueLayout() {
 
   const partagerBoutique = async () => {
     const url = `${SITE_URL}/boutique/${id}`;
-    const texte = `Découvre "${boutique?.nom || "cette boutique"}" sur TonaBk !`;
+    const texte = `Découvre "${boutique?.nom || "cette boutique"}" sur ${marque.nom} !`;
 
     if (navigator.share) {
       try {
@@ -119,4 +121,5 @@ export default function BoutiqueLayout() {
       </div>
     </div>
   );
-}
+    }
+              

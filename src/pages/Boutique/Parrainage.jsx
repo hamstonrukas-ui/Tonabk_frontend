@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+  import { useState, useEffect } from "react";
 import { useOutletContext, useNavigate } from "react-router-dom";
 import { MessageCircle, Copy, Check as CheckIcon } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 import { API_URL, SITE_URL } from "../../lib/api";
+import { obtenirMarque } from "../../lib/marque";
 
 export default function Parrainage() {
+  const marque = obtenirMarque();
   const { boutiqueId, boutique } = useOutletContext();
   const navigate = useNavigate();
   const [code, setCode] = useState(null);
@@ -45,7 +47,7 @@ export default function Parrainage() {
   };
 
   const shareReferralWhatsApp = () => {
-    const msg = `Découvre ${boutique?.nom || "cette boutique"} sur TonaBk ! Utilise mon code ${code} pour une réduction sur ta commande : ${referralLink}`;
+    const msg = `Découvre ${boutique?.nom || "cette boutique"} sur ${marque.nom} ! Utilise mon code ${code} pour une réduction sur ta commande : ${referralLink}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
@@ -115,4 +117,5 @@ export default function Parrainage() {
     </div>
   );
     }
-              
+
+        

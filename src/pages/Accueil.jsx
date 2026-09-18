@@ -5,11 +5,13 @@ import { useCachedData } from "../lib/useCachedData";
 import { supabase } from "../lib/supabaseClient";
 import { API_URL } from "../lib/api";
 import Footer from "../components/Footer";
+import { obtenirMarque } from "../lib/marque";
 
 const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
 const PRODUITS_PAR_PAGE = 30;
 
 export default function Accueil() {
+  const marque = obtenirMarque();
   const [page, setPage] = useState(1);
   const [maBoutique, setMaBoutique] = useState(null);
 
@@ -30,12 +32,12 @@ export default function Accueil() {
   }, []);
 
   const { data: reponseProduits } = useCachedData(
-    `produits_accueil_page_${page}`,
-    `${API_URL}/api/produits/accueil?page=${page}&limit=${PRODUITS_PAR_PAGE}`,
+    `produits_accueil_page_${page}_${marque.ville}`,
+    `${API_URL}/api/produits/accueil?page=${page}&limit=${PRODUITS_PAR_PAGE}&ville=${marque.ville}`,
     {},
     [page]
   );
-  const { data: boutiques } = useCachedData("boutiques_accueil", `${API_URL}/api/boutiques`);
+  const { data: boutiques } = useCachedData(`boutiques_accueil_${marque.ville}`, `${API_URL}/api/boutiques?ville=${marque.ville}`);
 
   const produits = reponseProduits?.data || [];
   const totalPages = reponseProduits?.totalPages || 1;
@@ -59,7 +61,7 @@ export default function Accueil() {
       <div className="bg-gradient-to-b from-[#F5720C] to-[#C9560A] px-4 lg:px-8 pt-3 pb-4">
         <div className="flex items-center justify-between mb-1 max-w-3xl mx-auto lg:mx-0">
           <span className="text-xl font-extrabold text-white">
-            Tona<span className="bg-white text-[#1B1B1B] px-1 rounded">Bk</span>
+            {marque.nom.slice(0, -2)}<span className="bg-white text-[#1B1B1B] px-1 rounded">{marque.nom.slice(-2)}</span>
           </span>
           <div className="flex items-center gap-2">
             {maBoutique && (
@@ -113,7 +115,7 @@ export default function Accueil() {
             </div>
             <div className="p-2.5">
               <p className="text-[11.5px] text-gray-800 font-medium leading-tight h-8 overflow-hidden">{p.nom}</p>
-              <p className="text-sm font-extrabold mt-1">{fmt(p.prix, p.devise)}</p>
+              <p className="text-sm font-extrabold mt-1">{fmt(p.prix_gros || p.prix, p.devise)}</p>
               <p className="text-[9px] font-semibold text-[#F5720C] mt-0.5">Voir détails →</p>
               <div className="flex items-center gap-1">
                 <p className="text-[9px] text-gray-400">{p.boutiques?.nom}</p>
@@ -192,7 +194,7 @@ export default function Accueil() {
 
       <div className="mx-3 lg:mx-8 mt-4 border-[1.5px] border-dashed border-[#F5720C] rounded-xl p-3.5 flex items-center gap-2.5 bg-[#FFF8F2] max-w-3xl">
         <div className="flex-1">
-          <p className="text-xs font-extrabold text-[#1B1B1B]">Vendez sur TonaBk</p>
+          <p className="text-xs font-extrabold text-[#1B1B1B]">Vendez sur {marque.nom}</p>
           <p className="text-[10px] text-gray-400">Créez votre boutique gratuitement</p>
         </div>
         <Link to="/boutique/creer" className="bg-[#F5720C] text-white text-xs font-semibold px-3 py-2 rounded-lg">
@@ -200,9 +202,15 @@ export default function Accueil() {
         </Link>
       </div>
 
+      <a
+        href={marque.autreDomaine}
+        className="flex items-center justify-center gap-1 mx-3 lg:mx-8 mt-4 mb-2 text-xs font-semibold text-gray-400"
+      >
+        Passer vers {marque.autreMarque} <ChevronRight size={13} />
+      </a>
+
       <Footer />
     </div>
   );
   }
-
-        
+    

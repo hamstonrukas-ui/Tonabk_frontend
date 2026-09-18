@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Download, X } from "lucide-react";
+import { obtenirMarque } from "../lib/marque";
 
 export default function InstallPrompt() {
+  const marque = obtenirMarque();
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [visible, setVisible] = useState(false);
 
@@ -42,7 +44,7 @@ export default function InstallPrompt() {
         <Download size={18} className="text-white" />
       </div>
       <div className="flex-1">
-        <p className="text-sm font-bold text-white">Installer TonaBk</p>
+        <p className="text-sm font-bold text-white">Installer {marque.nom}</p>
         <p className="text-[11px] text-gray-300">Accès rapide depuis votre écran d'accueil</p>
       </div>
       <button onClick={installer} className="bg-[#F5720C] text-white text-xs font-semibold px-3 py-1.5 rounded-lg flex-shrink-0">

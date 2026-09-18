@@ -1,32 +1,37 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronDown, ChevronUp, Store, Info, ShieldCheck } from "lucide-react";
+import { obtenirMarque } from "../lib/marque";
 
-const sections = [
-  {
-    titre: "Boutiques",
-    icone: Store,
-    liens: [
-      { label: "Découvrir les boutiques", to: "/boutique/populaires" },
-      { label: "Créer ma boutique", to: "/boutique/creer" },
-    ],
-  },
-  {
-    titre: "À propos",
-    icone: Info,
-    liens: [
-      { label: "Qui sommes-nous", to: "/a-propos" },
-      { label: "Comment fonctionne TonaBk", to: "/comment-ca-marche" },
-    ],
-  },
-  {
-    titre: "Légal",
-    icone: ShieldCheck,
-    liens: [{ label: "Politique de confidentialité", to: "/confidentialite" }],
-  },
-];
+function obtenirSections(nomMarque) {
+  return [
+    {
+      titre: "Boutiques",
+      icone: Store,
+      liens: [
+        { label: "Découvrir les boutiques", to: "/boutique/populaires" },
+        { label: "Créer ma boutique", to: "/boutique/creer" },
+      ],
+    },
+    {
+      titre: "À propos",
+      icone: Info,
+      liens: [
+        { label: "Qui sommes-nous", to: "/a-propos" },
+        { label: `Comment fonctionne ${nomMarque}`, to: "/comment-ca-marche" },
+      ],
+    },
+    {
+      titre: "Légal",
+      icone: ShieldCheck,
+      liens: [{ label: "Politique de confidentialité", to: "/confidentialite" }],
+    },
+  ];
+}
 
 export default function Footer() {
+  const marque = obtenirMarque();
+  const sections = obtenirSections(marque.nom);
   const [ouvert, setOuvert] = useState(null);
   const annee = new Date().getFullYear();
 
@@ -60,9 +65,10 @@ export default function Footer() {
         );
       })}
 
-      <p className="text-[10.5px] text-gray-400 text-center py-5">© {annee} TonaBk — Tous droits réservés</p>
+      <p className="text-[10.5px] text-gray-400 text-center py-5">© {annee} {marque.nom} — Tous droits réservés</p>
     </div>
   );
 }
 
+        
                     

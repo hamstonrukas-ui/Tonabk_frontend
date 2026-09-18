@@ -5,10 +5,12 @@ import { useCart } from "../../context/CartContext";
 import { API_URL } from "../../lib/api";
 import { useCachedData } from "../../lib/useCachedData";
 import { enregistrerClicWhatsapp } from "../../lib/analytics";
+import { obtenirMarque } from "../../lib/marque";
 
 const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
 
 export default function DetailProduit() {
+  const marque = obtenirMarque();
   const { id } = useParams();
   const location = useLocation();
   const depuisAccueil = !!location.state?.depuisAccueil;
@@ -22,7 +24,7 @@ export default function DetailProduit() {
 
   const partager = () => {
     const nomBoutique = produit.boutiques?.nom ? ` (${produit.boutiques.nom})` : "";
-    const texte = `Regarde ce produit sur TonaBk${nomBoutique} : ${produit.nom} — ${fmt(produit.prix, produit.devise)}`;
+    const texte = `Regarde ce produit sur ${marque.nom}${nomBoutique} : ${produit.nom} — ${fmt(produit.prix, produit.devise)}`;
     const url = `${API_URL}/partage/produit/${produit.id}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(`${texte}\n${url}`)}`, "_blank");
   };
@@ -34,7 +36,7 @@ export default function DetailProduit() {
 
   const handleAcheter = () => {
     const numero = produit.boutiques?.telephone?.replace(/\D/g, "");
-    const msg = `Bonjour, je suis intéressé(e) par "${produit.nom}" (${fmt(produit.prix, produit.devise)}) vu sur TonaBk.`;
+    const msg = `Bonjour, je suis intéressé(e) par "${produit.nom}" (${fmt(produit.prix, produit.devise)}) vu sur ${marque.nom}.`;
     if (numero) {
       enregistrerClicWhatsapp("produit", produit.id);
       window.open(`https://wa.me/${numero}?text=${encodeURIComponent(msg)}`, "_blank");
@@ -138,5 +140,5 @@ export default function DetailProduit() {
       )}
     </div>
   );
-    }
-    
+      }
+      

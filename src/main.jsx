@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import { registerSW } from "virtual:pwa-register";
 import App from "./App";
 import "./index.css";
+import { obtenirMarque } from "./lib/marque";
 
 // Enregistre le Service Worker : met l'app à jour automatiquement en arrière-plan
 // dès qu'une connexion est disponible, sans jamais bloquer l'utilisateur.
@@ -14,7 +15,7 @@ const updateSW = registerSW({
     updateSW(true);
   },
   onOfflineReady() {
-    console.log("TonaBk est prêt à fonctionner hors ligne.");
+    console.log(`${obtenirMarque().nom} est prêt à fonctionner hors ligne.`);
   },
 });
 

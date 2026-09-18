@@ -5,10 +5,12 @@ import { useCart } from "../../context/CartContext";
 import { supabase } from "../../lib/supabaseClient";
 import { API_URL } from "../../lib/api";
 import { useCachedData } from "../../lib/useCachedData";
+import { obtenirMarque } from "../../lib/marque";
 
 const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
 
 export default function Catalogue() {
+  const marque = obtenirMarque();
   const { boutiqueId } = useOutletContext();
   const { data: produitsData, loading } = useCachedData(
     `produits_boutique_${boutiqueId}`,
@@ -52,7 +54,7 @@ export default function Catalogue() {
 
   const shareProduct = (p) => {
     const nomBoutique = p.boutiques?.nom ? ` (${p.boutiques.nom})` : "";
-    const texte = `Regarde ce produit sur TonaBk${nomBoutique} : ${p.nom} — ${fmt(p.prix, p.devise)}`;
+    const texte = `Regarde ce produit sur ${marque.nom}${nomBoutique} : ${p.nom} — ${fmt(p.prix, p.devise)}`;
     const url = `${API_URL}/partage/produit/${p.id}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(`${texte}\n${url}`)}`, "_blank");
   };
@@ -130,4 +132,4 @@ export default function Catalogue() {
   );
 }
 
-        
+    

@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { obtenirMarque } from "../lib/marque";
 
 export default function Confidentialite() {
+  const marque = obtenirMarque();
   return (
     <div>
       <div className="bg-[#F5720C] px-4 pt-4 pb-6">
@@ -10,7 +12,7 @@ export default function Confidentialite() {
         </Link>
         <h1 className="text-xl font-extrabold text-white mb-1.5">Politique de confidentialité</h1>
         <p className="text-[12.5px] text-white/80 leading-relaxed">
-          Ce que TonaBk collecte comme informations, et comment nous les utilisons pour faire
+          Ce que {marque.nom} collecte comme informations, et comment nous les utilisons pour faire
           fonctionner la plateforme.
         </p>
       </div>

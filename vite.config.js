@@ -1,17 +1,24 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), "");
+  const nomMarque = env.VITE_MARQUE_NOM || "TonaBk";
+  const descriptionMarque = env.VITE_MARQUE_VILLE
+    ? `Marketplace, location de maisons et requêtes à ${env.VITE_MARQUE_VILLE}`
+    : "Marketplace, location de maisons et requêtes au Kivu";
+
+  return {
   plugins: [
     react(),
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "robots.txt"],
       manifest: {
-        name: "TonaBk",
-        short_name: "TonaBk",
-        description: "Marketplace, location de maisons et requêtes à Bukavu",
+        name: nomMarque,
+        short_name: nomMarque,
+        description: descriptionMarque,
         theme_color: "#F5720C",
         background_color: "#F3F3F3",
         display: "standalone",
@@ -54,4 +61,6 @@ export default defineConfig({
       "/api": "http://localhost:3000",
     },
   },
+  };
 });
+      

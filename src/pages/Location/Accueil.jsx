@@ -5,6 +5,7 @@ import { useFavoris } from "../../lib/favoris";
 import { useCachedData } from "../../lib/useCachedData";
 import { supabase } from "../../lib/supabaseClient";
 import { API_URL } from "../../lib/api";
+import { obtenirMarque } from "../../lib/marque";
 
 const fmt = (n, devise) => n.toLocaleString("fr-FR") + " " + devise;
 
@@ -64,7 +65,7 @@ export default function Accueil() {
         </div>
         <div className="flex-1">
           <p className="text-sm font-bold text-white">Publier une maison</p>
-          <p className="text-[11px] text-white/80">Louez votre bien via TonaBk</p>
+          <p className="text-[11px] text-white/80">Louez votre bien via {marque.nom}</p>
         </div>
       </Link>
 
@@ -165,4 +166,5 @@ export default function Accueil() {
       </div>
     </div>
   );
-}
+    }
+                  

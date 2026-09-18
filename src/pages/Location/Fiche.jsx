@@ -3,10 +3,12 @@ import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, MapPin, BedDouble, Bath, MessageCircle } from "lucide-react";
 import { API_URL } from "../../lib/api";
 import { enregistrerClicWhatsapp } from "../../lib/analytics";
+import { obtenirMarque } from "../../lib/marque";
 
 const fmt = (n, devise) => n.toLocaleString("fr-FR") + " " + devise;
 
 export default function Fiche() {
+  const marque = obtenirMarque();
   const { id } = useParams();
   const [maison, setMaison] = useState(null);
 
@@ -17,7 +19,7 @@ export default function Fiche() {
   if (!maison) return <p className="text-center text-sm text-gray-400 py-10">Chargement...</p>;
 
   const contacterWhatsApp = () => {
-    const msg = `Bonjour, je suis intéressé(e) par "${maison.titre}" à ${maison.quartier} (${fmt(maison.prix, maison.devise)}/mois) sur TonaBk.`;
+    const msg = `Bonjour, je suis intéressé(e) par "${maison.titre}" à ${maison.quartier} (${fmt(maison.prix, maison.devise)}/mois) sur ${marque.nom}.`;
     enregistrerClicWhatsapp("maison", maison.id);
     window.open(`https://wa.me/${maison.telephone.replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`, "_blank");
   };
@@ -69,5 +71,5 @@ export default function Fiche() {
       </div>
     </div>
   );
-      }
-
+            }
+      

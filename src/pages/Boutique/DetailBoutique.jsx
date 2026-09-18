@@ -1,28 +1,25 @@
-import { useEffect, useState } from "react";
+            import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, MapPin, BadgeCheck, MessageCircle } from "lucide-react";
 import { API_URL } from "../../lib/api";
-import { enregistrerClicWhatsapp, enregistrerVisiteSession } from "../../lib/analytics";
+import { enregistrerClicWhatsapp } from "../../lib/analytics";
+import { obtenirMarque } from "../../lib/marque";
 
 const fmt = (n) => n.toLocaleString("fr-FR") + " FC";
 
 export default function DetailBoutique() {
+  const marque = obtenirMarque();
   const { id } = useParams();
   const [boutique, setBoutique] = useState(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/boutiques/${id}`)
-      .then((r) => r.json())
-      .then((data) => {
-        setBoutique(data);
-        enregistrerVisiteSession("boutique", id);
-      });
+    fetch(`${API_URL}/api/boutiques/${id}`).then((r) => r.json()).then(setBoutique);
   }, [id]);
 
   if (!boutique) return <p className="text-center text-sm text-gray-400 py-10">Chargement...</p>;
 
   const contacterWhatsApp = () => {
-    const msg = `Bonjour, j'ai vu votre boutique "${boutique.nom}" sur TonaBk.`;
+    const msg = `Bonjour, j'ai vu votre boutique "${boutique.nom}" sur ${marque.nom}.`;
     enregistrerClicWhatsapp("boutique", boutique.id);
     window.open(`https://wa.me/${boutique.telephone?.replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`, "_blank");
   };
@@ -88,4 +85,3 @@ export default function DetailBoutique() {
     </div>
   );
 }
-  

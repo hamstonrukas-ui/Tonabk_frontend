@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
 import { API_URL } from "../../lib/api";
 import { useCachedData } from "../../lib/useCachedData";
+import { obtenirMarque } from "../../lib/marque";
 
 export default function ListeRequetes() {
+  const marque = obtenirMarque();
   const { data } = useCachedData("requetes", `${API_URL}/api/requetes`);
   const requetes = data || [];
 
@@ -11,7 +13,7 @@ export default function ListeRequetes() {
       <div className="bg-[#1B1B1B] rounded-xl p-4 text-white flex items-center gap-3 mb-4">
         <span className="text-2xl">🔎</span>
         <div className="flex-1">
-          <p className="text-sm font-bold">Introuvable sur TonaBk ?</p>
+          <p className="text-sm font-bold">Introuvable sur {marque.nom} ?</p>
           <p className="text-xs text-gray-300">Publiez une requête, on le cherche pour vous</p>
         </div>
         <Link to="/requete/publier" className="bg-[#F5720C] text-xs font-bold px-3 py-2 rounded-full whitespace-nowrap">
@@ -45,4 +47,4 @@ export default function ListeRequetes() {
       </div>
     </div>
   );
-}
+        }

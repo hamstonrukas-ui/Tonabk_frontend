@@ -3,8 +3,10 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
 import { API_URL } from "../../lib/api";
 import { analyserNettete } from "../../lib/detectionFlou";
+import { obtenirMarque } from "../../lib/marque";
 
 export default function Publier() {
+  const marque = obtenirMarque();
   const navigate = useNavigate();
   const [chargement, setChargement] = useState(true);
   const [connecte, setConnecte] = useState(false);
@@ -179,7 +181,7 @@ export default function Publier() {
       <div className="p-3">
         <div className="bg-white rounded-xl p-5 text-center">
           <p className="text-3xl mb-3">🏠</p>
-          <p className="text-sm font-bold text-[#1B1B1B] mb-2">Publiez votre maison sur TonaBk</p>
+          <p className="text-sm font-bold text-[#1B1B1B] mb-2">Publiez votre maison sur {marque.nom}</p>
           <p className="text-sm text-gray-500 mb-4">
             Créez un compte gratuitement pour publier vos annonces de location. Une fois connecté, vous
             pourrez publier autant de maisons que vous voulez et les gérer depuis votre propre espace.
@@ -331,3 +333,4 @@ export default function Publier() {
     </form>
   );
 }
+  

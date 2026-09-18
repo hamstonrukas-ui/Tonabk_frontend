@@ -3,10 +3,12 @@ import { Plus, Minus, Trash2, MessageCircle } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { API_URL } from "../../lib/api";
 import { useCachedData } from "../../lib/useCachedData";
+import { obtenirMarque } from "../../lib/marque";
 
 const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
 
 export default function Panier() {
+  const marque = obtenirMarque();
   const { boutiqueId } = useOutletContext();
   const { cart, addToCart, decFromCart, removeFromCart } = useCart();
   const { data: produitsData } = useCachedData(
@@ -32,7 +34,7 @@ export default function Panier() {
 
   const sendReminder = () => {
     const totalTexte = Object.entries(sousTotauxParDevise).map(([d, t]) => fmt(t, d)).join(" + ");
-    const msg = `Bonjour, il vous reste des articles dans votre panier chez TonaBk 👀 Total : ${totalTexte}. Finalisez votre commande.`;
+    const msg = `Bonjour, il vous reste des articles dans votre panier chez ${marque.nom} 👀 Total : ${totalTexte}. Finalisez votre commande.`;
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
@@ -86,4 +88,5 @@ export default function Panier() {
       </button>
     </div>
   );
-      }
+    }
+      

@@ -1,16 +1,18 @@
 import { Link } from "react-router-dom";
 import { ArrowLeft, Building2, Store, Search } from "lucide-react";
+import { obtenirMarque } from "../lib/marque";
 
 export default function CommentCaMarche() {
+  const marque = obtenirMarque();
   return (
     <div>
       <div className="bg-[#F5720C] px-4 pt-4 pb-6">
         <Link to="/" className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center mb-3">
           <ArrowLeft size={16} className="text-white" />
         </Link>
-        <h1 className="text-xl font-extrabold text-white mb-1.5">Comment fonctionne TonaBk</h1>
+        <h1 className="text-xl font-extrabold text-white mb-1.5">Comment fonctionne {marque.nom}</h1>
         <p className="text-[12.5px] text-white/80 leading-relaxed">
-          Trois façons simples d'utiliser TonaBk : louer une maison, acheter dans une boutique, ou
+          Trois façons simples d'utiliser {marque.nom} : louer une maison, acheter dans une boutique, ou
           demander ce que vous ne trouvez pas.
         </p>
       </div>
@@ -46,7 +48,7 @@ export default function CommentCaMarche() {
             <p className="text-sm font-bold text-[#1B1B1B]">Requêtes</p>
           </div>
           <p className="text-[12.5px] text-gray-600 leading-relaxed">
-            Vous cherchez un produit ou un service que vous ne trouvez pas sur TonaBk ? Publiez une
+            Vous cherchez un produit ou un service que vous ne trouvez pas sur {marque.nom} ? Publiez une
             requête décrivant ce dont vous avez besoin, et les boutiques ou particuliers intéressés
             pourront vous répondre directement.
           </p>

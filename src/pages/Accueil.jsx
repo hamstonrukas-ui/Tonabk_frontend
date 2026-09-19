@@ -61,7 +61,7 @@ export default function Accueil() {
       <div className="bg-gradient-to-b from-[#F5720C] to-[#C9560A] px-4 lg:px-8 pt-3 pb-4">
         <div className="flex items-center justify-between mb-1 max-w-3xl mx-auto lg:mx-0">
           <span className="text-xl font-extrabold text-white">
-            {marque.nom.slice(0, -2)}<span className="bg-white text-[#1B1B1B] px-1 rounded">{marque.nom.slice(-2)}</span>
+            {marque.prefixe}<span className="bg-white text-[#1B1B1B] px-1 rounded">{marque.suffixe}</span>
           </span>
           <div className="flex items-center gap-2">
             {maBoutique && (
@@ -78,7 +78,10 @@ export default function Accueil() {
             </Link>
           </div>
         </div>
-        <p className="text-[16px] text-white/80 mb-2.5">Grand marché du Kivu</p>
+        <p className="text-[16px] text-white/80 mb-1">Grand marché du Kivu</p>
+        <a href={marque.autreDomaine} className="inline-flex items-center gap-0.5 mb-2.5 text-[11px] font-semibold text-white/80">
+          Passer vers {marque.autreMarque} <ChevronRight size={12} />
+        </a>
         <Link to="/boutique/recherche" className="max-w-3xl bg-white rounded-lg flex items-center gap-2 px-3 py-2.5 text-xs text-gray-400">
           <Search size={15} /> Chaussures, smartphone, riz...
         </Link>
@@ -201,13 +204,6 @@ export default function Accueil() {
           Créer
         </Link>
       </div>
-
-      <a
-        href={marque.autreDomaine}
-        className="flex items-center justify-center gap-1 mx-3 lg:mx-8 mt-4 mb-2 text-xs font-semibold text-gray-400"
-      >
-        Passer vers {marque.autreMarque} <ChevronRight size={13} />
-      </a>
 
       <Footer />
     </div>

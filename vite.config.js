@@ -11,6 +11,15 @@ export default defineConfig(({ mode }) => {
 
   return {
   plugins: [
+    // %VITE_MARQUE_NOM% est remplacé automatiquement par Vite (variable d'env réelle).
+    // %VITE_MARQUE_DESCRIPTION% est calculée ici (pas une vraie variable d'env),
+    // donc on l'injecte nous-même dans le HTML au moment du build.
+    {
+      name: "injecter-description-marque",
+      transformIndexHtml(html) {
+        return html.replace("%VITE_MARQUE_DESCRIPTION%", descriptionMarque);
+      },
+    },
     react(),
     VitePWA({
       registerType: "autoUpdate",
@@ -63,4 +72,4 @@ export default defineConfig(({ mode }) => {
   },
   };
 });
-      
+

@@ -14,8 +14,17 @@ export default function DetailProduit() {
   const { id } = useParams();
   const location = useLocation();
   const depuisAccueil = !!location.state?.depuisAccueil;
+  // Rapide si le produit est déjà en cache (venant du catalogue déjà parcouru).
   const { data: tousLesProduits } = useCachedData("produits_tous", `${API_URL}/api/produits`);
-  const produit = (tousLesProduits || []).find((p) => p.id === id);
+  const produitEnCache = (tousLesProduits || []).find((p) => p.id === id);
+
+  // Sinon (ex. arrivée directe via un lien WhatsApp partagé), on ne charge que ce produit-là.
+  const { data: produitSeul } = useCachedData(
+    produitEnCache ? null : `produit_${id}`,
+    produitEnCache ? null : `${API_URL}/api/produits/${id}`
+  );
+
+  const produit = produitEnCache || produitSeul;
   const [ajoute, setAjoute] = useState(false);
   const [photoPleinEcran, setPhotoPleinEcran] = useState(false);
   const { addToCart } = useCart();
@@ -140,6 +149,5 @@ export default function DetailProduit() {
       )}
     </div>
   );
-      }
-
-      
+}
+  

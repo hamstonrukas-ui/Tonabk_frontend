@@ -55,7 +55,7 @@ export default function Catalogue() {
   const shareProduct = (p) => {
     const nomBoutique = p.boutiques?.nom ? ` (${p.boutiques.nom})` : "";
     const texte = `Regarde ce produit sur ${marque.nom}${nomBoutique} : ${p.nom} — ${fmt(p.prix, p.devise)}`;
-    const url = `${API_URL}/partage/produit/${p.id}`;
+    const url = `${API_URL}/partage/produit/${p.id}?v=${Date.now()}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(`${texte}\n${url}`)}`, "_blank");
   };
 
@@ -131,5 +131,6 @@ export default function Catalogue() {
     </div>
   );
 }
+
 
     

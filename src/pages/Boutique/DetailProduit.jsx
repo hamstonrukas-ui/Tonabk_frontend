@@ -25,7 +25,7 @@ export default function DetailProduit() {
   const partager = () => {
     const nomBoutique = produit.boutiques?.nom ? ` (${produit.boutiques.nom})` : "";
     const texte = `Regarde ce produit sur ${marque.nom}${nomBoutique} : ${produit.nom} — ${fmt(produit.prix, produit.devise)}`;
-    const url = `${API_URL}/partage/produit/${produit.id}`;
+    const url = `${API_URL}/partage/produit/${produit.id}?v=${Date.now()}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(`${texte}\n${url}`)}`, "_blank");
   };
 
@@ -36,7 +36,7 @@ export default function DetailProduit() {
 
   const handleAcheter = () => {
     const numero = produit.boutiques?.telephone?.replace(/\D/g, "");
-    const lienPhoto = `${API_URL}/partage/produit/${produit.id}`;
+    const lienPhoto = `${API_URL}/partage/produit/${produit.id}?v=${Date.now()}`;
     const msg = `Bonjour, je suis intéressé(e) par "${produit.nom}" (${fmt(produit.prix, produit.devise)}) vu sur ${marque.nom}.\n${lienPhoto}`;
     if (numero) {
       enregistrerClicWhatsapp("produit", produit.id);
@@ -142,4 +142,5 @@ export default function DetailProduit() {
     </div>
   );
       }
-      
+
+            

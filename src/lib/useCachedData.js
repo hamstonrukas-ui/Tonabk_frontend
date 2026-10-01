@@ -29,7 +29,8 @@ function ecrireCache(cacheKey, data) {
  * est déclenché (3s après l'ouverture de l'app, ou au retour de connexion).
  */
 export function useCachedData(key, url, options = {}, deps = []) {
-  const cacheKey = PREFIX + key;
+  const actif = !!key && !!url;
+  const cacheKey = PREFIX + (key || "desactive");
   const cache = lireCache(cacheKey);
 
   const [data, setData] = useState(cache?.data ?? null);
@@ -84,6 +85,12 @@ export function useCachedData(key, url, options = {}, deps = []) {
   }
 
   useEffect(() => {
+    if (!actif) {
+      setData(null);
+      setLoading(false);
+      setRevalidating(false);
+      return;
+    }
     const annuler = revalider(false);
 
     const surRevalidationGlobale = () => revalider(true);
@@ -98,4 +105,5 @@ export function useCachedData(key, url, options = {}, deps = []) {
 
   return { data, loading, revalidating, erreur };
 }
-  
+
+    

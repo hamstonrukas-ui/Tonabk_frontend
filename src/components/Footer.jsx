@@ -6,7 +6,7 @@ import { obtenirMarque } from "../lib/marque";
 // Remplacez ces liens par les vraies pages de TonaBk
 const RESEAUX_SOCIAUX = [
   { nom: "Facebook", href: "https://www.facebook.com/profile.php?id=61594085591693", Icone: Facebook },
-  { nom: "TikTok", href: "https://tiktok.com/@", Icone: ({ size = 17, ...props }) => (
+  { nom: "TikTok", href: "https://vm.tiktok.com/ZS9DMdDsE1q1v-9OFEq/", Icone: ({ size = 17, ...props }) => (
       <svg viewBox="0 0 24 24" fill="currentColor" width={size} height={size} {...props}>
         <path d="M16.6 5.82c-1.05-1.02-1.66-2.4-1.66-3.82h-3.13v13.62c0 1.5-1.22 2.72-2.72 2.72a2.72 2.72 0 0 1 0-5.44c.28 0 .55.04.8.12V9.9a5.86 5.86 0 0 0-.8-.06 5.85 5.85 0 1 0 5.85 5.85V8.4a8.97 8.97 0 0 0 4.66 1.3V6.6a5.65 5.65 0 0 1-3-.78z" />
       </svg>

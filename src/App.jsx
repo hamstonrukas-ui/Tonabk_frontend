@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import BarreNavigation from "./components/BarreNavigation";
-import InstallPrompt from "./components/InstallPrompt";
 import InstallButton from "./components/InstallButton";
 import ActualiserBouton from "./components/ActualiserBouton";
 import { CartProvider } from "./context/CartContext";
@@ -79,7 +78,6 @@ export default function App() {
   return (
     <BrowserRouter>
       <CartProvider>
-        <InstallPrompt />
         <InstallButton />
         <Routes>
           {/* Accueil */}

@@ -5,7 +5,7 @@ import { obtenirMarque } from "../../lib/marque";
 
 export default function ListeRequetes() {
   const marque = obtenirMarque();
-  const { data } = useCachedData("requetes", `${API_URL}/api/requetes`);
+  const { data } = useCachedData(`requetes_${marque.ville}`, `${API_URL}/api/requetes?ville=${marque.ville}`);
   const requetes = data || [];
 
   return (
@@ -47,4 +47,4 @@ export default function ListeRequetes() {
       </div>
     </div>
   );
-        }
+}

@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
 import { API_URL } from "../../lib/api";
+import { obtenirMarque } from "../../lib/marque";
 
 export default function PublierRequete() {
   const navigate = useNavigate();
+  const marque = obtenirMarque();
   const [categories, setCategories] = useState([]);
   const [description, setDescription] = useState("");
   const [categorieId, setCategorieId] = useState("");
@@ -41,6 +43,7 @@ export default function PublierRequete() {
           categorie_id: categorieId || null,
           telephone,
           budget_estime: budget ? Number(budget) : null,
+          ville: session.user.user_metadata?.ville || marque.ville,
         }),
         signal: controller.signal,
       });
@@ -112,4 +115,4 @@ export default function PublierRequete() {
       </button>
     </form>
   );
-}
+      }

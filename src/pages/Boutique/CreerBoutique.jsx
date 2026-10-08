@@ -6,7 +6,7 @@ import { API_URL } from "../../lib/api";
 export default function CreerBoutique() {
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
-  const [form, setForm] = useState({ nom: "", categorie_id: "", description: "", telephone: "", ville: "Bukavu", commune: "", quartier: "" });
+  const [form, setForm] = useState({ nom: "", categorie_id: "", description: "", telephone: "", ville: "", commune: "", quartier: "" });
   const [logo, setLogo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [erreur, setErreur] = useState("");
@@ -28,6 +28,8 @@ export default function CreerBoutique() {
         return;
       }
       setConnecte(true);
+      const villeCompte = session.user.user_metadata?.ville;
+      if (villeCompte) setForm((f) => ({ ...f, ville: villeCompte }));
 
       const res = await fetch(`${API_URL}/api/boutiques/mine`, {
         headers: { Authorization: `Bearer ${session.access_token}` },
@@ -195,4 +197,5 @@ export default function CreerBoutique() {
     </div>
   );
         }
-        
+
+            

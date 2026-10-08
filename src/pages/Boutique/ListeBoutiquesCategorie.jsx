@@ -2,13 +2,15 @@ import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, BadgeCheck, MapPin } from "lucide-react";
 import { API_URL } from "../../lib/api";
 import { useCachedData } from "../../lib/useCachedData";
+import { obtenirMarque } from "../../lib/marque";
 
 export default function ListeBoutiquesCategorie() {
   const { categorieId } = useParams();
+  const marque = obtenirMarque();
 
   const { data: boutiquesData } = useCachedData(
-    `boutiques_categorie_${categorieId}`,
-    `${API_URL}/api/boutiques?categorie_id=${categorieId}`,
+    `boutiques_categorie_${categorieId}_${marque.ville}`,
+    `${API_URL}/api/boutiques?categorie_id=${categorieId}&ville=${marque.ville}`,
     {},
     [categorieId]
   );
@@ -58,5 +60,6 @@ export default function ListeBoutiquesCategorie() {
       </div>
     </div>
   );
-          }
-                
+}
+
+          

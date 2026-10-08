@@ -1,6 +1,7 @@
           import { useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
+import { obtenirMarque, listeVilles } from "../../lib/marque";
 
 function traduireErreurInscription(message) {
   const m = (message || "").toLowerCase();
@@ -24,9 +25,11 @@ export default function Inscription() {
   const [searchParams] = useSearchParams();
   const redirect = searchParams.get("redirect") || "/boutique/creer";
 
+  const marque = obtenirMarque();
   const [email, setEmail] = useState("");
   const [surnom, setSurnom] = useState("");
   const [telephone, setTelephone] = useState("");
+  const [ville, setVille] = useState(marque.ville);
   const [loading, setLoading] = useState(false);
   const [erreur, setErreur] = useState("");
 
@@ -45,7 +48,7 @@ export default function Inscription() {
       email,
       password: surnom,
       options: {
-        data: { telephone, surnom },
+        data: { telephone, surnom, ville },
         emailRedirectTo: `${window.location.origin}${redirect}`,
       },
     });
@@ -77,9 +80,17 @@ export default function Inscription() {
           type="tel" placeholder="Numéro de téléphone (WhatsApp)" value={telephone} onChange={(e) => setTelephone(e.target.value)} required
           className="border border-gray-200 rounded-md px-3 py-2.5 text-sm w-full"
         />
+        <select
+          value={ville} onChange={(e) => setVille(e.target.value)} required
+          className="border border-gray-200 rounded-md px-3 py-2.5 text-sm w-full"
+        >
+          {listeVilles().map((v) => (
+            <option key={v.cle} value={v.ville}>{v.ville}</option>
+          ))}
+        </select>
         <div>
           <input
-            type="text" placeholder="Choisissez un surnom" value={surnom}
+            type="text" placeholder="Choisissez un mot de passe" value={surnom}
             onChange={(e) => setSurnom(e.target.value)} required minLength={6}
             className="border border-gray-200 rounded-md px-3 py-2.5 text-sm w-full"
           />
@@ -99,4 +110,5 @@ export default function Inscription() {
       </form>
     </div>
   );
-}
+              }
+                

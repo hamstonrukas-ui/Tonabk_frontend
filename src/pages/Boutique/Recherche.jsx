@@ -2,37 +2,31 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Search } from "lucide-react";
 import { API_URL } from "../../lib/api";
+import { obtenirMarque } from "../../lib/marque";
 
 const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
-const VILLES = ["Toutes", "Bukavu", "Goma"];
 
 export default function RechercheBoutique() {
+  const marque = obtenirMarque();
   const [terme, setTerme] = useState("");
-  const [ville, setVille] = useState("Toutes");
   const [produits, setProduits] = useState([]);
   const [resultats, setResultats] = useState([]);
 
+  // Toujours limité à la ville actuelle, en silence — pas de sélecteur visible.
   useEffect(() => {
-    fetch(`${API_URL}/api/produits`).then((r) => r.json()).then(setProduits);
-  }, []);
+    fetch(`${API_URL}/api/produits?ville=${marque.ville}`).then((r) => r.json()).then(setProduits);
+  }, [marque.ville]);
 
   useEffect(() => {
-    let filtres = produits;
-
-    if (ville !== "Toutes") {
-      filtres = filtres.filter((p) => p.boutiques?.ville === ville);
-    }
-
-    if (terme.trim()) {
-      filtres = filtres.filter(
+    if (!terme.trim()) { setResultats([]); return; }
+    setResultats(
+      produits.filter(
         (p) =>
           p.nom.toLowerCase().includes(terme.toLowerCase()) ||
           p.boutiques?.nom?.toLowerCase().includes(terme.toLowerCase())
-      );
-    }
-
-    setResultats(terme.trim() || ville !== "Toutes" ? filtres : []);
-  }, [terme, ville, produits]);
+      )
+    );
+  }, [terme, produits]);
 
   return (
     <div className="p-3">
@@ -45,20 +39,6 @@ export default function RechercheBoutique() {
           autoFocus
           className="flex-1 text-sm outline-none"
         />
-      </div>
-
-      <div className="flex gap-2 mb-3">
-        {VILLES.map((v) => (
-          <button
-            key={v}
-            onClick={() => setVille(v)}
-            className={`flex-1 text-xs font-semibold rounded-lg py-2 ${
-              ville === v ? "bg-[#F5720C] text-white" : "bg-white text-gray-500"
-            }`}
-          >
-            {v}
-          </button>
-        ))}
       </div>
 
       <div className="grid grid-cols-2 gap-2.5">
@@ -80,11 +60,12 @@ export default function RechercheBoutique() {
         ))}
       </div>
 
-      {(terme.trim() || ville !== "Toutes") && resultats.length === 0 && (
+      {terme.trim() && resultats.length === 0 && (
         <p className="text-center text-sm text-gray-400 py-8">
-          Aucun résultat{terme.trim() ? ` pour "${terme}"` : ""}{ville !== "Toutes" ? ` à ${ville}` : ""}
+          Aucun résultat pour "{terme}" à {marque.ville}
         </p>
       )}
     </div>
   );
-}
+    }
+                                                                                  

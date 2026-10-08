@@ -15,3 +15,10 @@ export function obtenirMarque() {
   const hote = window.location.hostname;
   return MARQUES[hote] || DEFAUT;
 }
+
+export function listeVilles() {
+  return [
+    { cle: "tonabk", ville: DEFAUT.ville },
+    { cle: "tona2go", ville: MARQUES["tona2go.com"].ville },
+  ];
+}

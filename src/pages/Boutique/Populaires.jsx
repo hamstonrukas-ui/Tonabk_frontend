@@ -2,9 +2,14 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, BadgeCheck, MapPin } from "lucide-react";
 import { API_URL } from "../../lib/api";
 import { useCachedData } from "../../lib/useCachedData";
+import { obtenirMarque } from "../../lib/marque";
 
 export default function Populaires() {
-  const { data: boutiquesData } = useCachedData("boutiques_populaires", `${API_URL}/api/boutiques`);
+  const marque = obtenirMarque();
+  const { data: boutiquesData } = useCachedData(
+    `boutiques_populaires_${marque.ville}`,
+    `${API_URL}/api/boutiques?ville=${marque.ville}`
+  );
   const boutiques = boutiquesData || [];
 
   return (
@@ -60,4 +65,5 @@ export default function Populaires() {
       </div>
     </div>
   );
-                               }
+            }
+                

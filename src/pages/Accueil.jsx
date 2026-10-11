@@ -5,7 +5,7 @@ import { useCachedData } from "../lib/useCachedData";
 import { supabase } from "../lib/supabaseClient";
 import { API_URL } from "../lib/api";
 import Footer from "../components/Footer";
-import { obtenirMarque } from "../lib/marque";
+import { obtenirMarque, changerDeVille } from "../lib/marque";
 
 const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
 const PRODUITS_PAR_PAGE = 30;
@@ -79,9 +79,12 @@ export default function Accueil() {
           </div>
         </div>
         <p className="text-[16px] text-white/80 mb-1">Grand marché du Kivu</p>
-        <a href={marque.autreDomaine} className="inline-flex items-center gap-0.5 mb-2.5 text-[11px] font-semibold text-white/80">
+        <button
+          onClick={() => changerDeVille(marque.autreVilleCle)}
+          className="inline-flex items-center gap-0.5 mb-2.5 text-[11px] font-semibold text-white/80"
+        >
           Passer vers {marque.autreMarque} <ChevronRight size={12} />
-        </a>
+        </button>
         <Link to="/boutique/recherche" className="max-w-3xl bg-white rounded-lg flex items-center gap-2 px-3 py-2.5 text-xs text-gray-400">
           <Search size={15} /> Chaussures, smartphone, riz...
         </Link>
@@ -204,6 +207,17 @@ export default function Accueil() {
           Créer
         </Link>
       </div>
+
+      <a
+        href="https://wa.me/243855841999"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block text-center text-[12px] text-gray-500 px-6 py-4"
+      >
+        Pour plus d'informations sur les produits, contactez-nous sur WhatsApp.
+        <br />
+        Réponse rapide garantie sur ce même numéro.
+      </a>
 
       <Footer />
     </div>

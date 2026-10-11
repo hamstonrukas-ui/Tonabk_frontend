@@ -216,7 +216,7 @@ export default function Accueil() {
       >
         Pour plus d'informations sur les produits, contactez-nous sur WhatsApp.
         <br />
-        Réponse rapide garantie sur ce même numéro.
+        Réponse rapide garantie.
       </a>
 
       <Footer />

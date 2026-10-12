@@ -206,7 +206,7 @@ export default function Accueil() {
       </div>
 
       <a
-        href="https://wa.me/243855841999"
+        href={`https://wa.me/243855841999?text=${encodeURIComponent(`Bonjour, je voulais me renseigner sur comment obtenir les produits se trouvant sur ${marque.nom}`)}`}
         target="_blank"
         rel="noopener noreferrer"
         className="mx-3 lg:mx-8 mt-4 border border-gray-200 rounded-xl p-3.5 flex items-center gap-3 bg-white max-w-3xl"

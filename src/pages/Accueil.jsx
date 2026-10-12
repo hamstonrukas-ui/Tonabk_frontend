@@ -209,11 +209,20 @@ export default function Accueil() {
         href="https://wa.me/243855841999"
         target="_blank"
         rel="noopener noreferrer"
-        className="block text-center text-[12px] text-gray-500 px-6 py-4"
+        className="mx-3 lg:mx-8 mt-4 border border-gray-200 rounded-xl p-3.5 flex items-center gap-3 bg-white max-w-3xl"
       >
-        Pour plus d'informations sur les produits, contactez-nous sur WhatsApp.
-        <br />
-        Réponse rapide garantie sur ce même numéro.
+        <div className="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center flex-shrink-0">
+          <svg viewBox="0 0 24 24" fill="white" width={20} height={20}>
+            <path d="M17.47 14.38c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.48-1.76-1.66-2.06-.17-.3-.02-.46.13-.61.14-.14.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51-.17-.01-.37-.01-.57-.01s-.52.07-.8.37c-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.19 1.87.12.57-.09 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35z" />
+            <path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.93-1.47A10 10 0 1 0 12 2zm0 18.2a8.18 8.18 0 0 1-4.17-1.14l-.3-.18-3.1.92.93-3-.2-.31A8.2 8.2 0 1 1 12 20.2z" />
+          </svg>
+        </div>
+        <div>
+          <p className="text-xs font-extrabold text-[#1B1B1B]">
+            Pour plus d'informations sur les produits, contactez-nous sur WhatsApp
+          </p>
+          <p className="text-[10px] text-gray-400">Réponse rapide garantie</p>
+        </div>
       </a>
 
       <Footer />

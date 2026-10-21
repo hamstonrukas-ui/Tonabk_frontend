@@ -73,23 +73,25 @@ export default function Accueil() {
                 <span className="text-[10px] font-bold text-white whitespace-nowrap">Entrer dans boutique</span>
               </Link>
             )}
+            <Link
+              to="/soldes"
+              className="w-14 h-14 rounded-xl bg-[#1B1B1B] flex flex-col items-center justify-center flex-shrink-0 border-2 border-white"
+            >
+              <Flame size={16} className="text-[#F5720C]" />
+              <span className="text-[8px] font-extrabold text-white leading-tight mt-0.5">Soldes</span>
+            </Link>
             <Link to="/boutique/panier" className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
               <ShoppingBag size={16} className="text-white" />
             </Link>
           </div>
         </div>
         <p className="text-[16px] text-white/80 mb-1">Grand marché du Kivu</p>
-        <div className="flex items-center gap-3 mb-2.5">
-          <button
-            onClick={() => changerDeVille(marque.autreVilleCle)}
-            className="inline-flex items-center gap-0.5 text-[11px] font-semibold text-white/80"
-          >
-            Passer vers {marque.autreMarque} <ChevronRight size={12} />
-          </button>
-          <Link to="/soldes" className="inline-flex items-center gap-1 bg-white/15 rounded-full px-2.5 py-1 text-[11px] font-bold text-white">
-            <Flame size={12} /> Soldes
-          </Link>
-        </div>
+        <button
+          onClick={() => changerDeVille(marque.autreVilleCle)}
+          className="inline-flex items-center gap-0.5 mb-2.5 text-[11px] font-semibold text-white/80"
+        >
+          Passer vers {marque.autreMarque} <ChevronRight size={12} />
+        </button>
         <Link to="/boutique/recherche" className="max-w-3xl bg-white rounded-lg flex items-center gap-2 px-3 py-2.5 text-xs text-gray-400">
           <Search size={15} /> Chaussures, smartphone, riz...
         </Link>

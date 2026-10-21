@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, ShoppingBag, BadgeCheck, ChevronLeft, ChevronRight, Store } from "lucide-react";
+import { Search, ShoppingBag, BadgeCheck, ChevronLeft, ChevronRight, Store, Flame, Loader2 } from "lucide-react";
 import { useCachedData } from "../lib/useCachedData";
 import { supabase } from "../lib/supabaseClient";
 import { API_URL } from "../lib/api";
 import Footer from "../components/Footer";
-import { obtenirMarque } from "../lib/marque";
+import { obtenirMarque, changerDeVille } from "../lib/marque";
 
 const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
 const PRODUITS_PAR_PAGE = 30;
@@ -31,7 +31,7 @@ export default function Accueil() {
     verifierMaBoutique();
   }, []);
 
-  const { data: reponseProduits } = useCachedData(
+  const { data: reponseProduits, loading: produitsEnChargement } = useCachedData(
     `produits_accueil_page_${page}_${marque.ville}`,
     `${API_URL}/api/produits/accueil?page=${page}&limit=${PRODUITS_PAR_PAGE}&ville=${marque.ville}`,
     {},
@@ -79,9 +79,17 @@ export default function Accueil() {
           </div>
         </div>
         <p className="text-[16px] text-white/80 mb-1">Grand marché du Kivu</p>
-        <a href={marque.autreDomaine} className="inline-flex items-center gap-0.5 mb-2.5 text-[11px] font-semibold text-white/80">
-          Passer vers {marque.autreMarque} <ChevronRight size={12} />
-        </a>
+        <div className="flex items-center gap-3 mb-2.5">
+          <button
+            onClick={() => changerDeVille(marque.autreVilleCle)}
+            className="inline-flex items-center gap-0.5 text-[11px] font-semibold text-white/80"
+          >
+            Passer vers {marque.autreMarque} <ChevronRight size={12} />
+          </button>
+          <Link to="/soldes" className="inline-flex items-center gap-1 bg-white/15 rounded-full px-2.5 py-1 text-[11px] font-bold text-white">
+            <Flame size={12} /> Soldes
+          </Link>
+        </div>
         <Link to="/boutique/recherche" className="max-w-3xl bg-white rounded-lg flex items-center gap-2 px-3 py-2.5 text-xs text-gray-400">
           <Search size={15} /> Chaussures, smartphone, riz...
         </Link>
@@ -100,6 +108,13 @@ export default function Accueil() {
       <div className="flex justify-between items-baseline px-3 lg:px-8 pt-4 pb-2">
         <h2 className="text-sm font-extrabold text-[#1B1B1B]">Articles</h2>
       </div>
+      {produitsEnChargement && produits.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+          <Loader2 size={28} className="animate-spin text-[#F5720C] mb-2" />
+          <p className="text-xs">Chargement des articles...</p>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 px-3 lg:px-8">
         {produits.map((p) => (
           <Link

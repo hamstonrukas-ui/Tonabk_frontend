@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@keyframes defiler-bandeau {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.bandeau-defilant {
+  animation: defiler-bandeau 14s linear infinite;
+}

@@ -27,6 +27,7 @@ export default function DetailSolde() {
   const galerie = solde.photos?.length ? solde.photos : (solde.photo_url ? [solde.photo_url] : []);
   const reste = tempsRestant(solde.expire_le);
   const economie = solde.prix_normal - solde.prix_solde;
+  const pourcentage = Math.round(100 - (solde.prix_solde / solde.prix_normal) * 100);
 
   const acheter = () => {
     const msg = `Bonjour, je suis intéressé(e) par l'offre "${solde.titre}" (${fmt(solde.prix_solde, solde.devise)}) vue sur TonaBk.`;
@@ -69,23 +70,36 @@ export default function DetailSolde() {
       </div>
 
       <div className="p-4">
-        {reste && (
-          <span className="inline-block bg-[#1B1B1B] text-white text-[10px] font-bold px-2.5 py-1 rounded-full mb-2">
-            ⏳ {reste}
-          </span>
-        )}
-        <h1 className="text-base font-extrabold text-[#1B1B1B]">{solde.titre}</h1>
+        <div className="flex items-center gap-2 mb-2">
+          {reste && (
+            <span className="inline-block bg-red-600 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full animate-pulse">
+              ⏳ {reste}
+            </span>
+          )}
+          {pourcentage > 0 && (
+            <span className="inline-block bg-[#1B1B1B] text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full">
+              -{pourcentage}% DE RÉDUCTION
+            </span>
+          )}
+        </div>
 
-        <div className="flex items-baseline gap-2 mt-1">
-          <p className="text-gray-400 line-through text-sm">{fmt(solde.prix_normal, solde.devise)}</p>
-          <p className="text-xl font-extrabold text-[#F5720C]">{fmt(solde.prix_solde, solde.devise)}</p>
+        <h1 className="text-lg font-extrabold text-[#1B1B1B]">{solde.titre}</h1>
+
+        <div className="flex items-baseline gap-2 mt-1.5">
+          <p className="text-gray-400 line-through text-base">{fmt(solde.prix_normal, solde.devise)}</p>
+          <p className="text-3xl font-extrabold text-[#F5720C]">{fmt(solde.prix_solde, solde.devise)}</p>
         </div>
         {economie > 0 && (
-          <p className="text-[11px] text-green-600 font-semibold">Vous économisez {fmt(economie, solde.devise)}</p>
+          <p className="text-xs text-green-600 font-bold mt-0.5">💰 Vous économisez {fmt(economie, solde.devise)} !</p>
         )}
 
-        {solde.quantite > 0 && (
-          <p className="text-[11px] text-gray-400 mt-1">{solde.quantite} disponible{solde.quantite > 1 ? "s" : ""}</p>
+        {solde.quantite > 0 && solde.quantite <= 5 && (
+          <p className="text-xs font-extrabold text-red-600 mt-2 animate-pulse">
+            ⚠️ Plus que {solde.quantite} disponible{solde.quantite > 1 ? "s" : ""} — dépêchez-vous !
+          </p>
+        )}
+        {solde.quantite > 5 && (
+          <p className="text-[11px] text-gray-400 mt-2">{solde.quantite} disponibles</p>
         )}
 
         {solde.description && (
@@ -94,9 +108,9 @@ export default function DetailSolde() {
 
         <button
           onClick={acheter}
-          className="w-full mt-5 flex items-center justify-center gap-2 bg-[#F5720C] text-white text-sm font-semibold rounded-lg py-3"
+          className="w-full mt-5 flex items-center justify-center gap-2 bg-[#F5720C] text-white text-base font-extrabold rounded-lg py-4 shadow-[0_0_20px_rgba(245,114,12,0.5)] animate-pulse"
         >
-          <MessageCircle size={16} /> Acheter sur WhatsApp
+          <MessageCircle size={18} /> JE VEUX CETTE OFFRE — WhatsApp
         </button>
       </div>
 

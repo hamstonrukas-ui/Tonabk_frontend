@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.tonabk.www.twa",
+        "sha256_cert_fingerprints": ["CF:FC:68:CE:4E:9A:C4:30:1F:22:A8:07:A6:8D:80:82:1D:04:37:91:E8:03:14:46:E1:AA:09:F0:77:D5:AA:DB"]
+      }
+    }]

@@ -125,7 +125,7 @@ export default function CreerBoutique() {
             Créer mon compte
           </Link>
           <Link
-            to="/connexion?redirect=/boutique/creer"
+            to="/boutique/acceder"
             className="block w-full border border-gray-200 text-gray-600 text-sm font-semibold py-3 rounded-lg"
           >
             Vous avez déjà une boutique ? Connectez-vous

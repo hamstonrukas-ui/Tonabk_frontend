@@ -45,6 +45,7 @@ import DetailRequete from "./pages/Requete/DetailRequete";
 
 // Auth
 import Connexion from "./pages/Auth/Connexion";
+import AccederBoutique from "./pages/Auth/AccederBoutique";
 import Inscription from "./pages/Auth/Inscription";
 import MotDePasseOublie from "./pages/Auth/MotDePasseOublie";
 import ReinitialiserMotDePasse from "./pages/Auth/ReinitialiserMotDePasse";
@@ -125,6 +126,7 @@ export default function App() {
 
           {/* Auth */}
           <Route path="/connexion" element={<Connexion />} />
+          <Route path="/boutique/acceder" element={<AccederBoutique />} />
           <Route path="/inscription" element={<Inscription />} />
           <Route path="/mot-de-passe-oublie" element={<MotDePasseOublie />} />
           <Route path="/reinitialiser-mot-de-passe" element={<ReinitialiserMotDePasse />} />

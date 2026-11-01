@@ -26,6 +26,7 @@ import GererBoutique from "./pages/Boutique/GererBoutique";
 import Inventaire from "./pages/Boutique/Inventaire";
 import DetailProduit from "./pages/Boutique/DetailProduit";
 import ListeSoldes from "./pages/Soldes/ListeSoldes";
+import MesCommandes from "./pages/Livraison/MesCommandes";
 import DetailSolde from "./pages/Soldes/DetailSolde";
 import RechercheBoutique from "./pages/Boutique/Recherche";
 import Populaires from "./pages/Boutique/Populaires";
@@ -99,6 +100,7 @@ export default function App() {
           <Route path="/boutique/populaires" element={<AppLayout><Populaires /></AppLayout>} />
           <Route path="/boutique/produit/:id" element={<AppLayout><DetailProduit /></AppLayout>} />
           <Route path="/soldes" element={<AppLayout><ListeSoldes /></AppLayout>} />
+          <Route path="/mes-commandes" element={<AppLayout><MesCommandes /></AppLayout>} />
           <Route path="/soldes/:id" element={<AppLayout><DetailSolde /></AppLayout>} />
 
           {/* Boutique — mini-site d'une boutique précise */}

@@ -3,6 +3,7 @@ import { useOutletContext } from "react-router-dom";
 import { MessageCircle } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { API_URL } from "../../lib/api";
+import LivreMoiButton from "../../components/LivreMoiButton";
 
 const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
 
@@ -107,6 +108,17 @@ export default function Commande() {
       >
         <MessageCircle size={18} /> Envoyer la commande sur WhatsApp
       </button>
+
+      {Object.keys(sousTotauxParDevise).length === 1 && (
+      <LivreMoiButton
+        produit={{
+          boutique_id: boutiqueId,
+          nom_produit: cartItems.map((i) => `${i.product.nom} x${i.qty}`).join(", "),
+          prix: Object.values(sousTotauxParDevise).reduce((a, b) => a + b, 0),
+          devise: Object.keys(sousTotauxParDevise)[0] || "USD",
+        }}
+      />
+      )}
     </div>
   );
           }

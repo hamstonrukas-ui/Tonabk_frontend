@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, ZoomIn, X, MessageCircle } from "lucide-react";
+import LivreMoiButton from "../../components/LivreMoiButton";
 import { API_URL } from "../../lib/api";
 import { useCachedData } from "../../lib/useCachedData";
 
@@ -112,6 +113,15 @@ export default function DetailSolde() {
         >
           <MessageCircle size={18} /> JE VEUX CETTE OFFRE — WhatsApp
         </button>
+
+        <LivreMoiButton
+          produit={{
+            solde_id: solde.id,
+            nom_produit: solde.titre,
+            prix: solde.prix_solde,
+            devise: solde.devise || "USD",
+          }}
+        />
       </div>
 
       {photoPleinEcran && (

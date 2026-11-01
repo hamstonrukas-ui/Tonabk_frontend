@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, ShoppingBag, BadgeCheck, ChevronLeft, ChevronRight, Store, Flame, Loader2 } from "lucide-react";
+import { Search, ShoppingBag, BadgeCheck, ChevronLeft, ChevronRight, Store, Flame, Loader2, Menu, Truck } from "lucide-react";
 import { useCachedData } from "../lib/useCachedData";
 import { supabase } from "../lib/supabaseClient";
 import { API_URL } from "../lib/api";
@@ -14,6 +14,7 @@ export default function Accueil() {
   const marque = obtenirMarque();
   const [page, setPage] = useState(1);
   const [maBoutique, setMaBoutique] = useState(null);
+  const [menuOuvert, setMenuOuvert] = useState(false);
 
   useEffect(() => {
     async function verifierMaBoutique() {
@@ -63,7 +64,7 @@ export default function Accueil() {
           <span className="text-xl font-extrabold text-white">
             {marque.prefixe}<span className="bg-white text-[#1B1B1B] px-1 rounded">{marque.suffixe}</span>
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 relative">
             {maBoutique && (
               <Link
                 to="/boutique/gerer"
@@ -73,16 +74,34 @@ export default function Accueil() {
                 <span className="text-[10px] font-bold text-white whitespace-nowrap">Entrer dans boutique</span>
               </Link>
             )}
-            <Link
-              to="/soldes"
-              className="w-14 h-14 rounded-xl bg-[#1B1B1B] flex flex-col items-center justify-center flex-shrink-0 border-2 border-white"
+            <button
+              onClick={() => setMenuOuvert((v) => !v)}
+              className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0"
             >
-              <Flame size={16} className="text-[#F5720C]" />
-              <span className="text-[8px] font-extrabold text-white leading-tight mt-0.5">Soldes</span>
-            </Link>
-            <Link to="/boutique/panier" className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-              <ShoppingBag size={16} className="text-white" />
-            </Link>
+              <Menu size={18} className="text-white" />
+            </button>
+
+            {menuOuvert && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setMenuOuvert(false)} />
+                <div className="absolute top-11 right-0 bg-white rounded-xl shadow-lg overflow-hidden z-50 w-44">
+                  <Link
+                    to="/boutique/populaires"
+                    onClick={() => setMenuOuvert(false)}
+                    className="flex items-center gap-2 px-4 py-3 text-xs font-semibold text-[#1B1B1B] border-b border-gray-100"
+                  >
+                    <Store size={14} className="text-[#F5720C]" /> Boutiques
+                  </Link>
+                  <Link
+                    to="/mes-commandes"
+                    onClick={() => setMenuOuvert(false)}
+                    className="flex items-center gap-2 px-4 py-3 text-xs font-semibold text-[#1B1B1B]"
+                  >
+                    <Truck size={14} className="text-[#F5720C]" /> Commandes
+                  </Link>
+                </div>
+              </>
+            )}
           </div>
         </div>
         <p className="text-[16px] text-white/80 mb-1">Grand marché du Kivu</p>
@@ -96,6 +115,15 @@ export default function Accueil() {
           <Search size={15} /> Chaussures, smartphone, riz...
         </Link>
       </div>
+
+      <Link
+        to="/soldes"
+        className="mx-3 lg:mx-8 mt-3 flex items-center gap-2 bg-[#1B1B1B] rounded-xl px-4 py-3 max-w-3xl"
+      >
+        <Flame size={18} className="text-[#F5720C]" />
+        <span className="text-xs font-extrabold text-white">Voir les Soldes du moment</span>
+        <ChevronRight size={14} className="text-white/60 ml-auto" />
+      </Link>
 
       <div className="mx-3 lg:mx-8 mt-3 bg-[#1B1B1B] rounded-xl p-3 flex items-center gap-3 max-w-3xl">
         <span className="text-xl">🔎</span>

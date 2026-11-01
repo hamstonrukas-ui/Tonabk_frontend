@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, useLocation, Link } from "react-router-dom";
 import { ArrowLeft, Share2, Check, ShoppingBag, MessageCircle, ZoomIn, X } from "lucide-react";
+import LivreMoiButton from "../../components/LivreMoiButton";
 import { useCart } from "../../context/CartContext";
 import { API_URL } from "../../lib/api";
 import { useCachedData } from "../../lib/useCachedData";
@@ -97,6 +98,16 @@ export default function DetailProduit() {
         </p>
 
         {produit.description && <p className="text-sm text-gray-600 mt-3">{produit.description}</p>}
+
+        <LivreMoiButton
+          produit={{
+            produit_id: produit.id,
+            boutique_id: produit.boutique_id,
+            nom_produit: produit.nom,
+            prix: produit.prix,
+            devise: produit.devise || "USD",
+          }}
+        />
 
         {depuisAccueil ? (
           <button

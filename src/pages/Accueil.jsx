@@ -64,7 +64,7 @@ export default function Accueil() {
           <span className="text-xl font-extrabold text-white">
             {marque.prefixe}<span className="bg-white text-[#1B1B1B] px-1 rounded">{marque.suffixe}</span>
           </span>
-          <div className="flex items-center gap-2 relative">
+          <div className="flex items-center gap-2 relative mr-12">
             {maBoutique && (
               <Link
                 to="/boutique/gerer"
@@ -76,15 +76,15 @@ export default function Accueil() {
             )}
             <button
               onClick={() => setMenuOuvert((v) => !v)}
-              className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0"
+              className="w-11 h-11 rounded-full bg-white/25 flex items-center justify-center flex-shrink-0"
             >
-              <Menu size={18} className="text-white" />
+              <Menu size={24} className="text-white" />
             </button>
 
             {menuOuvert && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setMenuOuvert(false)} />
-                <div className="absolute top-11 right-0 bg-white rounded-xl shadow-lg overflow-hidden z-50 w-44">
+                <div className="absolute top-[52px] right-0 bg-white rounded-xl shadow-lg overflow-hidden z-50 w-48">
                   <Link
                     to="/boutique/populaires"
                     onClick={() => setMenuOuvert(false)}

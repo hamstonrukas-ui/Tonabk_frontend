@@ -117,7 +117,7 @@ export default function DetailProduit() {
           >
             {produit.stock === 0 ? "Rupture de stock" : (
               <>
-                <MessageCircle size={16} /> Acheter sur WhatsApp
+                <MessageCircle size={16} /> Discuter sur WhatsApp
               </>
             )}
           </button>

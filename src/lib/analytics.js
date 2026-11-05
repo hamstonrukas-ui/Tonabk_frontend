@@ -14,8 +14,11 @@ function getVisitorId() {
 
 // Envoi "silencieux" — on ne bloque jamais l'utilisateur si ça échoue (réseau instable)
 export function enregistrerClicWhatsapp(cibleType, cibleId) {
+  // keepalive : la requête continue même si le téléphone bascule aussitôt vers WhatsApp.
+  // Sans ça, le navigateur l'annule souvent en route et le clic n'est jamais compté.
   fetch(`${API_URL}/api/analytics/clic-whatsapp`, {
     method: "POST",
+    keepalive: true,
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       cible_type: cibleType,
@@ -37,6 +40,7 @@ export function enregistrerVisiteSession(cibleType = "site", cibleId = null) {
 
   fetch(`${API_URL}/api/analytics/visite`, {
     method: "POST",
+    keepalive: true,
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       cible_type: cibleType,
@@ -44,4 +48,4 @@ export function enregistrerVisiteSession(cibleType = "site", cibleId = null) {
       session_id: getVisitorId(),
     }),
   }).catch(() => {});
-                                         }
+}

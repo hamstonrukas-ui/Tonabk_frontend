@@ -13,6 +13,7 @@ const PRODUITS_PAR_PAGE = 30;
 export default function Accueil() {
   const marque = obtenirMarque();
   const [page, setPage] = useState(1);
+  const [categorieId, setCategorieId] = useState(null); // null = tous les articles
   const [maBoutique, setMaBoutique] = useState(null);
   const [menuOuvert, setMenuOuvert] = useState(false);
 
@@ -33,15 +34,31 @@ export default function Accueil() {
   }, []);
 
   const { data: reponseProduits, loading: produitsEnChargement } = useCachedData(
-    `produits_accueil_page_${page}_${marque.ville}`,
-    `${API_URL}/api/produits/accueil?page=${page}&limit=${PRODUITS_PAR_PAGE}&ville=${marque.ville}`,
+    `produits_accueil_page_${page}_${marque.ville}_${categorieId || "tous"}`,
+    `${API_URL}/api/produits/accueil?page=${page}&limit=${PRODUITS_PAR_PAGE}&ville=${marque.ville}${
+      categorieId ? `&categorie_id=${encodeURIComponent(categorieId)}` : ""
+    }`,
     {},
-    [page]
+    [page, categorieId]
   );
+  const { data: categoriesData } = useCachedData("categories", `${API_URL}/api/categories`);
+  const categories = categoriesData || [];
   const { data: boutiques } = useCachedData(`boutiques_accueil_${marque.ville}`, `${API_URL}/api/boutiques?ville=${marque.ville}`);
 
-  const produits = reponseProduits?.data || [];
+  // Pendant un changement de catégorie/page sans cache, on n'affiche pas les anciens articles
+  const produits = produitsEnChargement ? [] : reponseProduits?.data || [];
   const totalPages = reponseProduits?.totalPages || 1;
+
+  const choisirCategorie = (id) => {
+    if (id === categorieId) return;
+    setCategorieId(id);
+    setPage(1);
+  };
+
+  const classeChip = (actif) =>
+    `flex-shrink-0 whitespace-nowrap text-xs font-bold px-3.5 py-1.5 rounded-full transition-colors ${
+      actif ? "bg-[#F5720C] text-white" : "bg-white text-[#1B1B1B] border border-gray-200"
+    }`;
 
   const allerPage = (p) => {
     if (p < 1 || p > totalPages) return;
@@ -135,14 +152,28 @@ export default function Accueil() {
         </Link>
       </div>
 
-      <div className="flex justify-between items-baseline px-3 lg:px-8 pt-4 pb-2">
-        <h2 className="text-sm font-extrabold text-[#1B1B1B]">Articles</h2>
+      {/* Ligne de catégories : "Tous les articles" puis les catégories, à faire défiler vers la droite */}
+      <div className="flex items-center gap-2 px-3 lg:px-8 pt-4 pb-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <button onClick={() => choisirCategorie(null)} className={classeChip(categorieId === null)}>
+          Tous les articles
+        </button>
+        {categories.map((c) => (
+          <button key={c.id} onClick={() => choisirCategorie(c.id)} className={classeChip(categorieId === c.id)}>
+            {c.nom}
+          </button>
+        ))}
       </div>
       {produitsEnChargement && produits.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 text-gray-400">
           <Loader2 size={28} className="animate-spin text-[#F5720C] mb-2" />
           <p className="text-xs">Chargement des articles...</p>
         </div>
+      )}
+
+      {!produitsEnChargement && produits.length === 0 && (
+        <p className="text-center text-xs text-gray-400 py-10 px-6">
+          Aucun article dans cette catégorie pour le moment.
+        </p>
       )}
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 px-3 lg:px-8">

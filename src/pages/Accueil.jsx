@@ -10,10 +10,26 @@ import { obtenirMarque, changerDeVille } from "../lib/marque";
 const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
 const PRODUITS_PAR_PAGE = 30;
 
+function Carre({ icone, nom, actif, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-1 p-1 text-center shadow-sm ${
+        actif ? "bg-[#F5720C] text-white" : "bg-white text-[#1B1B1B]"
+      }`}
+    >
+      <span className="text-2xl">{icone || "🛍️"}</span>
+      <span className="text-[10px] font-bold leading-tight">{nom}</span>
+    </button>
+  );
+}
+
 export default function Accueil() {
   const marque = obtenirMarque();
   const [page, setPage] = useState(1);
   const [categorieId, setCategorieId] = useState(null); // null = tous les articles
+  const [chemin, setChemin] = useState([]); // [] | [sousCategorie] | [sousCategorie, type]
+  const noeudFiltre = chemin[chemin.length - 1] || null; // le niveau le plus précis choisi
   const [maBoutique, setMaBoutique] = useState(null);
   const [menuOuvert, setMenuOuvert] = useState(false);
 
@@ -34,15 +50,26 @@ export default function Accueil() {
   }, []);
 
   const { data: reponseProduits, loading: produitsEnChargement } = useCachedData(
-    `produits_accueil_page_${page}_${marque.ville}_${categorieId || "tous"}`,
+    `produits_accueil_page_${page}_${marque.ville}_${categorieId || "tous"}_${noeudFiltre?.id || "tout"}`,
     `${API_URL}/api/produits/accueil?page=${page}&limit=${PRODUITS_PAR_PAGE}&ville=${marque.ville}${
       categorieId ? `&categorie_id=${encodeURIComponent(categorieId)}` : ""
-    }`,
+    }${noeudFiltre ? `&sous_categorie_id=${encodeURIComponent(noeudFiltre.id)}` : ""}`,
     {},
-    [page, categorieId]
+    [page, categorieId, noeudFiltre?.id]
   );
   const { data: categoriesData } = useCachedData("categories", `${API_URL}/api/categories`);
   const categories = categoriesData || [];
+  const { data: sousCatData } = useCachedData(
+    categorieId ? `sous_categories_${categorieId}` : null,
+    categorieId ? `${API_URL}/api/sous-categories?categorie_id=${encodeURIComponent(categorieId)}` : null
+  );
+  const sousCategories = (Array.isArray(sousCatData) ? sousCatData : []).filter(
+    (s) => String(s.categorie_id) === String(categorieId)
+  );
+  const racines = sousCategories.filter((s) => !s.parent_id);
+  const racineChoisie = chemin[0] || null;
+  const types = racineChoisie ? sousCategories.filter((s) => s.parent_id === racineChoisie.id) : [];
+  const nomCategorie = categories.find((c) => c.id === categorieId)?.nom || "";
   const { data: boutiques } = useCachedData(`boutiques_accueil_${marque.ville}`, `${API_URL}/api/boutiques?ville=${marque.ville}`);
 
   // Pendant un changement de catégorie/page sans cache, on n'affiche pas les anciens articles
@@ -52,6 +79,12 @@ export default function Accueil() {
   const choisirCategorie = (id) => {
     if (id === categorieId) return;
     setCategorieId(id);
+    setChemin([]);
+    setPage(1);
+  };
+
+  const allerChemin = (nouveauChemin) => {
+    setChemin(nouveauChemin);
     setPage(1);
   };
 
@@ -163,6 +196,38 @@ export default function Accueil() {
           </button>
         ))}
       </div>
+      {categorieId && racines.length > 0 && (
+        <div className="px-3 lg:px-8 pb-2">
+          {racineChoisie && (
+            <div className="flex items-center gap-1 text-[11px] font-semibold text-gray-500 mb-2">
+              <button onClick={() => allerChemin([])} className="text-[#F5720C] flex items-center gap-0.5">
+                <ChevronLeft size={12} /> {nomCategorie}
+              </button>
+              <span>›</span>
+              <span className="text-[#1B1B1B]">{racineChoisie.nom}</span>
+            </div>
+          )}
+          <div
+            className={`grid gap-2 ${
+              racineChoisie ? "grid-cols-3 sm:grid-cols-4 lg:grid-cols-6" : "grid-cols-4 lg:grid-cols-6"
+            }`}
+          >
+            {racineChoisie && (
+              <Carre icone="🛍️" nom="Tous" actif={chemin.length === 1} onClick={() => allerChemin([racineChoisie])} />
+            )}
+            {(racineChoisie ? types : racines).map((s) => (
+              <Carre
+                key={s.id}
+                icone={s.icone}
+                nom={s.nom}
+                actif={noeudFiltre?.id === s.id}
+                onClick={() => allerChemin(racineChoisie ? [racineChoisie, s] : [s])}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {produitsEnChargement && produits.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 text-gray-400">
           <Loader2 size={28} className="animate-spin text-[#F5720C] mb-2" />
@@ -172,7 +237,7 @@ export default function Accueil() {
 
       {!produitsEnChargement && produits.length === 0 && (
         <p className="text-center text-xs text-gray-400 py-10 px-6">
-          Aucun article dans cette catégorie pour le moment.
+          Aucun article ici pour le moment.
         </p>
       )}
 

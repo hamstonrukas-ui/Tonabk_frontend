@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Search, ShoppingBag, BadgeCheck, ChevronLeft, ChevronRight, Store, Flame, Loader2, Menu, Truck } from "lucide-react";
 import { useCachedData } from "../lib/useCachedData";
@@ -29,8 +29,8 @@ export default function Accueil() {
   // La navigation est dans l'adresse (?cat=...&sc=...&t=...) : le bouton « retour » du téléphone fonctionne
   const [params, setParams] = useSearchParams();
   const categorieId = params.get("cat"); // null = tous les articles
-  const scParam = params.get("sc"); // null | "tous" | identifiant d'une sous-catégorie (Femme...)
-  const tParam = params.get("t"); // null | "tous" | identifiant d'un type (Robes...)
+  const scParam = params.get("sc"); // null | identifiant d'une sous-catégorie (Femme...)
+  const tParam = params.get("t"); // null | identifiant d'un type (Robes...) = page à part
   const cleVue = [categorieId, scParam, tParam].join("|");
   const [etatPage, setEtatPage] = useState({ cle: cleVue, page: 1 });
   const page = etatPage.cle === cleVue ? etatPage.page : 1; // retour à la page 1 à chaque changement de vue
@@ -66,19 +66,17 @@ export default function Accueil() {
   );
   const racines = sousCategories.filter((s) => !s.parent_id);
   const aSousCategories = racines.length > 0;
-  const racineChoisie = scParam && scParam !== "tous" ? racines.find((s) => s.id === scParam) || null : null;
+  const racineChoisie = scParam ? racines.find((s) => s.id === scParam) || null : null;
   const types = racineChoisie ? sousCategories.filter((s) => s.parent_id === racineChoisie.id) : [];
-  const typeChoisi =
-    racineChoisie && tParam && tParam !== "tous" ? types.find((s) => s.id === tParam) || null : null;
+  const typeChoisi = racineChoisie && tParam ? types.find((s) => s.id === tParam) || null : null;
   const nomCategorie = categories.find((c) => String(c.id) === categorieId)?.nom || "";
 
-  // « À l'intérieur » = la liste des articles d'un type (ou d'un « Tous »). Sinon on navigue dans les carrés.
-  const dedans =
-    !!categorieId &&
-    aSousCategories &&
-    (scParam === "tous" || (!!racineChoisie && (tParam === "tous" || !!typeChoisi)));
-  const idFiltre = typeChoisi?.id || (racineChoisie && tParam === "tous" ? racineChoisie.id : null);
-  const afficherProduits = !categorieId || (sousCatChargee && (!aSousCategories || dedans));
+  // Page à part = un type précis (Robes...). Aux autres niveaux, les carrés sont en haut
+  // et le « Tous » (tous les articles du niveau) s'affiche en bas.
+  const dedans = !!typeChoisi;
+  const idFiltre = typeChoisi?.id || racineChoisie?.id || null;
+  const afficherProduits = !categorieId || sousCatChargee;
+  const refResultats = useRef(null);
 
   const { data: reponseProduits, loading: produitsEnChargement } = useCachedData(
     afficherProduits
@@ -98,15 +96,9 @@ export default function Accueil() {
   const enAttente = afficherProduits && (produitsEnChargement || !reponseProduits);
   const produits = afficherProduits && !produitsEnChargement ? reponseProduits?.data || [] : [];
   const totalPages = reponseProduits?.totalPages || 1;
-  const totalArticles = reponseProduits?.total;
 
-  const titreDedans = typeChoisi ? typeChoisi.nom : racineChoisie ? `${racineChoisie.nom} · Tous` : nomCategorie;
-  const sousTitreDedans = [
-    typeChoisi ? `${nomCategorie} › ${racineChoisie.nom}` : racineChoisie ? nomCategorie : "Tous les articles",
-    Number.isFinite(totalArticles) ? `${totalArticles} article${totalArticles > 1 ? "s" : ""}` : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const titreDedans = typeChoisi?.nom || "";
+  const sousTitreDedans = typeChoisi ? `${nomCategorie} › ${racineChoisie.nom}` : "";
 
   // Chaque clic ajoute une entrée à l'historique : le bouton retour du téléphone revient d'un cran
   const aller = (cat, sc = null, t = null) => {
@@ -117,7 +109,7 @@ export default function Accueil() {
     setParams(p);
     window.scrollTo({ top: 0 });
   };
-  const retourDedans = () => (scParam === "tous" ? aller(categorieId) : aller(categorieId, scParam));
+  const retourDedans = () => aller(categorieId, scParam);
   const retourCarres = () => aller(categorieId);
 
   const classeChip = (actif) =>
@@ -128,7 +120,8 @@ export default function Accueil() {
   const allerPage = (p) => {
     if (p < 1 || p > totalPages) return;
     setPage(p);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (dedans || !refResultats.current) window.scrollTo({ top: 0, behavior: "smooth" });
+    else refResultats.current.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const numerosPages = () => {
@@ -265,11 +258,6 @@ export default function Accueil() {
             </div>
           )}
           <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
-            <Carre
-              icone="🛍️"
-              nom="Tous"
-              onClick={() => (racineChoisie ? aller(categorieId, racineChoisie.id, "tous") : aller(categorieId, "tous"))}
-            />
             {(racineChoisie ? types : racines).map((s) => (
               <Carre
                 key={s.id}
@@ -278,11 +266,19 @@ export default function Accueil() {
                 onClick={() => (racineChoisie ? aller(categorieId, racineChoisie.id, s.id) : aller(categorieId, s.id))}
               />
             ))}
+            <Carre
+              icone="🛍️"
+              nom="Tous"
+              actif
+              onClick={() => refResultats.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+            />
           </div>
         </div>
       )}
         </>
       )}
+
+      <div ref={refResultats} className="scroll-mt-3" />
 
       {afficherProduits && enAttente && produits.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 text-gray-400">

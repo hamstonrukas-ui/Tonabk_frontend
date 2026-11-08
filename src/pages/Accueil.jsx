@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Search, ShoppingBag, BadgeCheck, ChevronLeft, ChevronRight, Store, Flame, Loader2, Menu, Truck } from "lucide-react";
 import { useCachedData } from "../lib/useCachedData";
 import { supabase } from "../lib/supabaseClient";
@@ -26,10 +26,15 @@ function Carre({ icone, nom, actif, onClick }) {
 
 export default function Accueil() {
   const marque = obtenirMarque();
-  const [page, setPage] = useState(1);
-  const [categorieId, setCategorieId] = useState(null); // null = tous les articles
-  const [chemin, setChemin] = useState([]); // [] | [sousCategorie] | [sousCategorie, type]
-  const noeudFiltre = chemin[chemin.length - 1] || null; // le niveau le plus précis choisi
+  // La navigation est dans l'adresse (?cat=...&sc=...&t=...) : le bouton « retour » du téléphone fonctionne
+  const [params, setParams] = useSearchParams();
+  const categorieId = params.get("cat"); // null = tous les articles
+  const scParam = params.get("sc"); // null | "tous" | identifiant d'une sous-catégorie (Femme...)
+  const tParam = params.get("t"); // null | "tous" | identifiant d'un type (Robes...)
+  const cleVue = [categorieId, scParam, tParam].join("|");
+  const [etatPage, setEtatPage] = useState({ cle: cleVue, page: 1 });
+  const page = etatPage.cle === cleVue ? etatPage.page : 1; // retour à la page 1 à chaque changement de vue
+  const setPage = (p) => setEtatPage({ cle: cleVue, page: p });
   const [maBoutique, setMaBoutique] = useState(null);
   const [menuOuvert, setMenuOuvert] = useState(false);
 
@@ -49,44 +54,71 @@ export default function Accueil() {
     verifierMaBoutique();
   }, []);
 
-  const { data: reponseProduits, loading: produitsEnChargement } = useCachedData(
-    `produits_accueil_page_${page}_${marque.ville}_${categorieId || "tous"}_${noeudFiltre?.id || "tout"}`,
-    `${API_URL}/api/produits/accueil?page=${page}&limit=${PRODUITS_PAR_PAGE}&ville=${marque.ville}${
-      categorieId ? `&categorie_id=${encodeURIComponent(categorieId)}` : ""
-    }${noeudFiltre ? `&sous_categorie_id=${encodeURIComponent(noeudFiltre.id)}` : ""}`,
-    {},
-    [page, categorieId, noeudFiltre?.id]
-  );
   const { data: categoriesData } = useCachedData("categories", `${API_URL}/api/categories`);
   const categories = categoriesData || [];
-  const { data: sousCatData } = useCachedData(
+  const { data: sousCatData, loading: sousCatEnChargement, erreur: sousCatErreur } = useCachedData(
     categorieId ? `sous_categories_${categorieId}` : null,
     categorieId ? `${API_URL}/api/sous-categories?categorie_id=${encodeURIComponent(categorieId)}` : null
   );
+  const sousCatChargee = !categorieId || (sousCatData != null && !sousCatEnChargement) || !!sousCatErreur;
   const sousCategories = (Array.isArray(sousCatData) ? sousCatData : []).filter(
     (s) => String(s.categorie_id) === String(categorieId)
   );
   const racines = sousCategories.filter((s) => !s.parent_id);
-  const racineChoisie = chemin[0] || null;
+  const aSousCategories = racines.length > 0;
+  const racineChoisie = scParam && scParam !== "tous" ? racines.find((s) => s.id === scParam) || null : null;
   const types = racineChoisie ? sousCategories.filter((s) => s.parent_id === racineChoisie.id) : [];
-  const nomCategorie = categories.find((c) => c.id === categorieId)?.nom || "";
+  const typeChoisi =
+    racineChoisie && tParam && tParam !== "tous" ? types.find((s) => s.id === tParam) || null : null;
+  const nomCategorie = categories.find((c) => String(c.id) === categorieId)?.nom || "";
+
+  // « À l'intérieur » = la liste des articles d'un type (ou d'un « Tous »). Sinon on navigue dans les carrés.
+  const dedans =
+    !!categorieId &&
+    aSousCategories &&
+    (scParam === "tous" || (!!racineChoisie && (tParam === "tous" || !!typeChoisi)));
+  const idFiltre = typeChoisi?.id || (racineChoisie && tParam === "tous" ? racineChoisie.id : null);
+  const afficherProduits = !categorieId || (sousCatChargee && (!aSousCategories || dedans));
+
+  const { data: reponseProduits, loading: produitsEnChargement } = useCachedData(
+    afficherProduits
+      ? `produits_accueil_page_${page}_${marque.ville}_${categorieId || "tous"}_${idFiltre || "tout"}`
+      : null,
+    afficherProduits
+      ? `${API_URL}/api/produits/accueil?page=${page}&limit=${PRODUITS_PAR_PAGE}&ville=${marque.ville}${
+          categorieId ? `&categorie_id=${encodeURIComponent(categorieId)}` : ""
+        }${idFiltre ? `&sous_categorie_id=${encodeURIComponent(idFiltre)}` : ""}`
+      : null,
+    {},
+    [page, categorieId, idFiltre, afficherProduits]
+  );
   const { data: boutiques } = useCachedData(`boutiques_accueil_${marque.ville}`, `${API_URL}/api/boutiques?ville=${marque.ville}`);
 
-  // Pendant un changement de catégorie/page sans cache, on n'affiche pas les anciens articles
-  const produits = produitsEnChargement ? [] : reponseProduits?.data || [];
+  // Pendant un changement de vue/page sans cache, on n'affiche pas les anciens articles
+  const enAttente = afficherProduits && (produitsEnChargement || !reponseProduits);
+  const produits = afficherProduits && !produitsEnChargement ? reponseProduits?.data || [] : [];
   const totalPages = reponseProduits?.totalPages || 1;
+  const totalArticles = reponseProduits?.total;
 
-  const choisirCategorie = (id) => {
-    if (id === categorieId) return;
-    setCategorieId(id);
-    setChemin([]);
-    setPage(1);
-  };
+  const titreDedans = typeChoisi ? typeChoisi.nom : racineChoisie ? `${racineChoisie.nom} · Tous` : nomCategorie;
+  const sousTitreDedans = [
+    typeChoisi ? `${nomCategorie} › ${racineChoisie.nom}` : racineChoisie ? nomCategorie : "Tous les articles",
+    Number.isFinite(totalArticles) ? `${totalArticles} article${totalArticles > 1 ? "s" : ""}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
-  const allerChemin = (nouveauChemin) => {
-    setChemin(nouveauChemin);
-    setPage(1);
+  // Chaque clic ajoute une entrée à l'historique : le bouton retour du téléphone revient d'un cran
+  const aller = (cat, sc = null, t = null) => {
+    const p = new URLSearchParams();
+    if (cat) p.set("cat", cat);
+    if (sc) p.set("sc", sc);
+    if (t) p.set("t", t);
+    setParams(p);
+    window.scrollTo({ top: 0 });
   };
+  const retourDedans = () => (scParam === "tous" ? aller(categorieId) : aller(categorieId, scParam));
+  const retourCarres = () => aller(categorieId);
 
   const classeChip = (actif) =>
     `flex-shrink-0 whitespace-nowrap text-xs font-bold px-3.5 py-1.5 rounded-full transition-colors ${
@@ -109,6 +141,24 @@ export default function Accueil() {
 
   return (
     <div className="min-h-screen bg-[#F3F3F3] pb-4">
+      {dedans && (
+        <div className="sticky top-0 z-30 bg-[#F3F3F3] px-3 lg:px-8 pt-3 pb-2 flex items-center gap-3">
+          <button
+            onClick={retourDedans}
+            aria-label="Retour"
+            className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center flex-shrink-0"
+          >
+            <ChevronLeft size={20} className="text-[#1B1B1B]" />
+          </button>
+          <div className="min-w-0">
+            <p className="text-sm font-extrabold text-[#1B1B1B] truncate">{titreDedans}</p>
+            <p className="text-[11px] text-gray-500 truncate">{sousTitreDedans}</p>
+          </div>
+        </div>
+      )}
+
+      {!dedans && (
+        <>
       <div className="bg-gradient-to-b from-[#F5720C] to-[#C9560A] px-4 lg:px-8 pt-3 pb-4">
         <div className="flex items-center justify-between mb-1 max-w-3xl mx-auto lg:mx-0">
           <span className="text-xl font-extrabold text-white">
@@ -187,55 +237,61 @@ export default function Accueil() {
 
       {/* Ligne de catégories : "Tous les articles" puis les catégories, à faire défiler vers la droite */}
       <div className="flex items-center gap-2 px-3 lg:px-8 pt-4 pb-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <button onClick={() => choisirCategorie(null)} className={classeChip(categorieId === null)}>
+        <button onClick={() => aller(null)} className={classeChip(categorieId === null)}>
           Tous les articles
         </button>
         {categories.map((c) => (
-          <button key={c.id} onClick={() => choisirCategorie(c.id)} className={classeChip(categorieId === c.id)}>
+          <button key={c.id} onClick={() => aller(String(c.id))} className={classeChip(categorieId === String(c.id))}>
             {c.nom}
           </button>
         ))}
       </div>
-      {categorieId && racines.length > 0 && (
+      {categorieId && !sousCatChargee && (
+        <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+          <Loader2 size={28} className="animate-spin text-[#F5720C] mb-2" />
+          <p className="text-xs">Chargement...</p>
+        </div>
+      )}
+
+      {categorieId && sousCatChargee && aSousCategories && (
         <div className="px-3 lg:px-8 pb-2">
           {racineChoisie && (
             <div className="flex items-center gap-1 text-[11px] font-semibold text-gray-500 mb-2">
-              <button onClick={() => allerChemin([])} className="text-[#F5720C] flex items-center gap-0.5">
+              <button onClick={retourCarres} className="text-[#F5720C] flex items-center gap-0.5">
                 <ChevronLeft size={12} /> {nomCategorie}
               </button>
               <span>›</span>
               <span className="text-[#1B1B1B]">{racineChoisie.nom}</span>
             </div>
           )}
-          <div
-            className={`grid gap-2 ${
-              racineChoisie ? "grid-cols-3 sm:grid-cols-4 lg:grid-cols-6" : "grid-cols-4 lg:grid-cols-6"
-            }`}
-          >
-            {racineChoisie && (
-              <Carre icone="🛍️" nom="Tous" actif={chemin.length === 1} onClick={() => allerChemin([racineChoisie])} />
-            )}
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+            <Carre
+              icone="🛍️"
+              nom="Tous"
+              onClick={() => (racineChoisie ? aller(categorieId, racineChoisie.id, "tous") : aller(categorieId, "tous"))}
+            />
             {(racineChoisie ? types : racines).map((s) => (
               <Carre
                 key={s.id}
                 icone={s.icone}
                 nom={s.nom}
-                actif={noeudFiltre?.id === s.id}
-                onClick={() => allerChemin(racineChoisie ? [racineChoisie, s] : [s])}
+                onClick={() => (racineChoisie ? aller(categorieId, racineChoisie.id, s.id) : aller(categorieId, s.id))}
               />
             ))}
           </div>
         </div>
       )}
+        </>
+      )}
 
-      {produitsEnChargement && produits.length === 0 && (
+      {afficherProduits && enAttente && produits.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 text-gray-400">
           <Loader2 size={28} className="animate-spin text-[#F5720C] mb-2" />
           <p className="text-xs">Chargement des articles...</p>
         </div>
       )}
 
-      {!produitsEnChargement && produits.length === 0 && (
+      {afficherProduits && !enAttente && produits.length === 0 && (
         <p className="text-center text-xs text-gray-400 py-10 px-6">
           Aucun article ici pour le moment.
         </p>
@@ -270,7 +326,7 @@ export default function Accueil() {
         ))}
       </div>
 
-      {totalPages > 1 && (
+      {afficherProduits && totalPages > 1 && (
         <div className="flex items-center justify-center gap-1.5 px-3 pt-4">
           <button
             onClick={() => allerPage(page - 1)}
@@ -308,6 +364,8 @@ export default function Accueil() {
         </div>
       )}
 
+      {!dedans && (
+        <>
       <div className="flex justify-between items-baseline px-3 lg:px-8 pt-4 pb-2">
         <h2 className="text-sm font-extrabold text-[#1B1B1B]">Boutiques populaires</h2>
         <Link to="/boutique/populaires" className="text-[10px] font-bold text-[#F5720C] flex items-center gap-0.5">
@@ -365,6 +423,9 @@ export default function Accueil() {
           <p className="text-[10px] text-gray-400">Réponse rapide garantie</p>
         </div>
       </a>
+
+        </>
+      )}
 
       <Footer />
     </div>

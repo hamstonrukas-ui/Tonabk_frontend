@@ -6,6 +6,7 @@ import { supabase } from "../lib/supabaseClient";
 import { API_URL } from "../lib/api";
 import Footer from "../components/Footer";
 import { obtenirMarque, changerDeVille } from "../lib/marque";
+import { demarrerAudioSolde } from "../lib/audioSolde";
 
 const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
 const PRODUITS_PAR_PAGE = 30;
@@ -211,6 +212,7 @@ export default function Accueil() {
 
       <Link
         to="/soldes"
+        onClick={() => demarrerAudioSolde()}
         className="mx-3 lg:mx-8 mt-3 flex items-center gap-2 bg-[#1B1B1B] rounded-xl px-4 py-3 max-w-3xl"
       >
         <Flame size={18} className="text-[#F5720C]" />

@@ -1,7 +1,11 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Flame } from "lucide-react";
+import { ArrowLeft, Flame, Volume2, VolumeX } from "lucide-react";
 import { API_URL } from "../../lib/api";
 import { useCachedData } from "../../lib/useCachedData";
+import {
+  demarrerAudioSolde, arreterAudioSolde, definirMuet, enLecture, audioIndisponible,
+} from "../../lib/audioSolde";
 
 const fmt = (n, devise = "USD") => Number(n).toLocaleString("fr-FR") + " " + devise;
 
@@ -20,6 +24,48 @@ export default function ListeSoldes() {
   const { data } = useCachedData("soldes", `${API_URL}/api/soldes`);
   const soldes = data || [];
 
+  const [lecture, setLecture] = useState(enLecture());
+  const [indispo, setIndispo] = useState(false);
+
+  // Le son tourne en boucle tant qu'on est sur cette page ; il s'arrête quand on la quitte
+  // ou quand l'app passe en arrière-plan.
+  useEffect(() => {
+    let actif = true;
+    const lancer = async () => {
+      await demarrerAudioSolde();
+      if (!actif) return;
+      setLecture(enLecture());
+      setIndispo(audioIndisponible());
+    };
+    lancer();
+    const surVisibilite = () => {
+      if (document.visibilityState === "hidden") {
+        arreterAudioSolde();
+        setLecture(false);
+      } else {
+        lancer();
+      }
+    };
+    document.addEventListener("visibilitychange", surVisibilite);
+    return () => {
+      actif = false;
+      document.removeEventListener("visibilitychange", surVisibilite);
+      arreterAudioSolde();
+    };
+  }, []);
+
+  const basculerSon = async () => {
+    if (lecture) {
+      definirMuet(true);
+      setLecture(false);
+    } else {
+      definirMuet(false);
+      await demarrerAudioSolde();
+      setLecture(enLecture());
+      setIndispo(audioIndisponible());
+    }
+  };
+
   return (
     <div className="pb-3 bg-[#1B1B1B] min-h-screen">
       <div className="p-4 flex items-center gap-3">
@@ -29,6 +75,18 @@ export default function ListeSoldes() {
           <p className="text-base font-extrabold text-white">SOLDES</p>
           <p className="text-[11px] text-white/50">Offres à durée limitée</p>
         </div>
+        {!indispo && (
+          <button
+            onClick={basculerSon}
+            aria-label={lecture ? "Couper le son" : "Activer le son"}
+            className={`ml-auto flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold text-white ${
+              lecture ? "bg-white/10" : "bg-[#F5720C] animate-pulse"
+            }`}
+          >
+            {lecture ? <Volume2 size={16} /> : <VolumeX size={16} />}
+            {lecture ? "Son" : "Activer le son"}
+          </button>
+        )}
       </div>
 
       <div className="overflow-hidden bg-[#F5720C] py-1.5">

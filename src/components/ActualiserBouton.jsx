@@ -7,6 +7,8 @@ export default function ActualiserBouton() {
   const actualiser = () => {
     if (enCours) return;
     window.dispatchEvent(new Event("tonabk:revalidate"));
+    // Cherche aussi une nouvelle version de l'application : si elle existe, elle s'installe et l'app se recharge seule
+    navigator.serviceWorker?.getRegistration().then((r) => r?.update()).catch(() => {});
     setEnCours(true);
     setTimeout(() => setEnCours(false), 900);
   };

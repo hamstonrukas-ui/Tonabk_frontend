@@ -22,12 +22,14 @@ function obtenir() {
   return audio;
 }
 
+// Le « muet » ne dure que le temps de la visite (fermer l'app le remet à zéro) :
+// un client qui a coupé le son une fois ne doit pas l'avoir coupé pour toujours.
 export function estMuet() {
-  try { return localStorage.getItem(CLE_MUET) === "1"; } catch { return false; }
+  try { return sessionStorage.getItem(CLE_MUET) === "1"; } catch { return false; }
 }
 
 export function definirMuet(muet) {
-  try { localStorage.setItem(CLE_MUET, muet ? "1" : "0"); } catch { /* stockage indisponible */ }
+  try { sessionStorage.setItem(CLE_MUET, muet ? "1" : "0"); } catch { /* stockage indisponible */ }
   if (muet) arreterAudioSolde();
 }
 
@@ -43,7 +45,10 @@ export async function demarrerAudioSolde() {
     await a.play();
     return true;
   } catch (e) {
-    if (e?.name === "NotSupportedError") indisponible = true; // fichier audio absent
+    if (e?.name === "NotSupportedError") {
+      indisponible = true; // fichier audio absent ou illisible
+      console.warn("Audio des soldes introuvable ou illisible : vérifie public/audio/solde.mp3 (ou solde.m4a)");
+    }
     return false; // NotAllowedError : le navigateur attend un geste → bouton « Activer le son »
   }
 }

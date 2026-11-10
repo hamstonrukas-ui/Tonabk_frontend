@@ -46,7 +46,7 @@ export default function DetailProduit() {
 
   const handleAcheter = () => {
     const numero = produit.boutiques?.telephone?.replace(/\D/g, "");
-    const msg = `Bonjour, je suis intéressé(e) par "${produit.nom}" (${fmt(produit.prix, produit.devise)}) vu sur ${marque.nom}.`;
+    const msg = `Bonjour, je suis intéressé(e) par "${produit.nom}" (${fmt(produit.prix, produit.devise)}) vu sur ${marque.nom}.\n${API_URL}/partage/produit/${produit.id}?v=${Date.now()}`;
     if (numero) {
       enregistrerClicWhatsapp("produit", produit.id);
       window.open(`https://wa.me/${numero}?text=${encodeURIComponent(msg)}`, "_blank");

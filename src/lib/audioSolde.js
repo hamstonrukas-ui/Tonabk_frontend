@@ -5,6 +5,7 @@
 // Le fichier à enregistrer : public/audio/solde.mp3  (ou public/audio/solde.m4a)
 
 const CLE_MUET = "tonabk_solde_muet";
+const VITESSE = 2; // vitesse de lecture : 1 = normale, 2 = deux fois plus vite
 let audio = null;
 let indisponible = false;
 
@@ -19,6 +20,10 @@ function obtenir() {
   });
   audio.loop = true;
   audio.preload = "auto";
+  audio.defaultPlaybackRate = VITESSE;
+  audio.playbackRate = VITESSE;
+  audio.preservesPitch = true; // plus rapide mais la voix garde sa hauteur
+  audio.webkitPreservesPitch = true;
   return audio;
 }
 
@@ -42,6 +47,7 @@ export async function demarrerAudioSolde() {
   const a = obtenir();
   if (!a) return false;
   try {
+    a.playbackRate = VITESSE;
     await a.play();
     return true;
   } catch (e) {

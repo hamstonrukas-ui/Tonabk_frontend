@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Flame, Volume2, VolumeX } from "lucide-react";
+import { ArrowLeft, Flame, Volume2, VolumeX, X } from "lucide-react";
 import { API_URL } from "../../lib/api";
 import { useCachedData } from "../../lib/useCachedData";
 import {
-  demarrerAudioSolde, arreterAudioSolde, definirMuet, enLecture, audioIndisponible,
+  demarrerAudioSolde, arreterAudioSolde, definirMuet, enLecture, audioIndisponible, estMuet,
 } from "../../lib/audioSolde";
 
 const fmt = (n, devise = "USD") => Number(n).toLocaleString("fr-FR") + " " + devise;
@@ -31,11 +31,25 @@ export default function ListeSoldes() {
   // ou quand l'app passe en arrière-plan.
   useEffect(() => {
     let actif = true;
+    const GESTES = ["click", "touchend", "keydown"];
+
+    // Si le navigateur refuse de lancer le son tout seul (page rouverte, app rechargée...),
+    // on le lance au premier toucher n'importe où sur la page : plus besoin de chercher le bouton.
+    const lancerAuGeste = async () => {
+      GESTES.forEach((g) => document.removeEventListener(g, lancerAuGeste));
+      await demarrerAudioSolde();
+      if (!actif) return;
+      setLecture(enLecture());
+      setIndispo(audioIndisponible());
+    };
+    const attendreGeste = () => GESTES.forEach((g) => document.addEventListener(g, lancerAuGeste, { once: true }));
+
     const lancer = async () => {
       await demarrerAudioSolde();
       if (!actif) return;
       setLecture(enLecture());
       setIndispo(audioIndisponible());
+      if (!enLecture() && !estMuet() && !audioIndisponible()) attendreGeste();
     };
     lancer();
     const surVisibilite = () => {
@@ -49,6 +63,7 @@ export default function ListeSoldes() {
     document.addEventListener("visibilitychange", surVisibilite);
     return () => {
       actif = false;
+      GESTES.forEach((g) => document.removeEventListener(g, lancerAuGeste));
       document.removeEventListener("visibilitychange", surVisibilite);
       arreterAudioSolde();
     };
@@ -103,7 +118,9 @@ export default function ListeSoldes() {
         {soldes.map((s) => {
           const reste = tempsRestant(s.expire_le);
           const pourcentage = Math.round(100 - (s.prix_solde / s.prix_normal) * 100);
-          const stockFaible = s.quantite > 0 && s.quantite <= 5;
+          const suivi = s.restant != null; // quantité suivie par l'admin
+          const epuise = suivi && s.restant === 0;
+          const stockFaible = suivi && s.restant > 0 && s.restant <= 5;
 
           return (
             <Link
@@ -128,16 +145,34 @@ export default function ListeSoldes() {
                     ⏳ {reste}
                   </span>
                 )}
+                {epuise && (
+                  <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center z-20">
+                    <X size={56} strokeWidth={3} className="text-red-500" />
+                    <span className="mt-1 bg-red-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded">
+                      STOCK ÉCOULÉ
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="p-2.5">
                 <p className="text-[11px] font-bold text-[#1B1B1B] line-clamp-1">{s.titre}</p>
                 <p className="text-[10px] text-gray-400 line-through">{fmt(s.prix_normal, s.devise)}</p>
                 <p className="text-base font-extrabold text-[#F5720C] leading-tight">{fmt(s.prix_solde, s.devise)}</p>
-                {stockFaible && (
-                  <p className="text-[9px] font-extrabold text-red-600 mt-0.5">
-                    ⚠️ PLUS QUE {s.quantite} EN STOCK !
-                  </p>
+                {epuise && <p className="text-[10px] font-extrabold text-red-600 mt-1">✕ Stock écoulé</p>}
+                {suivi && !epuise && (
+                  <div className="mt-1.5">
+                    <div className="h-1.5 rounded-full bg-gray-200 overflow-hidden">
+                      <div
+                        className="h-full bg-[#F5720C]"
+                        style={{ width: `${Math.round((s.restant / s.quantite) * 100)}%` }}
+                      />
+                    </div>
+                    <p className={`text-[9px] mt-0.5 ${stockFaible ? "font-extrabold text-red-600" : "text-gray-500"}`}>
+                      {stockFaible ? `⚠️ PLUS QUE ${s.restant} EN STOCK !` : `Reste ${s.restant}/${s.quantite}`}
+                      {s.vendus_total > 0 ? ` · ${s.vendus_total} déjà acheté${s.vendus_total > 1 ? "s" : ""}` : ""}
+                    </p>
+                  </div>
                 )}
               </div>
             </Link>

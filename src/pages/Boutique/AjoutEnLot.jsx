@@ -73,7 +73,7 @@ export default function AjoutEnLot({ boutique, authHeaders, onTermine, onFermer 
             nom: ligne.nom.trim(),
             prix: Number(ligne.prix),
             devise,
-            stock: 0,
+            stock: Math.floor(Math.random() * 100) + 1, // aléatoire de 1 à 100, jamais 0
             description: "",
             photo_url: url,
             photo_thumb_url: url,

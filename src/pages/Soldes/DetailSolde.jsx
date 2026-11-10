@@ -31,7 +31,7 @@ export default function DetailSolde() {
   const pourcentage = Math.round(100 - (solde.prix_solde / solde.prix_normal) * 100);
 
   const acheter = () => {
-    const msg = `Bonjour, je suis intéressé(e) par l'offre "${solde.titre}" (${fmt(solde.prix_solde, solde.devise)}) vue sur TonaBk.`;
+    const msg = `Bonjour, je suis intéressé(e) par l'offre "${solde.titre}" (${fmt(solde.prix_solde, solde.devise)}) vue sur TonaBk.\n${API_URL}/partage/solde/${solde.id}?v=${Date.now()}`;
     window.open(`https://wa.me/${NUMERO_CENTRAL}?text=${encodeURIComponent(msg)}`, "_blank");
   };
 

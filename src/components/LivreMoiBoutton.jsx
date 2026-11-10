@@ -19,7 +19,16 @@ export default function LivreMoiButton({ produit }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(produit),
       });
+      if (res.status === 409 || res.status === 429) {
+        // Stock écoulé (ou trop de demandes) : on n'ouvre pas WhatsApp
+        const data = await res.json().catch(() => ({}));
+        fenetre?.close();
+        window.dispatchEvent(new Event("tonabk:revalidate"));
+        alert(data.error || "Cette offre n'est plus disponible.");
+        return;
+      }
       if (res.ok) {
+        window.dispatchEvent(new Event("tonabk:revalidate")); // le stock affiché se met à jour
         const { id } = await res.json();
         ref = id.slice(0, 8);
         try {

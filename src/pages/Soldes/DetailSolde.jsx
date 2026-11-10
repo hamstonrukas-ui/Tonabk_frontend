@@ -94,34 +94,52 @@ export default function DetailSolde() {
           <p className="text-xs text-green-600 font-bold mt-0.5">💰 Vous économisez {fmt(economie, solde.devise)} !</p>
         )}
 
-        {solde.quantite > 0 && solde.quantite <= 5 && (
-          <p className="text-xs font-extrabold text-red-600 mt-2 animate-pulse">
-            ⚠️ Plus que {solde.quantite} disponible{solde.quantite > 1 ? "s" : ""} — dépêchez-vous !
-          </p>
+        {solde.restant != null && solde.restant > 0 && (
+          <div className="mt-3">
+            <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
+              <div className="h-full bg-[#F5720C]" style={{ width: `${Math.round((solde.restant / solde.quantite) * 100)}%` }} />
+            </div>
+            <p className={`text-xs mt-1.5 ${solde.restant <= 5 ? "font-extrabold text-red-600 animate-pulse" : "text-gray-500"}`}>
+              {solde.restant <= 5
+                ? `⚠️ Plus que ${solde.restant} disponible${solde.restant > 1 ? "s" : ""} — dépêchez-vous !`
+                : `Il reste ${solde.restant} sur ${solde.quantite}`}
+              {solde.vendus_total > 0 ? ` · ${solde.vendus_total} déjà acheté${solde.vendus_total > 1 ? "s" : ""}` : ""}
+            </p>
+          </div>
         )}
-        {solde.quantite > 5 && (
-          <p className="text-[11px] text-gray-400 mt-2">{solde.quantite} disponibles</p>
+        {solde.restant === 0 && (
+          <p className="mt-3 text-sm font-extrabold text-red-600 flex items-center gap-1">
+            <X size={18} strokeWidth={3} /> Stock écoulé
+          </p>
         )}
 
         {solde.description && (
           <p className="text-xs text-gray-600 mt-3 leading-relaxed">{solde.description}</p>
         )}
 
-        <button
-          onClick={acheter}
-          className="w-full mt-5 flex items-center justify-center gap-2 bg-[#F5720C] text-white text-base font-extrabold rounded-lg py-4 shadow-[0_0_20px_rgba(245,114,12,0.5)] animate-pulse"
-        >
-          <MessageCircle size={18} /> JE VEUX CETTE OFFRE — WhatsApp
-        </button>
+        {solde.restant === 0 ? (
+          <div className="w-full mt-5 flex items-center justify-center gap-2 bg-gray-200 text-gray-500 text-base font-extrabold rounded-lg py-4">
+            <X size={18} strokeWidth={3} /> STOCK ÉCOULÉ
+          </div>
+        ) : (
+          <>
+            <button
+              onClick={acheter}
+              className="w-full mt-5 flex items-center justify-center gap-2 bg-[#F5720C] text-white text-base font-extrabold rounded-lg py-4 shadow-[0_0_20px_rgba(245,114,12,0.5)] animate-pulse"
+            >
+              <MessageCircle size={18} /> JE VEUX CETTE OFFRE — WhatsApp
+            </button>
 
-        <LivreMoiButton
-          produit={{
-            solde_id: solde.id,
-            nom_produit: solde.titre,
-            prix: solde.prix_solde,
-            devise: solde.devise || "USD",
-          }}
-        />
+            <LivreMoiButton
+              produit={{
+                solde_id: solde.id,
+                nom_produit: solde.titre,
+                prix: solde.prix_solde,
+                devise: solde.devise || "USD",
+              }}
+            />
+          </>
+        )}
       </div>
 
       {photoPleinEcran && (

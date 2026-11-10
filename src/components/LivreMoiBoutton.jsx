@@ -19,16 +19,7 @@ export default function LivreMoiButton({ produit }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(produit),
       });
-      if (res.status === 409 || res.status === 429) {
-        // Stock écoulé (ou trop de demandes) : on n'ouvre pas WhatsApp
-        const data = await res.json().catch(() => ({}));
-        fenetre?.close();
-        window.dispatchEvent(new Event("tonabk:revalidate"));
-        alert(data.error || "Cette offre n'est plus disponible.");
-        return;
-      }
       if (res.ok) {
-        window.dispatchEvent(new Event("tonabk:revalidate")); // le stock affiché se met à jour
         const { id } = await res.json();
         ref = id.slice(0, 8);
         try {
@@ -38,9 +29,17 @@ export default function LivreMoiButton({ produit }) {
       }
     } catch {}
 
+    // WhatsApp ne permet pas d'attacher une image via un lien : on ajoute le lien de partage
+    // du produit/de l'offre, dont WhatsApp affiche automatiquement l'aperçu (photo + titre + prix).
+    const lienApercu = produit.solde_id
+      ? `${API_URL}/partage/solde/${produit.solde_id}?v=${Date.now()}`
+      : produit.produit_id
+        ? `${API_URL}/partage/produit/${produit.produit_id}?v=${Date.now()}`
+        : "";
     const message =
       `Bonjour, je veux me faire livrer à la maison : "${produit.nom_produit}" (${fmt(produit.prix, produit.devise)}).` +
-      (ref ? ` Réf. commande : ${ref}` : "");
+      (ref ? ` Réf. commande : ${ref}` : "") +
+      (lienApercu ? `\n${lienApercu}` : "");
     const url = `https://wa.me/${NUMERO_SERVICE}?text=${encodeURIComponent(message)}`;
     if (fenetre) fenetre.location.href = url;
     else window.location.href = url;

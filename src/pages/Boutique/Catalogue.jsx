@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useOutletContext, Link } from "react-router-dom";
-import { Star, Share2, Bell, BellRing } from "lucide-react";
+import { Star, Share2, Bell, BellRing, Loader2, WifiOff } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { supabase } from "../../lib/supabaseClient";
 import { API_URL } from "../../lib/api";
@@ -12,13 +12,18 @@ const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
 export default function Catalogue() {
   const marque = obtenirMarque();
   const { boutiqueId } = useOutletContext();
-  const { data: produitsData, loading } = useCachedData(
+  const { data: produitsData, loading, revalidating, erreur, recharger } = useCachedData(
     `produits_boutique_${boutiqueId}`,
     `${API_URL}/api/produits?boutique_id=${boutiqueId}`,
     {},
     [boutiqueId]
   );
   const produits = produitsData || [];
+
+  // Trois cas bien séparés quand il n'y a rien à afficher : chargement, problème de connexion, boutique vraiment vide
+  const enChargement = produits.length === 0 && (loading || revalidating || produitsData === null) && !erreur;
+  const echec = produits.length === 0 && !!erreur && !loading && !revalidating;
+  const vide = Array.isArray(produitsData) && produits.length === 0 && !enChargement && !echec;
 
   const [abonne, setAbonne] = useState(false);
   const { addToCart } = useCart();
@@ -121,10 +126,26 @@ export default function Catalogue() {
             </div>
           </div>
         ))}
-        {loading && produits.length === 0 && (
-          <p className="col-span-2 sm:col-span-3 lg:col-span-4 text-center text-sm text-gray-400 py-10">Chargement...</p>
+        {enChargement && (
+          <div className="col-span-2 sm:col-span-3 lg:col-span-4 flex flex-col items-center justify-center py-14 text-gray-400">
+            <Loader2 size={34} className="animate-spin text-[#F5720C] mb-2" />
+            <p className="text-sm">Chargement...</p>
+          </div>
         )}
-        {!loading && produits.length === 0 && (
+        {echec && (
+          <div className="col-span-2 sm:col-span-3 lg:col-span-4 flex flex-col items-center justify-center py-12 px-6 text-center">
+            <WifiOff size={30} className="text-gray-400 mb-2" />
+            <p className="text-sm font-semibold text-[#1B1B1B]">Connexion instable</p>
+            <p className="text-xs text-gray-500 mt-1">Vérifiez votre connexion puis réessayez.</p>
+            <button
+              onClick={recharger}
+              className="mt-3 bg-[#F5720C] text-white text-xs font-semibold rounded-md px-5 py-2"
+            >
+              Réessayer
+            </button>
+          </div>
+        )}
+        {vide && (
           <p className="col-span-2 sm:col-span-3 lg:col-span-4 text-center text-sm text-gray-400 py-10">Aucun produit publié pour l'instant</p>
         )}
       </div>

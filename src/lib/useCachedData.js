@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 
 const PREFIX = "tonabk_cache_";
 const DELAI_MAX_MS = 8000;
+const DELAI_RELANCE_MS = 20000; // 2e essai, plus patient (serveur qui se réveille, réseau lent)
 const EVENEMENT_REVALIDATION = "tonabk:revalidate";
 
 function lireCache(cacheKey) {
@@ -37,17 +38,23 @@ export function useCachedData(key, url, options = {}, deps = []) {
   const [loading, setLoading] = useState(!cache);
   const [revalidating, setRevalidating] = useState(!!cache);
   const [erreur, setErreur] = useState(null);
+  const [tentative, setTentative] = useState(0); // incrémenté par recharger()
   const optionsRef = useRef(options);
   optionsRef.current = options;
 
   function revalider(silencieux) {
     const c = lireCache(cacheKey);
+    // Une liste vide gardée en cache n'est pas une information fiable : elle ne cache pas une erreur
+    const cacheUtile = !!c && !(Array.isArray(c.data) && c.data.length === 0);
+
     if (!silencieux) {
+      setErreur(null);
       if (c) {
         setData(c.data);
         setLoading(false);
         setRevalidating(true);
       } else {
+        setData(null); // on n'affiche pas les données d'une autre page/boutique pendant le chargement
         setLoading(true);
         setRevalidating(false);
       }
@@ -55,32 +62,44 @@ export function useCachedData(key, url, options = {}, deps = []) {
       setRevalidating(true);
     }
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), DELAI_MAX_MS);
+    let annule = false;
+    let controller = null;
+    let minuteur = null;
 
-    fetch(url, { ...optionsRef.current, signal: controller.signal })
-      .then((res) => {
-        if (!res.ok) throw new Error("Réponse serveur invalide");
-        return res.json();
-      })
-      .then((freshData) => {
-        clearTimeout(timeout);
-        ecrireCache(cacheKey, freshData);
-        setData(freshData);
-        setErreur(null);
-      })
-      .catch(() => {
-        clearTimeout(timeout);
-        if (!c) setErreur("Impossible de charger les données");
-      })
-      .finally(() => {
-        setLoading(false);
-        setRevalidating(false);
-      });
+    const tenter = (delai, derniereChance) => {
+      controller = new AbortController();
+      minuteur = setTimeout(() => controller.abort(), delai);
+      return fetch(url, { ...optionsRef.current, signal: controller.signal })
+        .then((res) => {
+          if (!res.ok) throw new Error("Réponse serveur invalide");
+          return res.json();
+        })
+        .then((freshData) => {
+          clearTimeout(minuteur);
+          if (annule) return;
+          ecrireCache(cacheKey, freshData);
+          setData(freshData);
+          setErreur(null);
+        })
+        .catch(() => {
+          clearTimeout(minuteur);
+          if (annule) return;
+          // Sans données utiles à montrer : 2e essai plus patient avant de signaler un problème
+          if (!cacheUtile && !derniereChance) return tenter(DELAI_RELANCE_MS, true);
+          if (!cacheUtile) setErreur("Impossible de charger les données");
+        });
+    };
+
+    tenter(DELAI_MAX_MS, false).finally(() => {
+      if (annule) return;
+      setLoading(false);
+      setRevalidating(false);
+    });
 
     return () => {
-      clearTimeout(timeout);
-      controller.abort();
+      annule = true;
+      clearTimeout(minuteur);
+      controller?.abort();
     };
   }
 
@@ -101,9 +120,9 @@ export function useCachedData(key, url, options = {}, deps = []) {
       window.removeEventListener(EVENEMENT_REVALIDATION, surRevalidationGlobale);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, url, ...deps]);
+  }, [key, url, tentative, ...deps]);
 
-  return { data, loading, revalidating, erreur };
+  const recharger = () => setTentative((t) => t + 1);
+
+  return { data, loading, revalidating, erreur, recharger };
 }
-
-    

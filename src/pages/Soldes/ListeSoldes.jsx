@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Flame, Volume2, VolumeX, X } from "lucide-react";
 import { API_URL } from "../../lib/api";
@@ -26,6 +26,40 @@ export default function ListeSoldes() {
 
   const [lecture, setLecture] = useState(enLecture());
   const [indispo, setIndispo] = useState(false);
+
+  // Les quantités restantes sont réglées par l'admin : on rafraîchit la liste toutes les 20 s
+  // tant que la page est visible, pour que les clients voient les chiffres baisser.
+  useEffect(() => {
+    const t = setInterval(() => {
+      if (document.visibilityState === "visible") window.dispatchEvent(new Event("tonabk:revalidate"));
+    }, 20000);
+    return () => clearInterval(t);
+  }, []);
+
+  // Audio propre à chaque annonce (bouton « Écouter » sur la carte)
+  const audioAnnonce = useRef(null);
+  const [annonceEnLecture, setAnnonceEnLecture] = useState(null);
+  const arreterAnnonce = () => {
+    if (audioAnnonce.current) {
+      audioAnnonce.current.pause();
+      audioAnnonce.current = null;
+    }
+    setAnnonceEnLecture(null);
+  };
+  useEffect(() => () => { if (audioAnnonce.current) audioAnnonce.current.pause(); }, []);
+  const basculerAnnonce = async (e, s) => {
+    e.preventDefault(); // la carte est un lien : on ne veut pas ouvrir l'offre
+    e.stopPropagation();
+    if (annonceEnLecture === s.id) return arreterAnnonce();
+    arreterAnnonce();
+    arreterAudioSolde(); // on coupe la musique générale pendant l'annonce
+    setLecture(false);
+    const a = new Audio(s.audio_url);
+    a.onended = () => setAnnonceEnLecture(null);
+    audioAnnonce.current = a;
+    setAnnonceEnLecture(s.id);
+    try { await a.play(); } catch { arreterAnnonce(); }
+  };
 
   // Le son tourne en boucle tant qu'on est sur cette page ; il s'arrête quand on la quitte
   // ou quand l'app passe en arrière-plan.
@@ -139,6 +173,15 @@ export default function ListeSoldes() {
                   <img src={s.photo_url} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-3xl">🔥</div>
+                )}
+                {s.audio_url && !epuise && (
+                  <button
+                    onClick={(e) => basculerAnnonce(e, s)}
+                    aria-label="Écouter l'annonce"
+                    className="absolute top-2 right-2 z-10 flex items-center gap-1 bg-black/70 text-white text-[10px] font-bold rounded-full px-2.5 py-1"
+                  >
+                    {annonceEnLecture === s.id ? <><VolumeX size={12} /> Stop</> : <><Volume2 size={12} /> Écouter</>}
+                  </button>
                 )}
                 {reste && (
                   <span className="absolute bottom-1.5 left-1.5 right-1.5 bg-red-600 text-white text-[9px] font-extrabold px-2 py-1 rounded text-center animate-pulse">

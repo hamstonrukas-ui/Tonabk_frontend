@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, ZoomIn, X, MessageCircle } from "lucide-react";
 import LivreMoiButton from "../../components/LivreMoiButton";
@@ -22,6 +22,21 @@ export default function DetailSolde() {
   const { data: solde } = useCachedData(`solde_${id}`, `${API_URL}/api/soldes/${id}`);
   const [photoActive, setPhotoActive] = useState(0);
   const [photoPleinEcran, setPhotoPleinEcran] = useState(false);
+  const audioRef = useRef(null);
+
+  // Rafraîchit la quantité restante toutes les 20 s tant que la page est visible
+  useEffect(() => {
+    const t = setInterval(() => {
+      if (document.visibilityState === "visible") window.dispatchEvent(new Event("tonabk:revalidate"));
+    }, 20000);
+    return () => clearInterval(t);
+  }, []);
+
+  // Audio de l'annonce : lecture automatique si le navigateur l'autorise (sinon le client appuie sur lecture)
+  useEffect(() => {
+    const a = audioRef.current;
+    if (a) a.play().catch(() => {});
+  }, [solde?.audio_url]);
 
   if (!solde) return <p className="text-center text-sm text-gray-400 py-10">Chargement...</p>;
 
@@ -111,6 +126,13 @@ export default function DetailSolde() {
           <p className="mt-3 text-sm font-extrabold text-red-600 flex items-center gap-1">
             <X size={18} strokeWidth={3} /> Stock écoulé
           </p>
+        )}
+
+        {solde.audio_url && (
+          <div className="mt-3">
+            <p className="text-[11px] font-bold text-[#1B1B1B] mb-1">🔊 Écoutez l'annonce</p>
+            <audio ref={audioRef} src={solde.audio_url} controls preload="auto" className="w-full" />
+          </div>
         )}
 
         {solde.description && (

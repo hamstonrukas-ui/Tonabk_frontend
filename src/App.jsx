@@ -28,6 +28,8 @@ import DetailProduit from "./pages/Boutique/DetailProduit";
 import ListeSoldes from "./pages/Soldes/ListeSoldes";
 import MesCommandes from "./pages/Livraison/MesCommandes";
 import DetailSolde from "./pages/Soldes/DetailSolde";
+import ListeNouveautes from "./pages/Nouveautes/ListeNouveautes";
+import PublierNouveaute from "./pages/Nouveautes/PublierNouveaute";
 import RechercheBoutique from "./pages/Boutique/Recherche";
 import Populaires from "./pages/Boutique/Populaires";
 
@@ -102,6 +104,8 @@ export default function App() {
           <Route path="/soldes" element={<AppLayout><ListeSoldes /></AppLayout>} />
           <Route path="/mes-commandes" element={<AppLayout><MesCommandes /></AppLayout>} />
           <Route path="/soldes/:id" element={<AppLayout><DetailSolde /></AppLayout>} />
+          <Route path="/nouveautes" element={<AppLayout><ListeNouveautes /></AppLayout>} />
+          <Route path="/nouveautes/publier" element={<AppLayout><PublierNouveaute /></AppLayout>} />
 
           {/* Boutique — mini-site d'une boutique précise */}
           <Route path="/boutique/:id" element={<AppLayout><BoutiqueLayout /></AppLayout>}>
@@ -137,3 +141,4 @@ export default function App() {
     </BrowserRouter>
   );
       }
+

@@ -1,19 +1,20 @@
 // Un commerçant publie une nouveauté (photo + texte) visible 48 h.
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Camera, Trash2 } from "lucide-react";
+import { ArrowLeft, Camera, Trash2, X } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 import { API_URL } from "../../lib/api";
 import { reduireImage } from "../../lib/image";
 import { ilYa, tempsAvantExpiration } from "../../lib/nouveautes";
+
+const MAX_PHOTOS = 5;
 
 export default function PublierNouveaute() {
   const navigate = useNavigate();
   const [session, setSession] = useState(undefined); // undefined = chargement
   const [boutique, setBoutique] = useState(null);
   const [mes, setMes] = useState([]);
-  const [photo, setPhoto] = useState(null);
-  const [apercu, setApercu] = useState(null);
+  const [photos, setPhotos] = useState([]); // [{ fichier, apercu }] — 5 maximum
   const [texte, setTexte] = useState("");
   const [envoi, setEnvoi] = useState(false);
   const [erreur, setErreur] = useState("");
@@ -43,33 +44,48 @@ export default function PublierNouveaute() {
     })();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => () => { if (apercu) URL.revokeObjectURL(apercu); }, [apercu]);
+  const apercusRef = useRef([]);
+  apercusRef.current = photos.map((p) => p.apercu);
+  useEffect(() => () => { apercusRef.current.forEach((u) => URL.revokeObjectURL(u)); }, []);
 
-  const choisirPhoto = (e) => {
-    const f = e.target.files?.[0];
+  const choisirPhotos = (e) => {
+    const fichiers = Array.from(e.target.files || []);
     e.target.value = "";
-    if (!f) return;
-    setPhoto(f);
-    setApercu(URL.createObjectURL(f));
+    if (!fichiers.length) return;
+    const place = MAX_PHOTOS - photos.length;
+    if (fichiers.length > place) setErreur(`${MAX_PHOTOS} photos maximum par nouveauté`);
+    else setErreur("");
+    setPhotos((prev) => [...prev, ...fichiers.slice(0, place).map((fichier) => ({ fichier, apercu: URL.createObjectURL(fichier) }))]);
+  };
+
+  const retirerPhoto = (idx) => {
+    setPhotos((prev) => {
+      URL.revokeObjectURL(prev[idx].apercu);
+      return prev.filter((_, k) => k !== idx);
+    });
+    setErreur("");
   };
 
   const publier = async (e) => {
     e.preventDefault();
     setErreur("");
-    if (!photo) return setErreur("Choisissez une photo");
+    if (photos.length === 0) return setErreur("Choisissez au moins une photo");
     setEnvoi(true);
     try {
-      const reduite = await reduireImage(photo);
-      const formData = new FormData();
-      formData.append("photo", reduite);
-      const up = await fetch(`${API_URL}/api/upload/photo-nouveaute`, { method: "POST", headers: entetes(session), body: formData });
-      const dataUp = await up.json().catch(() => ({}));
-      if (!up.ok) throw new Error(dataUp.error || "Échec de l'envoi de la photo");
+      const urls = [];
+      for (const { fichier } of photos) {
+        const formData = new FormData();
+        formData.append("photo", await reduireImage(fichier));
+        const up = await fetch(`${API_URL}/api/upload/photo-nouveaute`, { method: "POST", headers: entetes(session), body: formData });
+        const dataUp = await up.json().catch(() => ({}));
+        if (!up.ok) throw new Error(dataUp.error || "Échec de l'envoi d'une photo");
+        urls.push(dataUp.url);
+      }
 
       const res = await fetch(`${API_URL}/api/nouveautes`, {
         method: "POST",
         headers: { ...entetes(session), "Content-Type": "application/json" },
-        body: JSON.stringify({ photo_url: dataUp.url, texte, boutique_id: boutique.id }),
+        body: JSON.stringify({ photos: urls, texte, boutique_id: boutique.id }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Échec de la publication");
@@ -90,7 +106,7 @@ export default function PublierNouveaute() {
   return (
     <div className="min-h-screen bg-[#F3F3F3] pb-24">
       <div className="bg-[#F5720C] px-4 py-4 flex items-center gap-3">
-        <Link to="/nouveautes"><ArrowLeft size={20} className="text-white" /></Link>
+        <Link to="/boutique/gerer"><ArrowLeft size={20} className="text-white" /></Link>
         <p className="text-base font-extrabold text-white">Publier une nouveauté</p>
       </div>
 
@@ -108,18 +124,27 @@ export default function PublierNouveaute() {
           <form onSubmit={publier} className="bg-white rounded-xl p-4 space-y-3">
             <p className="text-xs text-gray-500">Votre nouveauté apparaîtra sous le nom de <strong>{boutique.nom}</strong> et disparaîtra après 48 h.</p>
 
-            <label className="block cursor-pointer">
-              {apercu ? (
-                <img src={apercu} alt="" className="w-full max-h-80 object-contain rounded-lg bg-black" />
-              ) : (
-                <div className="border-2 border-dashed border-[#F5720C]/50 rounded-lg py-10 flex flex-col items-center gap-2 text-[#F5720C]">
-                  <Camera size={28} />
-                  <span className="text-sm font-semibold">Choisir une photo</span>
+            <div className="grid grid-cols-3 gap-2">
+              {photos.map((p, idx) => (
+                <div key={p.apercu} className="relative aspect-square">
+                  <img src={p.apercu} alt="" className="w-full h-full object-cover rounded-lg" />
+                  <button type="button" onClick={() => retirerPhoto(idx)} aria-label="Retirer la photo"
+                    className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/70 flex items-center justify-center">
+                    <X size={14} className="text-white" />
+                  </button>
                 </div>
+              ))}
+              {photos.length < MAX_PHOTOS && (
+                <label className="aspect-square border-2 border-dashed border-[#F5720C]/50 rounded-lg flex flex-col items-center justify-center gap-1 text-[#F5720C] cursor-pointer">
+                  <Camera size={22} />
+                  <span className="text-[11px] font-semibold text-center leading-tight">
+                    {photos.length === 0 ? "Ajouter des photos" : "Ajouter"}
+                  </span>
+                  <input type="file" accept="image/*" multiple onChange={choisirPhotos} className="hidden" />
+                </label>
               )}
-              <input type="file" accept="image/*" onChange={choisirPhoto} className="hidden" />
-            </label>
-            {apercu && <button type="button" onClick={() => { setPhoto(null); setApercu(null); }} className="text-xs text-red-500">Changer de photo</button>}
+            </div>
+            <p className="text-[11px] text-gray-400">{photos.length}/{MAX_PHOTOS} photos</p>
 
             <textarea
               value={texte} onChange={(e) => setTexte(e.target.value)} maxLength={200} rows={3}
@@ -129,7 +154,7 @@ export default function PublierNouveaute() {
             <p className="text-[11px] text-gray-400 text-right -mt-2">{texte.length}/200</p>
 
             {erreur && <p className="text-sm text-red-500">{erreur}</p>}
-            <button type="submit" disabled={envoi || !photo} className="w-full bg-[#F5720C] text-white font-bold rounded-lg py-3 disabled:opacity-50">
+            <button type="submit" disabled={envoi || photos.length === 0} className="w-full bg-[#F5720C] text-white font-bold rounded-lg py-3 disabled:opacity-50">
               {envoi ? "Publication..." : "Publier (visible 48 h)"}
             </button>
           </form>
@@ -144,7 +169,7 @@ export default function PublierNouveaute() {
                   <img src={n.photo_url} alt="" className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
                   <div className="min-w-0 flex-1">
                     <p className="text-sm text-[#1B1B1B] truncate">{n.texte || "Sans texte"}</p>
-                    <p className="text-[11px] text-gray-400">{ilYa(n.created_at)} · {tempsAvantExpiration(n.expire_le)}</p>
+                    <p className="text-[11px] text-gray-400">{(n.photos?.length || 1)} photo{(n.photos?.length || 1) > 1 ? "s" : ""} · {ilYa(n.created_at)} · {tempsAvantExpiration(n.expire_le)}</p>
                   </div>
                   <button onClick={() => supprimer(n.id)} aria-label="Supprimer" className="text-red-500 p-2"><Trash2 size={16} /></button>
                 </div>

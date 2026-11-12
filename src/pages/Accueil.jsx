@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Search, ShoppingBag, BadgeCheck, ChevronLeft, ChevronRight, Store, Flame, Loader2, Menu, Truck } from "lucide-react";
+import { Search, ShoppingBag, BadgeCheck, ChevronLeft, ChevronRight, Store, Flame, Loader2, Menu, Truck, Sparkles } from "lucide-react";
 import { useCachedData } from "../lib/useCachedData";
 import { supabase } from "../lib/supabaseClient";
 import { API_URL } from "../lib/api";
 import Footer from "../components/Footer";
 import { obtenirMarque, changerDeVille } from "../lib/marque";
 import { demarrerAudioSolde } from "../lib/audioSolde";
+import { lireVues } from "../lib/nouveautes";
 
 const fmt = (n, devise = "USD") => n.toLocaleString("fr-FR") + " " + devise;
 const PRODUITS_PAR_PAGE = 30;
@@ -38,6 +39,12 @@ export default function Accueil() {
   const setPage = (p) => setEtatPage({ cle: cleVue, page: p });
   const [maBoutique, setMaBoutique] = useState(null);
   const [menuOuvert, setMenuOuvert] = useState(false);
+  // Pastille orange sur le menu quand il y a des nouveautés (statuts de 48 h) pas encore vues
+  const { data: nouveautes } = useCachedData("nouveautes", `${API_URL}/api/nouveautes`);
+  const nouveautesNonVues = (() => {
+    const vues = lireVues();
+    return (nouveautes || []).some((n) => !vues.has(n.id) && new Date(n.expire_le).getTime() > Date.now());
+  })();
 
   useEffect(() => {
     async function verifierMaBoutique() {
@@ -170,15 +177,24 @@ export default function Accueil() {
             )}
             <button
               onClick={() => setMenuOuvert((v) => !v)}
-              className="w-11 h-11 rounded-full bg-white/25 flex items-center justify-center flex-shrink-0"
+              className="relative w-11 h-11 rounded-full bg-white/25 flex items-center justify-center flex-shrink-0"
             >
               <Menu size={24} className="text-white" />
+              {nouveautesNonVues && <span className="absolute top-1 right-1 w-3 h-3 rounded-full bg-red-500 border-2 border-[#F5720C]" />}
             </button>
 
             {menuOuvert && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setMenuOuvert(false)} />
                 <div className="absolute top-[52px] right-0 bg-white rounded-xl shadow-lg overflow-hidden z-50 w-48">
+                  <Link
+                    to="/nouveautes"
+                    onClick={() => setMenuOuvert(false)}
+                    className="flex items-center gap-2 px-4 py-3 text-xs font-semibold text-[#1B1B1B] border-b border-gray-100"
+                  >
+                    <Sparkles size={14} className="text-[#F5720C]" /> Nouveautés
+                    {nouveautesNonVues && <span className="ml-auto w-2 h-2 rounded-full bg-red-500" />}
+                  </Link>
                   <Link
                     to="/boutique/populaires"
                     onClick={() => setMenuOuvert(false)}

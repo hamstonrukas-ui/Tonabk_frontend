@@ -1,10 +1,10 @@
 // Nouveautés : des statuts (photo + texte) qui disparaissent après 48 h, comme sur WhatsApp.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, BadgeCheck, Plus, Store, X } from "lucide-react";
+import { ArrowLeft, BadgeCheck, Store, Truck, X } from "lucide-react";
 import { API_URL } from "../../lib/api";
 import { useCachedData } from "../../lib/useCachedData";
-import { ilYa, lireVues, marquerVue } from "../../lib/nouveautes";
+import { ilYa, lireVues, marquerVue, ouvrirLivreMoi } from "../../lib/nouveautes";
 
 const DUREE_MS = 5000; // durée d'affichage de chaque photo
 
@@ -28,10 +28,10 @@ function Visionneuse({ groupes, depart, onFermer, onVue }) {
   const debutAppui = useRef(0);
 
   const groupe = groupes[g];
-  const item = groupe.items[i];
+  const item = groupe.slides[i]; // une « diapo » = une photo (jusqu'à 5 par nouveauté)
 
   const suivant = useCallback(() => {
-    if (i < groupe.items.length - 1) setI(i + 1);
+    if (i < groupe.slides.length - 1) setI(i + 1);
     else if (g < groupes.length - 1) { setG(g + 1); setI(0); }
     else onFermer();
   }, [i, g, groupe, groupes.length, onFermer]);
@@ -40,7 +40,7 @@ function Visionneuse({ groupes, depart, onFermer, onVue }) {
     ecoule.current = 0;
     setProgres(0);
     if (i > 0) setI(i - 1);
-    else if (g > 0) { setG(g - 1); setI(groupes[g - 1].items.length - 1); }
+    else if (g > 0) { setG(g - 1); setI(groupes[g - 1].slides.length - 1); }
   };
 
   useEffect(() => { onVue(item.id); }, [item.id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -58,7 +58,7 @@ function Visionneuse({ groupes, depart, onFermer, onVue }) {
       if (ecoule.current >= DUREE_MS) suivantRef.current();
     }, 50);
     return () => clearInterval(t);
-  }, [item.id]);
+  }, [item.cle]);
 
   const surAppui = () => { enPause.current = true; debutAppui.current = Date.now(); };
   const surRelache = (e) => {
@@ -72,8 +72,8 @@ function Visionneuse({ groupes, depart, onFermer, onVue }) {
     <div className="fixed inset-0 z-[100] bg-black flex flex-col select-none">
       <div className="absolute top-0 left-0 right-0 z-20 px-2 pt-2 bg-gradient-to-b from-black/70 to-transparent pb-8">
         <div className="flex gap-1">
-          {groupe.items.map((n, idx) => (
-            <div key={n.id} className="h-[3px] flex-1 rounded bg-white/30 overflow-hidden">
+          {groupe.slides.map((n, idx) => (
+            <div key={n.cle} className="h-[3px] flex-1 rounded bg-white/30 overflow-hidden">
               <div className="h-full bg-white" style={{ width: idx < i ? "100%" : idx === i ? `${progres * 100}%` : "0%" }} />
             </div>
           ))}
@@ -99,24 +99,25 @@ function Visionneuse({ groupes, depart, onFermer, onVue }) {
       </div>
 
       <div className="flex-1 flex items-center justify-center" onPointerDown={surAppui} onPointerUp={surRelache} onPointerLeave={() => { enPause.current = false; }}>
-        <img src={item.photo_url} alt="" draggable={false} className="max-w-full max-h-full object-contain pointer-events-none" />
+        <img src={item.photo} alt="" draggable={false} className="max-w-full max-h-full object-contain pointer-events-none" />
       </div>
 
-      {(item.texte || groupe.boutique_id) && (
-        <div className="absolute bottom-0 left-0 right-0 z-20 px-4 pb-6 pt-12 bg-gradient-to-t from-black/80 to-transparent">
-          {item.texte && <p className="text-white text-sm text-center leading-snug mb-3 whitespace-pre-wrap">{item.texte}</p>}
+      <div className="absolute bottom-0 left-0 right-0 z-20 px-4 pb-6 pt-12 bg-gradient-to-t from-black/80 to-transparent">
+        {item.texte && <p className="text-white text-sm text-center leading-snug mb-3 whitespace-pre-wrap">{item.texte}</p>}
+        <div className="flex items-center justify-center gap-2" onPointerDown={(e) => e.stopPropagation()} onPointerUp={(e) => e.stopPropagation()}>
+          <button
+            onClick={() => ouvrirLivreMoi({ ...item, boutique_id: groupe.boutique_id, telephone: groupe.telephone }, API_URL)}
+            className="flex items-center gap-1.5 bg-[#F5720C] text-white text-xs font-bold rounded-full px-4 py-2"
+          >
+            <Truck size={14} /> Livre-moi
+          </button>
           {groupe.boutique_id && (
-            <Link
-              to={`/boutique/${groupe.boutique_id}`}
-              onPointerDown={(e) => e.stopPropagation()}
-              onPointerUp={(e) => e.stopPropagation()}
-              className="mx-auto flex w-fit items-center gap-1.5 bg-[#F5720C] text-white text-xs font-bold rounded-full px-4 py-2"
-            >
-              <Store size={14} /> Visiter la boutique
+            <Link to={`/boutique/${groupe.boutique_id}`} className="flex items-center gap-1.5 bg-white/20 text-white text-xs font-bold rounded-full px-4 py-2">
+              <Store size={14} /> Voir la boutique
             </Link>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -141,13 +142,16 @@ export default function ListeNouveautes() {
     for (const n of data || []) {
       if (new Date(n.expire_le).getTime() <= maintenant) continue;
       const cle = n.boutique_id || "tonabk";
-      if (!m.has(cle)) m.set(cle, { cle, boutique_id: n.boutique_id, nom: n.auteur_nom, logo_url: n.logo_url, certifiee: n.certifiee, items: [] });
+      if (!m.has(cle)) m.set(cle, { cle, boutique_id: n.boutique_id, nom: n.auteur_nom, logo_url: n.logo_url, certifiee: n.certifiee, telephone: n.telephone, items: [] });
       m.get(cle).items.push(n);
     }
     const liste = [...m.values()];
     for (const gr of liste) {
       gr.items.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
       gr.derniere = gr.items[gr.items.length - 1];
+      gr.slides = gr.items.flatMap((n) =>
+        (n.photos?.length ? n.photos : [n.photo_url]).map((photo, k) => ({ ...n, photo, cle: `${n.id}-${k}` }))
+      );
       gr.nonVue = gr.items.some((x) => !vues.has(x.id));
     }
     // TonaBk d'abord, puis les non vues, puis les plus récentes
@@ -171,9 +175,6 @@ export default function ListeNouveautes() {
           <p className="text-base font-extrabold text-white">Nouveautés</p>
           <p className="text-[11px] text-white/80">Disparaissent après 48 h</p>
         </div>
-        <Link to="/nouveautes/publier" className="flex items-center gap-1 bg-white/20 rounded-full px-3 py-1.5 text-[11px] font-bold text-white">
-          <Plus size={14} /> Publier
-        </Link>
       </div>
 
       {loading && !data && <p className="text-center text-sm text-gray-400 py-10">Chargement...</p>}

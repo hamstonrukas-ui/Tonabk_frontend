@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useParams, useLocation, Link } from "react-router-dom";
-import { ArrowLeft, Share2, Check, ShoppingBag, MessageCircle, ZoomIn, X } from "lucide-react";
+import { ArrowLeft, Share2, Check, ShoppingBag, MessageCircle, ZoomIn, X, ChevronLeft, ChevronRight } from "lucide-react";
 import LivreMoiButton from "../../components/LivreMoiButton";
 import { useCart } from "../../context/CartContext";
 import { API_URL } from "../../lib/api";
@@ -29,8 +29,22 @@ export default function DetailProduit() {
   const [ajoute, setAjoute] = useState(false);
   const [photoPleinEcran, setPhotoPleinEcran] = useState(false);
   const { addToCart } = useCart();
+  // Galerie : une annonce spéciale a plusieurs photos ; un produit ordinaire n'en a qu'une
+  const [indexPhoto, setIndexPhoto] = useState(0);
+  const departX = useRef(null);
 
   if (!produit) return <p className="text-center text-sm text-gray-400 py-10">Chargement...</p>;
+
+  const photos = produit.photos?.length ? produit.photos : produit.photo_url ? [produit.photo_url] : [];
+  const photoCourante = photos[Math.min(indexPhoto, photos.length - 1)] || produit.photo_url;
+  const allerA = (i) => setIndexPhoto((i + photos.length) % photos.length);
+  const debutToucher = (e) => { departX.current = e.touches[0].clientX; };
+  const finToucher = (e) => {
+    if (departX.current == null || photos.length < 2) return;
+    const dx = e.changedTouches[0].clientX - departX.current;
+    departX.current = null;
+    if (Math.abs(dx) > 40) allerA(indexPhoto + (dx < 0 ? 1 : -1));
+  };
 
   const partager = () => {
     const nomBoutique = produit.boutiques?.nom ? ` (${produit.boutiques.nom})` : "";
@@ -57,10 +71,27 @@ export default function DetailProduit() {
 
   return (
     <div>
-      <div className="relative h-64 bg-[#F6F6F6]">
-        {produit.photo_url ? (
+      <div className="relative h-64 bg-[#F6F6F6]" onTouchStart={debutToucher} onTouchEnd={finToucher}>
+        {photoCourante ? (
           <>
-            <img src={produit.photo_url} className="w-full h-full object-cover" />
+            <img src={photoCourante} className="w-full h-full object-cover" />
+            {photos.length > 1 && (
+              <>
+                <button onClick={() => allerA(indexPhoto - 1)} aria-label="Photo précédente"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 flex items-center justify-center">
+                  <ChevronLeft size={18} />
+                </button>
+                <button onClick={() => allerA(indexPhoto + 1)} aria-label="Photo suivante"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 flex items-center justify-center">
+                  <ChevronRight size={18} />
+                </button>
+                <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 pointer-events-none">
+                  {photos.map((_, i) => (
+                    <span key={i} className={`h-1.5 rounded-full ${i === indexPhoto ? "w-4 bg-[#F5720C]" : "w-1.5 bg-white/80"}`} />
+                  ))}
+                </div>
+              </>
+            )}
             <button
               onClick={() => setPhotoPleinEcran(true)}
               className="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-white/90 flex items-center justify-center"
@@ -78,6 +109,17 @@ export default function DetailProduit() {
           <Share2 size={16} className="text-[#25D366]" />
         </button>
       </div>
+
+      {photos.length > 1 && (
+        <div className="flex gap-2 px-4 pt-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {photos.map((u, i) => (
+            <button key={u + i} onClick={() => setIndexPhoto(i)}
+              className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 ${i === indexPhoto ? "border-[#F5720C]" : "border-transparent"}`}>
+              <img src={u} alt="" className="w-full h-full object-cover" />
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="p-4">
         <p className="text-lg font-bold text-[#1B1B1B]">{produit.nom}</p>
@@ -155,7 +197,7 @@ export default function DetailProduit() {
           >
             <X size={18} className="text-white" />
           </button>
-          <img src={produit.photo_url} className="max-w-full max-h-full object-contain" />
+          <img src={photoCourante} className="max-w-full max-h-full object-contain" />
         </div>
       )}
     </div>

@@ -172,7 +172,7 @@ export default function ListeNouveautes() {
       <div className="bg-[#F5720C] px-4 py-4 flex items-center gap-3">
         <Link to="/"><ArrowLeft size={20} className="text-white" /></Link>
         <div className="flex-1">
-          <p className="text-base font-extrabold text-white">Nouveautés</p>
+          <p className="text-base font-extrabold text-white">Mali mupya</p>
           <p className="text-[11px] text-white/80">Disparaissent après 48 h</p>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import BarreNavigation from "./components/BarreNavigation";
 import InstallButton from "./components/InstallButton";
 import ActualiserBouton from "./components/ActualiserBouton";
@@ -52,7 +52,7 @@ import AccederBoutique from "./pages/Auth/AccederBoutique";
 import Inscription from "./pages/Auth/Inscription";
 import MotDePasseOublie from "./pages/Auth/MotDePasseOublie";
 import ReinitialiserMotDePasse from "./pages/Auth/ReinitialiserMotDePasse";
-import { enregistrerVisiteSession } from "./lib/analytics";
+import { enregistrerVisiteSession, enregistrerPageVue, demarrerSuiviDuree } from "./lib/analytics";
 
 function AppLayout({ children }) {
   return (
@@ -64,9 +64,17 @@ function AppLayout({ children }) {
   );
 }
 
+// Compte chaque page consultée (statistiques de l'admin) — invisible pour le visiteur
+function SuiviPages() {
+  const { pathname } = useLocation();
+  useEffect(() => { enregistrerPageVue(pathname); }, [pathname]);
+  return null;
+}
+
 export default function App() {
   useEffect(() => {
     enregistrerVisiteSession();
+    demarrerSuiviDuree();
   }, []);
 
   useEffect(() => {
@@ -83,6 +91,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <SuiviPages />
       <CartProvider>
         <InstallButton />
         <Routes>
@@ -141,4 +150,3 @@ export default function App() {
     </BrowserRouter>
   );
       }
-

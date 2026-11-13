@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Search, ShoppingBag, BadgeCheck, ChevronLeft, ChevronRight, Store, Flame, Loader2, Menu, Truck, Sparkles } from "lucide-react";
+import { Search, ShoppingBag, BadgeCheck, ChevronLeft, ChevronRight, Store, Flame, Loader2, Menu, Truck, Sparkles, Briefcase } from "lucide-react";
 import { useCachedData } from "../lib/useCachedData";
 import { supabase } from "../lib/supabaseClient";
 import { API_URL } from "../lib/api";
@@ -192,8 +192,15 @@ export default function Accueil() {
                     onClick={() => setMenuOuvert(false)}
                     className="flex items-center gap-2 px-4 py-3 text-xs font-semibold text-[#1B1B1B] border-b border-gray-100"
                   >
-                    <Sparkles size={14} className="text-[#F5720C]" /> Nouveautés
+                    <Sparkles size={14} className="text-[#F5720C]" /> Mali mupya
                     {nouveautesNonVues && <span className="ml-auto w-2 h-2 rounded-full bg-red-500" />}
+                  </Link>
+                  <Link
+                    to="/kisakoshi"
+                    onClick={() => setMenuOuvert(false)}
+                    className="flex items-center gap-2 px-4 py-3 text-xs font-semibold text-[#1B1B1B] border-b border-gray-100"
+                  >
+                    <Briefcase size={14} className="text-[#F5720C]" /> Kisakoshi
                   </Link>
                   <Link
                     to="/boutique/populaires"

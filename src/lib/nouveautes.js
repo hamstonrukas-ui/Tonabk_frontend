@@ -33,3 +33,21 @@ export function tempsAvantExpiration(iso) {
   if (min < 60) return `expire dans ${min} min`;
   return `expire dans ${Math.floor(min / 60)} h`;
 }
+
+// Numéro WhatsApp du service client TonaBk (nouveautés publiées par l'admin)
+export const NUMERO_SERVICE = "243855841999";
+
+// « Livre-moi » sur une nouveauté : ouvre WhatsApp de la boutique qui a publié,
+// ou du service client si c'est TonaBk. Le lien joint affiche la photo dans la conversation.
+export function ouvrirLivreMoi(item, apiUrl) {
+  const numero = item.boutique_id ? (item.telephone || "").replace(/\D/g, "") : NUMERO_SERVICE;
+  if (!numero) {
+    alert("Cette boutique n'a pas encore de numéro WhatsApp renseigné.");
+    return;
+  }
+  const message =
+    `Bonjour, je veux me faire livrer ce que j'ai vu dans vos nouveautés sur TonaBk` +
+    (item.texte ? ` : "${item.texte}"` : ".") +
+    `\n${apiUrl}/partage/nouveaute/${item.id}?v=${Date.now()}`;
+  window.open(`https://wa.me/${numero}?text=${encodeURIComponent(message)}`, "_blank");
+}

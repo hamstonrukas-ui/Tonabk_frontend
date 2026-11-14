@@ -107,7 +107,7 @@ export default function PublierNouveaute() {
     <div className="min-h-screen bg-[#F3F3F3] pb-24">
       <div className="bg-[#F5720C] px-4 py-4 flex items-center gap-3">
         <Link to="/boutique/gerer"><ArrowLeft size={20} className="text-white" /></Link>
-        <p className="text-base font-extrabold text-white">Publier une nouveauté</p>
+        <p className="text-base font-extrabold text-white">Publier un Mali mupya</p>
       </div>
 
       <div className="p-4 space-y-4">

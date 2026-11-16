@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Search, ShoppingBag, BadgeCheck, ChevronLeft, ChevronRight, Store, Flame, Loader2, Menu, Truck, Sparkles, Briefcase } from "lucide-react";
+import { Search, ShoppingBag, BadgeCheck, ChevronLeft, ChevronRight, Store, Flame, Loader2, Menu, Truck, Sparkles, Briefcase, Play } from "lucide-react";
 import { useCachedData } from "../lib/useCachedData";
 import { supabase } from "../lib/supabaseClient";
 import { API_URL } from "../lib/api";
 import Footer from "../components/Footer";
+import VueTikTok from "../components/VueTikTok";
 import { obtenirMarque, changerDeVille } from "../lib/marque";
 import { demarrerAudioSolde } from "../lib/audioSolde";
 import { lireVues } from "../lib/nouveautes";
@@ -39,6 +40,7 @@ export default function Accueil() {
   const setPage = (p) => setEtatPage({ cle: cleVue, page: p });
   const [maBoutique, setMaBoutique] = useState(null);
   const [menuOuvert, setMenuOuvert] = useState(false);
+  const [tiktokOuvert, setTiktokOuvert] = useState(false);
   // Pastille orange sur le menu quand il y a des nouveautés (statuts de 48 h) pas encore vues
   const { data: nouveautes } = useCachedData("nouveautes", `${API_URL}/api/nouveautes`);
   const nouveautesNonVues = (() => {
@@ -104,6 +106,17 @@ export default function Accueil() {
   const enAttente = afficherProduits && (produitsEnChargement || !reponseProduits);
   const produits = afficherProduits && !produitsEnChargement ? reponseProduits?.data || [] : [];
   const totalPages = reponseProduits?.totalPages || 1;
+
+  // Même requête que la grille, pour la vue TikTok (qui charge les pages suivantes à mesure qu'on défile)
+  const chargerPageTiktok = async (p) => {
+    const r = await fetch(
+      `${API_URL}/api/produits/accueil?page=${p}&limit=${PRODUITS_PAR_PAGE}&ville=${marque.ville}${
+        categorieId ? `&categorie_id=${encodeURIComponent(categorieId)}` : ""
+      }${idFiltre ? `&sous_categorie_id=${encodeURIComponent(idFiltre)}` : ""}`
+    );
+    if (!r.ok) throw new Error("chargement");
+    return r.json();
+  };
 
   const titreDedans = typeChoisi?.nom || "";
   const sousTitreDedans = typeChoisi ? `${nomCategorie} › ${racineChoisie.nom}` : "";
@@ -316,6 +329,27 @@ export default function Accueil() {
         <p className="text-center text-xs text-gray-400 py-10 px-6">
           Aucun article ici pour le moment.
         </p>
+      )}
+
+      {produits.length > 0 && (
+        <div className="px-3 lg:px-8 pb-2.5">
+          <button
+            onClick={() => setTiktokOuvert(true)}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#1B1B1B] text-white text-xs font-extrabold rounded-xl px-4 py-2.5"
+          >
+            <Play size={14} className="text-[#F5720C]" fill="#F5720C" /> Voir en mode TikTok
+          </button>
+        </div>
+      )}
+
+      {tiktokOuvert && (
+        <VueTikTok
+          produits={produits}
+          pageSuivante={page + 1}
+          totalPages={totalPages}
+          chargerPage={chargerPageTiktok}
+          onFermer={() => setTiktokOuvert(false)}
+        />
       )}
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 px-3 lg:px-8">

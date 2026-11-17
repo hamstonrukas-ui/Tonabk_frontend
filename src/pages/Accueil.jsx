@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Search, ShoppingBag, BadgeCheck, ChevronLeft, ChevronRight, Store, Flame, Loader2, Menu, Truck, Sparkles, Briefcase, Play } from "lucide-react";
+import { Search, ShoppingBag, BadgeCheck, ChevronLeft, ChevronRight, Store, Flame, Loader2, Menu, Truck, Sparkles, Briefcase, Play, Share2, Copy, Check } from "lucide-react";
 import { useCachedData } from "../lib/useCachedData";
 import { supabase } from "../lib/supabaseClient";
 import { API_URL } from "../lib/api";
 import Footer from "../components/Footer";
 import VueTikTok from "../components/VueTikTok";
+import GuideBienvenue from "../components/GuideBienvenue";
+import { guideVu, marquerGuideVu, PHRASE_RASSURANCE } from "../lib/guide";
 import { obtenirMarque, changerDeVille } from "../lib/marque";
 import { demarrerAudioSolde } from "../lib/audioSolde";
 import { lireVues } from "../lib/nouveautes";
@@ -41,6 +43,15 @@ export default function Accueil() {
   const [maBoutique, setMaBoutique] = useState(null);
   const [menuOuvert, setMenuOuvert] = useState(false);
   const [tiktokOuvert, setTiktokOuvert] = useState(false);
+  const [lienCopie, setLienCopie] = useState(false);
+  const [guideOuvert, setGuideOuvert] = useState(false);
+  // Première visite : le guide s'ouvre tout seul (une seule fois)
+  useEffect(() => {
+    if (guideVu()) return;
+    const t = setTimeout(() => setGuideOuvert(true), 900);
+    return () => clearTimeout(t);
+  }, []);
+  const fermerGuide = () => { marquerGuideVu(); setGuideOuvert(false); };
   // Pastille orange sur le menu quand il y a des nouveautés (statuts de 48 h) pas encore vues
   const { data: nouveautes } = useCachedData("nouveautes", `${API_URL}/api/nouveautes`);
   const nouveautesNonVues = (() => {
@@ -116,6 +127,23 @@ export default function Accueil() {
     );
     if (!r.ok) throw new Error("chargement");
     return r.json();
+  };
+
+  // Lien direct vers le rayon affiché (ex. « Chemises ») : à envoyer à un client sur WhatsApp
+  const nomRayon = typeChoisi?.nom || racineChoisie?.nom || "";
+  const lienRayon = idFiltre ? `${API_URL}/partage/type/${idFiltre}` : null;
+  const partagerRayon = () => {
+    const texte = `Voici nos ${nomRayon.toLowerCase()} sur ${marque.nom} :\n${lienRayon}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(texte)}`, "_blank");
+  };
+  const copierRayon = async () => {
+    try {
+      await navigator.clipboard.writeText(lienRayon);
+      setLienCopie(true);
+      setTimeout(() => setLienCopie(false), 2000);
+    } catch {
+      window.prompt("Copiez ce lien :", lienRayon);
+    }
   };
 
   const titreDedans = typeChoisi?.nom || "";
@@ -244,6 +272,16 @@ export default function Accueil() {
         <Link to="/boutique/recherche" className="max-w-3xl bg-white rounded-lg flex items-center gap-2 px-3 py-2.5 text-xs text-gray-400">
           <Search size={15} /> Chaussures, smartphone, riz...
         </Link>
+        <button onClick={() => setGuideOuvert(true)} className="mt-3 w-full max-w-3xl flex items-center gap-1 text-left">
+          {["1 Choisir", "2 Contacter", "3 Recevoir"].map((t, k) => (
+            <span key={t} className="flex items-center gap-1">
+              <span className="bg-white/25 text-white text-[10.5px] font-bold rounded-full px-2.5 py-1">{t}</span>
+              {k < 2 && <ChevronRight size={12} className="text-white/70" />}
+            </span>
+          ))}
+          <span className="ml-auto text-[10.5px] font-semibold text-white underline whitespace-nowrap">Comment ça marche ?</span>
+        </button>
+        <p className="text-[10.5px] text-white/90 mt-1.5">✅ {PHRASE_RASSURANCE}</p>
       </div>
 
       <Link
@@ -332,13 +370,29 @@ export default function Accueil() {
       )}
 
       {produits.length > 0 && (
-        <div className="px-3 lg:px-8 pb-2.5">
+        <div className="px-3 lg:px-8 pb-2.5 flex flex-wrap gap-2">
           <button
             onClick={() => setTiktokOuvert(true)}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#1B1B1B] text-white text-xs font-extrabold rounded-xl px-4 py-2.5"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#1B1B1B] text-white text-xs font-extrabold rounded-xl px-4 py-2.5"
           >
             <Play size={14} className="text-[#F5720C]" fill="#F5720C" /> Voir en mode TikTok
           </button>
+          {lienRayon && (
+            <>
+              <button
+                onClick={partagerRayon}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-[#25D366] text-white text-xs font-extrabold rounded-xl px-4 py-2.5"
+              >
+                <Share2 size={14} /> Partager « {nomRayon} »
+              </button>
+              <button
+                onClick={copierRayon}
+                className="flex items-center justify-center gap-1.5 bg-white border border-gray-200 text-[#1B1B1B] text-xs font-bold rounded-xl px-3 py-2.5"
+              >
+                {lienCopie ? <Check size={14} className="text-green-600" /> : <Copy size={14} />} {lienCopie ? "Copié" : "Copier le lien"}
+              </button>
+            </>
+          )}
         </div>
       )}
 
@@ -481,6 +535,8 @@ export default function Accueil() {
 
         </>
       )}
+
+      {guideOuvert && <GuideBienvenue onFermer={fermerGuide} />}
 
       <Footer />
     </div>

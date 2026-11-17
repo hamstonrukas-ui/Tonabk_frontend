@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Volume2, VolumeX, X } from "lucide-react";
 import { API_URL } from "../lib/api";
 import { useCachedData } from "../lib/useCachedData";
-import { ECRANS_GUIDE } from "../lib/guide";
+import { ECRANS_GUIDE, PHRASE_RASSURANCE } from "../lib/guide";
 
 export default function GuideBienvenue({ onFermer }) {
   const [i, setI] = useState(0);
@@ -52,7 +52,9 @@ export default function GuideBienvenue({ onFermer }) {
           )}
         </div>
 
-        <div className="flex justify-center gap-1.5 mt-5">
+        <p className="text-center text-[11px] text-gray-500 mt-4">✅ {PHRASE_RASSURANCE}</p>
+
+        <div className="flex justify-center gap-1.5 mt-3">
           {ECRANS_GUIDE.map((_, k) => (
             <span key={k} className={`h-1.5 rounded-full ${k === i ? "w-5 bg-[#F5720C]" : "w-1.5 bg-gray-300"}`} />
           ))}

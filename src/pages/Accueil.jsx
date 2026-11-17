@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Search, ShoppingBag, BadgeCheck, ChevronLeft, ChevronRight, Store, Flame, Loader2, Menu, Truck, Sparkles, Briefcase, Play, Share2, Copy, Check } from "lucide-react";
+import { Search, ShoppingBag, BadgeCheck, ChevronLeft, ChevronRight, Store, Flame, Loader2, Menu, Truck, Sparkles, Briefcase, Play, Share2, Copy, Check, Info } from "lucide-react";
 import { useCachedData } from "../lib/useCachedData";
 import { supabase } from "../lib/supabaseClient";
 import { API_URL } from "../lib/api";
 import Footer from "../components/Footer";
 import VueTikTok from "../components/VueTikTok";
 import GuideBienvenue from "../components/GuideBienvenue";
-import { guideVu, marquerGuideVu, PHRASE_RASSURANCE } from "../lib/guide";
+import { guideVu, marquerGuideVu } from "../lib/guide";
 import { obtenirMarque, changerDeVille } from "../lib/marque";
 import { demarrerAudioSolde } from "../lib/audioSolde";
 import { lireVues } from "../lib/nouveautes";
@@ -253,10 +253,16 @@ export default function Accueil() {
                   <Link
                     to="/mes-commandes"
                     onClick={() => setMenuOuvert(false)}
-                    className="flex items-center gap-2 px-4 py-3 text-xs font-semibold text-[#1B1B1B]"
+                    className="flex items-center gap-2 px-4 py-3 text-xs font-semibold text-[#1B1B1B] border-b border-gray-100"
                   >
                     <Truck size={14} className="text-[#F5720C]" /> Commandes
                   </Link>
+                  <button
+                    onClick={() => { setMenuOuvert(false); setGuideOuvert(true); }}
+                    className="w-full flex items-center gap-2 px-4 py-3 text-xs font-semibold text-[#1B1B1B]"
+                  >
+                    <Info size={14} className="text-[#F5720C]" /> Comment ça marche ?
+                  </button>
                 </div>
               </>
             )}
@@ -272,16 +278,7 @@ export default function Accueil() {
         <Link to="/boutique/recherche" className="max-w-3xl bg-white rounded-lg flex items-center gap-2 px-3 py-2.5 text-xs text-gray-400">
           <Search size={15} /> Chaussures, smartphone, riz...
         </Link>
-        <button onClick={() => setGuideOuvert(true)} className="mt-3 w-full max-w-3xl flex items-center gap-1 text-left">
-          {["1 Choisir", "2 Contacter", "3 Recevoir"].map((t, k) => (
-            <span key={t} className="flex items-center gap-1">
-              <span className="bg-white/25 text-white text-[10.5px] font-bold rounded-full px-2.5 py-1">{t}</span>
-              {k < 2 && <ChevronRight size={12} className="text-white/70" />}
-            </span>
-          ))}
-          <span className="ml-auto text-[10.5px] font-semibold text-white underline whitespace-nowrap">Comment ça marche ?</span>
-        </button>
-        <p className="text-[10.5px] text-white/90 mt-1.5">✅ {PHRASE_RASSURANCE}</p>
+
       </div>
 
       <Link

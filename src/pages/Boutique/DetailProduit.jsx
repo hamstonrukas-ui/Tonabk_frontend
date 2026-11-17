@@ -2,7 +2,6 @@ import { useRef, useState } from "react";
 import { useParams, useLocation, Link } from "react-router-dom";
 import { ArrowLeft, Share2, Check, ShoppingBag, MessageCircle, ZoomIn, X, ChevronLeft, ChevronRight } from "lucide-react";
 import LivreMoiButton from "../../components/LivreMoiButton";
-import BulleAide from "../../components/BulleAide";
 import { useCart } from "../../context/CartContext";
 import { API_URL } from "../../lib/api";
 import { useCachedData } from "../../lib/useCachedData";
@@ -141,8 +140,6 @@ export default function DetailProduit() {
         </p>
 
         {produit.description && <p className="text-sm text-gray-600 mt-3">{produit.description}</p>}
-
-        <BulleAide id="fiche_produit" texte="Touchez « WhatsApp » pour écrire au vendeur, ou « Livre-moi » pour être livré à la maison." />
 
         <LivreMoiButton
           produit={{

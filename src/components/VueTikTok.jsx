@@ -2,11 +2,15 @@
 // Boutons : WhatsApp du commerçant et « Livre-moi » (livraison à la maison).
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { X, BadgeCheck, MessageCircle, Truck, ChevronUp } from "lucide-react";
+import { X, BadgeCheck, MessageCircle, Truck, ChevronUp, Volume2, VolumeX } from "lucide-react";
 import { API_URL } from "../lib/api";
 import { obtenirMarque } from "../lib/marque";
 import { enregistrerClicWhatsapp } from "../lib/analytics";
 
+// Musique de fond : les 5 chansons jouent l'une après l'autre, en boucle.
+// Les fichiers sont à placer dans le dossier public/musique/ du frontend (voir noms ci-dessous).
+const PISTES = [1, 2, 3, 4, 5].map((n) => `/musique/chanson-${n}.mp3`);
+const CLE_SON = "tonabk_tiktok_son_coupe";
 const NUMERO_SERVICE = "243855841999";
 const fmt = (n, devise = "USD") => Number(n).toLocaleString("fr-FR") + " " + devise;
 
@@ -25,6 +29,55 @@ export default function VueTikTok({ produits, pageSuivante, totalPages, chargerP
   const enCours = useRef(false);
   const conteneur = useRef(null);
   const fermeture = useRef(false);
+  const audio = useRef(null);
+  const [sonCoupe, setSonCoupe] = useState(() => {
+    try { return localStorage.getItem(CLE_SON) === "1"; } catch { return false; }
+  });
+  const sonCoupeRef = useRef(sonCoupe);
+  sonCoupeRef.current = sonCoupe;
+
+  // Lecture en boucle des chansons (démarre au clic sur « Voir en mode TikTok », donc autorisée par le navigateur)
+  useEffect(() => {
+    const a = new Audio();
+    a.preload = "auto";
+    a.volume = 0.6;
+    a.muted = sonCoupeRef.current;
+    audio.current = a;
+    let i = Math.floor(Math.random() * PISTES.length);
+    let echecs = 0;
+    const jouer = () => {
+      a.src = PISTES[i];
+      a.play().catch(() => { /* bloqué : le bouton son permet de relancer */ });
+    };
+    const suivante = () => { i = (i + 1) % PISTES.length; jouer(); };
+    a.addEventListener("ended", () => { echecs = 0; suivante(); });
+    a.addEventListener("error", () => {
+      echecs += 1;                    // fichier absent : on passe à la suivante, on s'arrête si aucune ne marche
+      if (echecs < PISTES.length) suivante();
+    });
+    const surVisibilite = () => {
+      if (document.hidden) a.pause();
+      else if (!sonCoupeRef.current) a.play().catch(() => {});
+    };
+    document.addEventListener("visibilitychange", surVisibilite);
+    jouer();
+    return () => {
+      document.removeEventListener("visibilitychange", surVisibilite);
+      a.pause();
+      a.removeAttribute("src");
+      a.load();
+    };
+  }, []);
+
+  const basculerSon = () => {
+    const coupe = !sonCoupe;
+    setSonCoupe(coupe);
+    try { localStorage.setItem(CLE_SON, coupe ? "1" : "0"); } catch { /* pas grave */ }
+    const a = audio.current;
+    if (!a) return;
+    a.muted = coupe;
+    if (!coupe && a.paused) a.play().catch(() => {});
+  };
 
   // Le bouton « retour » du téléphone ferme la vue au lieu de quitter la page
   useEffect(() => {
@@ -174,6 +227,9 @@ export default function VueTikTok({ produits, pageSuivante, totalPages, chargerP
 
       <button onClick={fermer} aria-label="Fermer" className="absolute top-3 left-3 w-10 h-10 rounded-full bg-black/50 flex items-center justify-center">
         <X size={22} className="text-white" />
+      </button>
+      <button onClick={basculerSon} aria-label={sonCoupe ? "Activer la musique" : "Couper la musique"} className="absolute top-3 right-[88px] w-10 h-10 rounded-full bg-black/50 flex items-center justify-center">
+        {sonCoupe ? <VolumeX size={20} className="text-white" /> : <Volume2 size={20} className="text-white" />}
       </button>
       <span className="absolute top-4 right-3 bg-black/50 text-white text-[11px] font-bold px-2.5 py-1 rounded-full">
         {Math.min(index + 1, liste.length)} / {liste.length}{fini.current ? "" : "+"}

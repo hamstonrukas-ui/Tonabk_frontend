@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import BarreNavigation from "./components/BarreNavigation";
@@ -11,6 +10,7 @@ import { CartProvider } from "./context/CartContext";
 import Accueil from "./pages/Accueil";
 import ListeExpeditions from "./pages/Expeditions/ListeExpeditions";
 import DetailExpedition from "./pages/Expeditions/DetailExpedition";
+import DepotColis from "./pages/Expeditions/DepotColis";
 import APropos from "./pages/APropos";
 import CommentCaMarche from "./pages/CommentCaMarche";
 import Confidentialite from "./pages/Confidentialite";
@@ -106,6 +106,7 @@ export default function App() {
           <Route path="/" element={<AppLayout><Accueil /></AppLayout>} />
           <Route path="/a-propos" element={<AppLayout><APropos /></AppLayout>} />
           <Route path="/expeditions" element={<AppLayout><ListeExpeditions /></AppLayout>} />
+          <Route path="/expeditions/deposer" element={<AppLayout><DepotColis /></AppLayout>} />
           <Route path="/expeditions/:id" element={<AppLayout><DetailExpedition /></AppLayout>} />
           <Route path="/comment-ca-marche" element={<AppLayout><CommentCaMarche /></AppLayout>} />
           <Route path="/confidentialite" element={<AppLayout><Confidentialite /></AppLayout>} />

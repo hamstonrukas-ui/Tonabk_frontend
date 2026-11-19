@@ -1,8 +1,9 @@
-// Les 4 trajets d'expédition de colis. Pour modifier un itinéraire, une étape ou ajouter des informations,
+// Les trajets d'expédition de colis. Pour modifier un itinéraire, une étape ou ajouter des informations,
 // changez ce fichier : la carte et les pages se mettent à jour toutes seules.
 //
 // points : de l'origine à la destination finale (lat / lng = position réelle de la ville).
 //   role (facultatif) : "Départ", "Escale" ou "Arrivée". Sans role : premier = Départ, dernier = Arrivée, les autres = Escale.
+//   lointain (facultatif) : true pour un point très éloigné (la Chine) : il est placé au bord de la carte.
 //   mode (facultatif) : comment le colis voyage jusqu'à ce point (ex. "Bateau", "Route", "Avion").
 // infos : les renseignements à afficher sous la carte, par exemple
 //   { titre: "Délais", texte: "10 à 15 jours" }, { titre: "Tarifs", texte: "…" }
@@ -16,13 +17,27 @@ export const EXPEDITIONS = [
   {
     id: "chine-rdc",
     titre: "Chine → RDC",
-    sous_titre: "Vos achats de Chine jusqu'au Kivu",
+    sous_titre: "Via Mombasa et l'Ouganda, jusqu'à Goma",
     emoji: "🚢",
     points: [
-      { nom: "Guangzhou", pays: "Chine", lat: 23.13, lng: 113.26, role: "Départ" },
-      { nom: "Dar es Salaam", pays: "Tanzanie", lat: -6.79, lng: 39.21, role: "Escale", mode: "Bateau" },
-      { nom: "Kigali", pays: "Rwanda", lat: -1.94, lng: 30.06, role: "Escale", mode: "Route" },
+      // lointain : true = la Chine est placée au bord de la carte, dans sa direction réelle
+      { nom: "Chine", pays: "Guangzhou", lat: 23.13, lng: 113.26, role: "Départ", lointain: true },
+      { nom: "Mombasa", pays: "Kenya", lat: -4.04, lng: 39.67, role: "Escale", mode: "Bateau" },
+      { nom: "Kampala", pays: "Ouganda", lat: 0.35, lng: 32.58, role: "Escale", mode: "Route" },
       { nom: "Goma", pays: "RDC", lat: -1.68, lng: 29.22, role: "Arrivée", mode: "Route" },
+    ],
+    infos: [],
+  },
+  {
+    id: "chine-uvira",
+    titre: "Chine → Uvira",
+    sous_titre: "Via Dar es Salaam et le Burundi",
+    emoji: "🚢",
+    points: [
+      { nom: "Chine", pays: "Guangzhou", lat: 23.13, lng: 113.26, role: "Départ", lointain: true },
+      { nom: "Dar es Salaam", pays: "Tanzanie", lat: -6.79, lng: 39.21, role: "Escale", mode: "Bateau" },
+      { nom: "Bujumbura", pays: "Burundi", lat: -3.38, lng: 29.36, role: "Escale", mode: "Route" },
+      { nom: "Uvira", pays: "RDC", lat: -3.40, lng: 29.14, role: "Arrivée", mode: "Route" },
     ],
     infos: [],
   },

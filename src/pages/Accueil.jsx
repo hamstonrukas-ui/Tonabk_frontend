@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Search, ShoppingBag, BadgeCheck, ChevronLeft, ChevronRight, Store, Flame, Loader2, Menu, Truck, Sparkles, Briefcase, Play, Share2, Copy, Check, Info } from "lucide-react";
+import { Search, ShoppingBag, BadgeCheck, ChevronLeft, ChevronRight, Store, Flame, Loader2, Menu, Truck, Sparkles, Briefcase, Play, Share2, Copy, Check, Info, Package } from "lucide-react";
 import { useCachedData } from "../lib/useCachedData";
 import { supabase } from "../lib/supabaseClient";
 import { API_URL } from "../lib/api";
@@ -256,6 +256,13 @@ export default function Accueil() {
                     className="flex items-center gap-2 px-4 py-3 text-xs font-semibold text-[#1B1B1B] border-b border-gray-100"
                   >
                     <Truck size={14} className="text-[#F5720C]" /> Commandes
+                  </Link>
+                  <Link
+                    to="/expeditions"
+                    onClick={() => setMenuOuvert(false)}
+                    className="flex items-center gap-2 px-4 py-3 text-xs font-semibold text-[#1B1B1B] border-b border-gray-100"
+                  >
+                    <Package size={14} className="text-[#F5720C]" /> Expédition de colis
                   </Link>
                   <button
                     onClick={() => { setMenuOuvert(false); setGuideOuvert(true); }}
@@ -540,3 +547,4 @@ export default function Accueil() {
   );
   }
     
+

@@ -1,4 +1,5 @@
 // Détail d'un trajet : carte de l'itinéraire, étapes, informations, contact WhatsApp.
+import { useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { ArrowLeft, MapPin } from "lucide-react";
 import CarteItineraire from "../../components/CarteItineraire";
@@ -9,7 +10,10 @@ const COULEUR = { Départ: "bg-[#2E9E5B]", Escale: "bg-[#F5720C]", Arrivée: "bg
 export default function DetailExpedition() {
   const { id } = useParams();
   const exp = trouverExpedition(id);
+  const [choix, setChoix] = useState(0);
   if (!exp) return <Navigate to="/expeditions" replace />;
+  const variante = exp.variantes[Math.min(choix, exp.variantes.length - 1)];
+  const points = variante.points;
 
   const contacter = () => {
     const msg = `Bonjour, je souhaite expédier un colis : ${exp.titre}.`;
@@ -30,14 +34,33 @@ export default function DetailExpedition() {
       </div>
 
       <div className="px-3 mt-4 flex flex-col gap-3.5">
-        <CarteItineraire points={exp.points} />
+        {exp.variantes.length > 1 && (
+          <div>
+            <p className="text-[11px] font-bold text-gray-500 mb-1.5">Choisissez l'itinéraire :</p>
+            <div className="flex flex-col gap-1.5">
+              {exp.variantes.map((v, i) => (
+                <button
+                  key={v.nom}
+                  onClick={() => setChoix(i)}
+                  className={`text-left rounded-xl px-3.5 py-2.5 text-[13px] font-bold border-2 ${
+                    i === choix ? "bg-[#F5720C] border-[#F5720C] text-white" : "bg-white border-gray-200 text-[#1B1B1B]"
+                  }`}
+                >
+                  {v.icone} {v.nom}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <CarteItineraire key={variante.nom} points={points} />
 
         <div className="bg-white rounded-2xl p-4">
           <p className="text-xs font-extrabold text-[#1B1B1B] mb-3">Le trajet de votre colis</p>
           <ol className="flex flex-col">
-            {exp.points.map((p, i) => {
-              const role = roleDuPoint(exp.points, i);
-              const dernier = i === exp.points.length - 1;
+            {points.map((p, i) => {
+              const role = roleDuPoint(points, i);
+              const dernier = i === points.length - 1;
               return (
                 <li key={`${p.nom}${i}`} className="flex gap-3">
                   <div className="flex flex-col items-center">

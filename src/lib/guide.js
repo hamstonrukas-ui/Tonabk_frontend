@@ -29,6 +29,7 @@ export const AIDES = {
   location: "Trouvez une maison à louer par quartier. Touchez une maison pour voir les photos et contacter le propriétaire.",
   commandes: "Vous retrouvez ici vos demandes de livraison. Touchez-en une pour reprendre la conversation sur WhatsApp.",
   panier: "Vérifiez vos articles puis envoyez votre commande.",
+  expeditions: "Choisissez votre trajet pour voir sur la carte le chemin que suit votre colis, puis lisez les informations. Touchez le bouton vert pour nous écrire sur WhatsApp et expédier.",
 };
 
 // Quelle aide pour quelle page ? (null = pas d'aide)
@@ -46,6 +47,7 @@ export function idAide(pathname, search = "") {
   if (p === "/requete") return "requete";
   if (p === "/location") return "location";
   if (p === "/mes-commandes") return "commandes";
+  if (p === "/expeditions" || p.startsWith("/expeditions/")) return "expeditions";
   return null;
 }
 

@@ -35,7 +35,10 @@ export default function ListeExpeditions() {
         ))}
       </div>
 
-      <div className="px-3 mt-5">
+      <div className="px-3 mt-5 flex flex-col gap-2.5">
+        <Link to="/expeditions/deposer" className="w-full bg-[#F5720C] text-white text-sm font-extrabold rounded-xl py-3.5 text-center">
+          📦 Déposer mon colis
+        </Link>
         <button onClick={contacter} className="w-full bg-[#25D366] text-white text-sm font-extrabold rounded-xl py-3.5">
           Une question ? Écrivez-nous sur WhatsApp
         </button>

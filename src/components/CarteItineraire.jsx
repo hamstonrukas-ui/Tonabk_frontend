@@ -11,7 +11,8 @@ export default function CarteItineraire({ points }) {
   const d = cheminCourbe(pts);
 
   // Quadrillage de repère (latitudes / longitudes rondes)
-  const lats = points.map((p) => p.lat), lngs = points.map((p) => p.lng);
+  const proches = points.filter((p) => !p.lointain);
+  const lats = proches.map((p) => p.lat), lngs = proches.map((p) => p.lng);
   const pas = pasGrille(Math.max(Math.max(...lats) - Math.min(...lats), Math.max(...lngs) - Math.min(...lngs)));
   const lignes = [];
   for (let la = Math.ceil((Math.min(...lats) - pas) / pas) * pas; la <= Math.max(...lats) + pas; la += pas) {

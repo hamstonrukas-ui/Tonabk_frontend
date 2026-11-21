@@ -48,6 +48,12 @@ export default function Connexion() {
             S'inscrire
           </Link>
         </p>
+        <div className="border-t border-gray-100 pt-3 mt-1 text-center">
+          <p className="text-xs text-gray-500">Vous avez oublié vos accès, ou votre boutique a été créée pour vous ?</p>
+          <Link to="/boutique/acceder" className="inline-block mt-1.5 text-sm text-[#F5720C] font-bold">
+            Récupérer votre boutique
+          </Link>
+        </div>
       </form>
     </div>
   );

@@ -8,6 +8,7 @@ import { CartProvider } from "./context/CartContext";
 
 // Accueil
 import Accueil from "./pages/Accueil";
+import LienAgent from "./pages/LienAgent";
 import ListeExpeditions from "./pages/Expeditions/ListeExpeditions";
 import DetailExpedition from "./pages/Expeditions/DetailExpedition";
 import DepotColis from "./pages/Expeditions/DepotColis";
@@ -157,6 +158,8 @@ export default function App() {
           <Route path="/inscription" element={<Inscription />} />
           <Route path="/mot-de-passe-oublie" element={<MotDePasseOublie />} />
           <Route path="/reinitialiser-mot-de-passe" element={<ReinitialiserMotDePasse />} />
+          {/* Adresse personnelle d'un agent de sensibilisation : tonabk.com/<code> (toujours en dernier) */}
+          <Route path="/:code" element={<LienAgent />} />
         </Routes>
       </CartProvider>
     </BrowserRouter>

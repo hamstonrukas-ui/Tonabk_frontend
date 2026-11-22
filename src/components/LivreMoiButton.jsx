@@ -1,5 +1,6 @@
 import { Truck } from "lucide-react";
 import { API_URL } from "../lib/api";
+import { noterEvenement } from "../lib/agent";
 
 const NUMERO_SERVICE = "243855841999";
 const fmt = (n, devise = "USD") => Number(n).toLocaleString("fr-FR") + " " + devise;
@@ -20,6 +21,7 @@ export default function LivreMoiButton({ produit }) {
         body: JSON.stringify(produit),
       });
       if (res.ok) {
+        noterEvenement("livraison");
         const { id } = await res.json();
         ref = id.slice(0, 8);
         try {
@@ -29,17 +31,9 @@ export default function LivreMoiButton({ produit }) {
       }
     } catch {}
 
-    // WhatsApp ne permet pas d'attacher une image via un lien : on ajoute le lien de partage
-    // du produit/de l'offre, dont WhatsApp affiche automatiquement l'aperçu (photo + titre + prix).
-    const lienApercu = produit.solde_id
-      ? `${API_URL}/partage/solde/${produit.solde_id}?v=${Date.now()}`
-      : produit.produit_id
-        ? `${API_URL}/partage/produit/${produit.produit_id}?v=${Date.now()}`
-        : "";
     const message =
       `Bonjour, je veux me faire livrer à la maison : "${produit.nom_produit}" (${fmt(produit.prix, produit.devise)}).` +
-      (ref ? ` Réf. commande : ${ref}` : "") +
-      (lienApercu ? `\n${lienApercu}` : "");
+      (ref ? ` Réf. commande : ${ref}` : "");
     const url = `https://wa.me/${NUMERO_SERVICE}?text=${encodeURIComponent(message)}`;
     if (fenetre) fenetre.location.href = url;
     else window.location.href = url;

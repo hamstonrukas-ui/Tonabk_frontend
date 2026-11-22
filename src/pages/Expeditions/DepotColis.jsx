@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Camera, X, CheckCircle } from "lucide-react";
 import { API_URL } from "../../lib/api";
+import { noterEvenement } from "../../lib/agent";
 import { NUMERO_WHATSAPP_EXPEDITION } from "../../lib/expeditions";
 
 const LIEUX = ["Bukavu", "Goma", "Bujumbura (Burundi)", "Uvira", "Kalemie", "Lubumbashi", "Chine"];
@@ -62,6 +63,7 @@ export default function DepotColis() {
       const r = await fetch(`${API_URL}/api/colis`, { method: "POST", body: fd });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(d.error || "Envoi impossible");
+      noterEvenement("colis");
       setFini(true);
     } catch (err) {
       setErreur(err.message || "Envoi impossible. Vérifiez votre connexion et réessayez.");

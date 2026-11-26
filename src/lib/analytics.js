@@ -62,7 +62,12 @@ const contexte = () => ({
   source: detecterSource(),
 });
 
+// Robots et navigateurs automatisés : on n'envoie rien (ils faussaient le compteur de visiteurs)
+const ROBOT = /bot|crawl|spider|slurp|headless|lighthouse|pagespeed|gtmetrix|pingdom|facebookexternalhit|preview|phantom|puppeteer|playwright|selenium/i;
+const estRobot = () => navigator.webdriver === true || ROBOT.test(navigator.userAgent || "");
+
 function envoyer(chemin, donnees) {
+  if (estRobot()) return;
   fetch(`${API_URL}/api/analytics/${chemin}`, {
     method: "POST",
     keepalive: true,
@@ -102,6 +107,7 @@ export function demarrerSuiviDuree() {
 
 // Envoi "silencieux" — on ne bloque jamais l'utilisateur si ça échoue (réseau instable)
 export function enregistrerClicWhatsapp(cibleType, cibleId) {
+  if (estRobot()) return;
   // keepalive : la requête continue même si le téléphone bascule aussitôt vers WhatsApp.
   // Sans ça, le navigateur l'annule souvent en route et le clic n'est jamais compté.
   fetch(`${API_URL}/api/analytics/clic-whatsapp`, {
@@ -123,6 +129,7 @@ export function enregistrerClicWhatsapp(cibleType, cibleId) {
 const CLE_SESSION_VISITE = "tonabk_visite_enregistree";
 
 export function enregistrerVisiteSession(cibleType = "site", cibleId = null) {
+  if (estRobot()) return;
   const cleUnique = `${CLE_SESSION_VISITE}_${cibleType}_${cibleId ?? "global"}`;
   if (sessionStorage.getItem(cleUnique)) return;
   sessionStorage.setItem(cleUnique, "1");
